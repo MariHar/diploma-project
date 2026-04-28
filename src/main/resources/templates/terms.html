@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - MediCare Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            100: '#1E293B',
+                            200: '#0F172A',
+                            300: '#020617',
+                        },
+                        accent: {
+                            cyan: '#06B6D4',
+                            blue: '#3B82F6',
+                            purple: '#8B5CF6',
+                        },
+                        light: {
+                            100: '#F9FAFB',
+                            200: '#F3F4F6',
+                            300: '#E5E7EB',
+                        }
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-in',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-text {
+            background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        .toc-link {
+            transition: all 0.3s ease;
+        }
+
+        .toc-link.active {
+            color: #06B6D4;
+            border-left-color: #06B6D4;
+            background-color: rgba(6, 182, 212, 0.1);
+        }
+
+        .toc-link:hover {
+            color: #06B6D4;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        .shimmer {
+            animation: shimmer 2s infinite;
+            background: linear-gradient(to right, transparent 0%, rgba(6, 182, 212, 0.1) 50%, transparent 100%);
+            background-size: 1000px 100%;
+        }
+
+        /* Light Mode Styles */
+        body:not(.dark) {
+            background-color: #F9FAFB !important;
+            color: #1E293B !important;
+        }
+
+        body:not(.dark) .bg-dark-300 {
+            background-color: #F9FAFB !important;
+        }
+
+        body:not(.dark) .bg-dark-200 {
+            background-color: #FFFFFF !important;
+            border-color: #E5E7EB !important;
+        }
+
+        body:not(.dark) .bg-dark-100 {
+            background-color: #FFFFFF !important;
+            border-color: #E5E7EB !important;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+        }
+
+        body:not(.dark) .text-gray-100,
+        body:not(.dark) .text-gray-200 {
+            color: #1E293B !important;
+        }
+
+        body:not(.dark) .text-gray-300 {
+            color: #4B5563 !important;
+        }
+
+        body:not(.dark) .text-gray-400 {
+            color: #6B7280 !important;
+        }
+
+        body:not(.dark) .text-white {
+            color: #1E293B !important;
+        }
+
+        body:not(.dark) .border-gray-800,
+        body:not(.dark) .border-gray-700 {
+            border-color: #E5E7EB !important;
+        }
+
+        body:not(.dark) nav {
+            background-color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        body:not(.dark) .nav-link {
+            color: #4B5563 !important;
+        }
+
+        body:not(.dark) .nav-link:hover {
+            color: #1E293B !important;
+        }
+
+        body:not(.dark) footer {
+            background-color: #FFFFFF !important;
+        }
+
+        body:not(.dark) .dropdown-menu {
+            background-color: #FFFFFF !important;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        body:not(.dark) .shimmer {
+            background: linear-gradient(to right, transparent 0%, rgba(6, 182, 212, 0.05) 50%, transparent 100%);
+        }
+
+        body:not(.dark) .toc-link.active {
+            background-color: rgba(6, 182, 212, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-dark-300 text-gray-100 font-sans dark">
+
+    <!-- Same Top Bar & Navigation -->
+    <div class="bg-dark-200 dark:bg-dark-200 bg-white border-b border-gray-800 dark:border-gray-800 border-gray-200">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex flex-wrap justify-between items-center text-sm">
+                <div class="flex flex-wrap gap-6 text-gray-400">
+                    <a href="tel:+1234567890" class="flex items-center gap-2 hover:text-accent-cyan transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                        </svg>
+                        +1 (234) 567-8900
+                    </a>
+                    <a href="#" class="flex items-center gap-2 hover:text-accent-cyan transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        123 Medical Center, New York, NY 10001
+                    </a>
+                </div>
+                <div class="flex items-center gap-3 mt-2 md:mt-0">
+                    <div class="flex gap-3">
+                        <button class="px-3 py-1 rounded hover:bg-dark-100 dark:hover:bg-dark-100 hover:bg-gray-100 transition-colors text-gray-300 dark:text-gray-300 text-gray-600 hover:text-white dark:hover:text-white" onclick="switchLanguage('en')">EN</button>
+                        <button class="px-3 py-1 rounded hover:bg-dark-100 dark:hover:bg-dark-100 hover:bg-gray-100 transition-colors text-gray-300 dark:text-gray-300 text-gray-600 hover:text-white dark:hover:text-white" onclick="switchLanguage('am')">AM</button>
+                        <button class="px-3 py-1 rounded hover:bg-dark-100 dark:hover:bg-dark-100 hover:bg-gray-100 transition-colors text-gray-300 dark:text-gray-300 text-gray-600 hover:text-white dark:hover:text-white" onclick="switchLanguage('ru')">RU</button>
+                    </div>
+                    <div class="flex items-center gap-3 border-l border-gray-700 dark:border-gray-700 border-gray-300 pl-6 ml-3">
+                        <span class="text-xs text-gray-400">Theme:</span>
+                        <button id="themeToggle" class="w-8 h-8 rounded-lg bg-dark-100 dark:bg-dark-100 bg-gray-100 hover:bg-dark-300 dark:hover:bg-dark-300 hover:bg-gray-200 transition-colors flex items-center justify-center group">
+                            <svg id="sunIcon" class="w-5 h-5 text-yellow-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                            <svg id="moonIcon" class="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bg-dark-200/95 backdrop-blur-md sticky top-0 z-50 border-b border-gray-800">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between py-4">
+                <!-- Logo -->
+                <a href="#" class="flex items-center gap-3 group">
+                    <div class="w-12 h-12 bg-gradient-to-br from-accent-cyan to-accent-blue rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <span class="text-xl font-bold gradient-text block">MediCare Pro</span>
+                        <span class="text-xs text-gray-400">Premium Health Services</span>
+                    </div>
+                </a>
+
+                <!-- Desktop Menu -->
+                <div class="hidden lg:flex items-center gap-8">
+                    <a href="#home" class="nav-link text-gray-300 hover:text-white font-medium">Home</a>
+                    <a href="#services" class="nav-link text-gray-300 hover:text-white font-medium">Services</a>
+                    <a href="#doctors" class="nav-link text-gray-300 hover:text-white font-medium">Doctors</a>
+                    <a href="#contact" class="nav-link text-gray-300 hover:text-white font-medium">Contact</a>
+                    <a href="#about" class="nav-link text-gray-300 hover:text-white font-medium">About</a>
+                    
+                    <!-- Dropdown More -->
+                    <div class="dropdown relative">
+                        <button class="nav-link text-gray-300 hover:text-white font-medium flex items-center gap-1">
+                            More
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div class="dropdown-menu hidden absolute top-full left-0 mt-2 w-56 bg-dark-100 rounded-xl shadow-xl border border-gray-700 py-2">
+                            <a href="#departments" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Departments</a>
+                            <!-- <a href="#service-details" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Service Details</a> -->
+                            <a href="#appointment" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Book Appointment</a>
+                            <a href="#gallery" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Gallery</a>
+                            <a href="#terms" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Terms & Conditions</a>
+                            <a href="#privacy" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Privacy Policy</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search, Login, Register -->
+                <div class="hidden lg:flex items-center gap-4">
+                    <div class="relative">
+                        <input type="text" placeholder="Search..." class="bg-dark-100 border border-gray-700 rounded-lg px-4 py-2 pl-10 text-sm focus:outline-none focus:border-accent-cyan transition-colors w-48">
+                        <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    <button class="text-gray-300 hover:text-white font-medium transition-colors">Login</button>
+                    <button class="bg-gradient-to-r from-accent-cyan to-accent-blue px-6 py-2 rounded-lg font-medium hover:shadow-lg hover:shadow-accent-cyan/20 transition-all">Register</button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button class="lg:hidden text-gray-300 hover:text-white" onclick="toggleMobileMenu()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="hidden lg:hidden pb-4">
+                <div class="flex flex-col gap-3">
+                    <input type="text" placeholder="Search..." class="bg-dark-100 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-accent-cyan">
+                    <a href="#home" class="text-gray-300 hover:text-white py-2">Home</a>
+                    <a href="#services" class="text-gray-300 hover:text-white py-2">Departments</a>
+                    <a href="#doctors" class="text-gray-300 hover:text-white py-2">Doctors</a>
+                    <a href="#contact" class="text-gray-300 hover:text-white py-2">Contact</a>
+                    <a href="#about" class="text-gray-300 hover:text-white py-2">About</a>
+                    <div class="border-t border-gray-800 pt-3 mt-2">
+                        <a href="#departments" class="text-gray-400 hover:text-white py-2 block text-sm">Services</a>
+                        <a href="#appointment" class="text-gray-400 hover:text-white py-2 block text-sm">Book Appointment</a>
+                        <a href="#gallery" class="text-gray-400 hover:text-white py-2 block text-sm">Gallery</a>
+                    </div>
+                    <div class="flex gap-3 pt-3">
+                        <button class="flex-1 border border-gray-700 py-2 rounded-lg hover:bg-dark-100">Login</button>
+                        <button class="flex-1 bg-gradient-to-r from-accent-cyan to-accent-blue py-2 rounded-lg">Register</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="relative py-20 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-accent-cyan/10 via-dark-200 to-accent-blue/10 dark:bg-gradient-to-br dark:from-accent-cyan/10 dark:via-dark-200 dark:to-accent-blue/10"></div>
+        <div class="absolute inset-0 bg-gradient-to-br from-accent-cyan/5 via-gray-50 to-accent-blue/5 dark:hidden"></div>
+        <div class="absolute inset-0 shimmer"></div>
+        
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="text-center max-w-4xl mx-auto animate-fade-in">
+                <h1 class="text-5xl md:text-6xl font-bold mb-6 leading-tight text-gray-900 dark:text-white">
+                    Terms of <span class="gradient-text">Service</span>
+                </h1>
+                <p class="text-lg text-gray-600 dark:text-gray-300 mb-4">
+                    Last Updated: January 15, 2025
+                </p>
+                <p class="text-gray-500 dark:text-gray-400">
+                    Please read these terms carefully before using our services
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Terms Content -->
+    <section class="py-16 bg-dark-300 dark:bg-dark-300 bg-light-100">
+        <div class="container mx-auto px-4">
+            <div class="grid lg:grid-cols-4 gap-8">
+                
+                <!-- Table of Contents (Sidebar) -->
+                <div class="lg:col-span-1">
+                    <div class="bg-dark-100 dark:bg-dark-100 bg-white border border-gray-800 dark:border-gray-800 border-gray-200 rounded-2xl p-6 sticky top-24">
+                        <h3 class="text-lg font-bold mb-4 text-white dark:text-white text-gray-900">Table of Contents</h3>
+                        <nav class="space-y-2">
+                            <a href="#acceptance" class="toc-link block py-2 px-3 border-l-2 border-gray-700 dark:border-gray-700 border-gray-300 text-gray-400 text-sm hover:pl-4 transition-all">1. Acceptance of Terms</a>
+                            <a href="#services" class="toc-link block py-2 px-3 border-l-2 border-gray-700 dark:border-gray-700 border-gray-300 text-gray-400 text-sm hover:pl-4 transition-all">2. Medical Services</a>
+                            <a href="#appointments" class="toc-link block py-2 px-3 border-l-2 border-gray-700 dark:border-gray-700 border-gray-300 text-gray-400 text-sm hover:pl-4 transition-all">3. Appointments</a>
+                            <a href="#payments" class="toc-link block py-2 px-3 border-l-2 border-gray-700 dark:border-gray-700 border-gray-300 text-gray-400 text-sm hover:pl-4 transition-all">4. Payments & Billing</a>
+                            <a href="#privacy" class="toc-link block py-2 px-3 border-l-2 border-gray-700 dark:border-gray-700 border-gray-300 text-gray-400 text-sm hover:pl-4 transition-all">5. Privacy & Confidentiality</a>
+                            <a href="#responsibilities" class="toc-link block py-2 px-3 border-l-2 border-gray-700 dark:border-gray-700 border-gray-300 text-gray-400 text-sm hover:pl-4 transition-all">6. Patient Responsibilities</a>
+                            <a href="#liability" class="toc-link block py-2 px-3 border-l-2 border-gray-700 dark:border-gray-700 border-gray-300 text-gray-400 text-sm hover:pl-4 transition-all">7. Limitation of Liability</a>
+                            <a href="#termination" class="toc-link block py-2 px-3 border-l-2 border-gray-700 dark:border-gray-700 border-gray-300 text-gray-400 text-sm hover:pl-4 transition-all">8. Termination</a>
+                            <a href="#contact" class="toc-link block py-2 px-3 border-l-2 border-gray-700 dark:border-gray-700 border-gray-300 text-gray-400 text-sm hover:pl-4 transition-all">9. Contact Information</a>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="lg:col-span-3">
+                    <div class="space-y-8">
+
+                        <!-- Section 1 -->
+                        <div id="acceptance" class="bg-dark-100 dark:bg-dark-100 bg-white border border-gray-800 dark:border-gray-800 border-gray-200 rounded-2xl p-8 scroll-mt-24">
+                            <h2 class="text-3xl font-bold mb-6 gradient-text">1. Acceptance of Terms</h2>
+                            <div class="prose prose-invert max-w-none">
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed mb-4">
+                                    By accessing and using the services provided by MediCare Pro ("we", "our", or "us"), you acknowledge that you have read, understood, and agree to be bound by these Terms of Service. If you do not agree with any part of these terms, you must not use our services.
+                                </p>
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed mb-4">
+                                    These terms constitute a legally binding agreement between you and MediCare Pro. We reserve the right to modify these terms at any time, and such modifications will be effective immediately upon posting.
+                                </p>
+                                <div class="bg-accent-cyan/10 border-l-4 border-accent-cyan p-4 rounded-r-lg">
+                                    <p class="text-sm text-gray-300 dark:text-gray-300 text-gray-600">
+                                        <strong>Important:</strong> It is your responsibility to review these terms periodically for changes.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2 -->
+                        <div id="services" class="bg-dark-100 dark:bg-dark-100 bg-white border border-gray-800 dark:border-gray-800 border-gray-200 rounded-2xl p-8 scroll-mt-24">
+                            <h2 class="text-3xl font-bold mb-6 gradient-text">2. Medical Services</h2>
+                            <div class="prose prose-invert max-w-none">
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed mb-4">
+                                    MediCare Pro provides comprehensive medical services including, but not limited to:
+                                </p>
+                                <ul class="list-disc list-inside space-y-2 text-gray-300 dark:text-gray-300 text-gray-600 ml-4 mb-4">
+                                    <li>General medical consultations and examinations</li>
+                                    <li>Specialist consultations (cardiology, neurology, orthopedics, etc.)</li>
+                                    <li>Diagnostic services and laboratory testing</li>
+                                    <li>Surgical procedures and post-operative care</li>
+                                    <li>Emergency medical services</li>
+                                </ul>
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed mb-4">
+                                    All medical services are provided by licensed and board-certified healthcare professionals. We maintain the highest standards of medical care in accordance with applicable medical regulations and best practices.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Section 3 -->
+                        <div id="appointments" class="bg-dark-100 dark:bg-dark-100 bg-white border border-gray-800 dark:border-gray-800 border-gray-200 rounded-2xl p-8 scroll-mt-24">
+                            <h2 class="text-3xl font-bold mb-6 gradient-text">3. Appointments</h2>
+                            <div class="prose prose-invert max-w-none">
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed mb-4">
+                                    <strong>Scheduling:</strong> Appointments can be scheduled through our website, mobile app, or by calling our reception desk. We recommend booking appointments at least 24 hours in advance.
+                                </p>
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed mb-4">
+                                    <strong>Cancellation Policy:</strong> You may cancel or reschedule appointments up to 24 hours before the scheduled time without penalty. Cancellations made less than 24 hours in advance or no-shows may be subject to a cancellation fee.
+                                </p>
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed mb-4">
+                                    <strong>Late Arrivals:</strong> Please arrive 15 minutes before your scheduled appointment. Late arrivals may result in shortened consultation time or rescheduling.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Section 4 -->
+                        <div id="payments" class="bg-dark-100 dark:bg-dark-100 bg-white border border-gray-800 dark:border-gray-800 border-gray-200 rounded-2xl p-8 scroll-mt-24">
+                            <h2 class="text-3xl font-bold mb-6 gradient-text">4. Payments & Billing</h2>
+                            <div class="prose prose-invert max-w-none">
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed mb-4">
+                                    Payment is expected at the time of service unless prior arrangements have been made. We accept the following payment methods:
+                                </p>
+                                <ul class="list-disc list-inside space-y-2 text-gray-300 dark:text-gray-300 text-gray-600 ml-4 mb-4">
+                                    <li>Cash</li>
+                                    <li>Credit and debit cards (Visa, MasterCard, American Express)</li>
+                                    <li>Health insurance (subject to verification)</li>
+                                    <li>Flexible payment plans (upon approval)</li>
+                                </ul>
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed mb-4">
+                                    <strong>Insurance:</strong> If you are using health insurance, please provide your insurance information at the time of booking. You are responsible for understanding your coverage and any co-pays or deductibles.
+                                </p>
+                                <div class="bg-amber-500/10 border-l-4 border-amber-500 p-4 rounded-r-lg">
+                                    <p class="text-sm text-gray-300 dark:text-gray-300 text-gray-600">
+                                        <strong>Note:</strong> Unpaid balances may be sent to collections and may affect your ability to receive future services.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 5 -->
+                        <div id="privacy" class="bg-dark-100 dark:bg-dark-100 bg-white border border-gray-800 dark:border-gray-800 border-gray-200 rounded-2xl p-8 scroll-mt-24">
+                            <h2 class="text-3xl font-bold mb-6 gradient-text">5. Privacy & Confidentiality</h2>
+                            <div class="prose prose-invert max-w-none">
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed mb-4">
+                                    We are committed to protecting your privacy and maintaining the confidentiality of your medical information in accordance with HIPAA (Health Insurance Portability and Accountability Act) and other applicable privacy laws.
+                                </p>
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed mb-4">
+                                    Your medical information will only be shared with authorized healthcare providers involved in your care, and with your explicit consent for any other purposes.
+                                </p>
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed">
+                                    For more detailed information about how we collect, use, and protect your data, please refer to our <a href="privacy.html" class="text-accent-cyan hover:text-accent-blue underline">Privacy Policy</a>.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Section 6 -->
+                        <div id="responsibilities" class="bg-dark-100 dark:bg-dark-100 bg-white border border-gray-800 dark:border-gray-800 border-gray-200 rounded-2xl p-8 scroll-mt-24">
+                            <h2 class="text-3xl font-bold mb-6 gradient-text">6. Patient Responsibilities</h2>
+                            <div class="prose prose-invert max-w-none">
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed mb-4">
+                                    As a patient, you have certain responsibilities to ensure the best possible care:
+                                </p>
+                                <ul class="list-disc list-inside space-y-2 text-gray-300 dark:text-gray-300 text-gray-600 ml-4 mb-4">
+                                    <li>Provide accurate and complete medical history</li>
+                                    <li>Follow treatment plans and take medications as prescribed</li>
+                                    <li>Ask questions if you don't understand instructions</li>
+                                    <li>Inform us of any changes in your condition</li>
+                                    <li>Treat staff and other patients with respect</li>
+                                    <li>Comply with facility policies and procedures</li>
+                                </ul>
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed">
+                                    Failure to fulfill these responsibilities may affect the quality of care you receive and could result in termination of services.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Section 7 -->
+                        <div id="liability" class="bg-dark-100 dark:bg-dark-100 bg-white border border-gray-800 dark:border-gray-800 border-gray-200 rounded-2xl p-8 scroll-mt-24">
+                            <h2 class="text-3xl font-bold mb-6 gradient-text">7. Limitation of Liability</h2>
+                            <div class="prose prose-invert max-w-none">
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed mb-4">
+                                    While we strive to provide the highest quality medical care, MediCare Pro and its affiliated healthcare providers shall not be liable for:
+                                </p>
+                                <ul class="list-disc list-inside space-y-2 text-gray-300 dark:text-gray-300 text-gray-600 ml-4 mb-4">
+                                    <li>Outcomes resulting from patient non-compliance with treatment plans</li>
+                                    <li>Unforeseen medical complications inherent to medical procedures</li>
+                                    <li>Delays or cancellations due to emergency situations</li>
+                                    <li>Third-party service failures (e.g., laboratory, imaging services)</li>
+                                </ul>
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed">
+                                    This limitation of liability does not affect any statutory rights that cannot be waived under applicable law.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Section 8 -->
+                        <div id="termination" class="bg-dark-100 dark:bg-dark-100 bg-white border border-gray-800 dark:border-gray-800 border-gray-200 rounded-2xl p-8 scroll-mt-24">
+                            <h2 class="text-3xl font-bold mb-6 gradient-text">8. Termination</h2>
+                            <div class="prose prose-invert max-w-none">
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed mb-4">
+                                    Either party may terminate the physician-patient relationship at any time with appropriate notice:
+                                </p>
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed mb-4">
+                                    <strong>By the Patient:</strong> You may terminate your relationship with any healthcare provider at MediCare Pro at any time by providing written notice.
+                                </p>
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed mb-4">
+                                    <strong>By MediCare Pro:</strong> We reserve the right to terminate services if:
+                                </p>
+                                <ul class="list-disc list-inside space-y-2 text-gray-300 dark:text-gray-300 text-gray-600 ml-4 mb-4">
+                                    <li>Payment obligations are not met</li>
+                                    <li>Patient behavior is abusive or threatening to staff</li>
+                                    <li>Patient repeatedly fails to follow treatment plans</li>
+                                    <li>Services requested are outside our scope of practice</li>
+                                </ul>
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed">
+                                    In case of termination, we will provide reasonable assistance in transferring your care to another provider.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Section 9 -->
+                        <div id="contact" class="bg-dark-100 dark:bg-dark-100 bg-white border border-gray-800 dark:border-gray-800 border-gray-200 rounded-2xl p-8 scroll-mt-24">
+                            <h2 class="text-3xl font-bold mb-6 gradient-text">9. Contact Information</h2>
+                            <div class="prose prose-invert max-w-none">
+                                <p class="text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed mb-4">
+                                    If you have any questions or concerns about these Terms of Service, please contact us:
+                                </p>
+                                <div class="bg-dark-200 dark:bg-dark-200 bg-gray-50 rounded-xl p-6 space-y-3">
+                                    <div class="flex items-start gap-3">
+                                        <svg class="w-5 h-5 text-accent-cyan mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                        </svg>
+                                        <div>
+                                            <p class="font-semibold text-white dark:text-white text-gray-900">Address</p>
+                                            <p class="text-gray-400">123 Medical Center Drive, New York, NY 10001</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <svg class="w-5 h-5 text-accent-cyan mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                        </svg>
+                                        <div>
+                                            <p class="font-semibold text-white dark:text-white text-gray-900">Phone</p>
+                                            <p class="text-gray-400">+1 (234) 567-8900</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <svg class="w-5 h-5 text-accent-cyan mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                        </svg>
+                                        <div>
+                                            <p class="font-semibold text-white dark:text-white text-gray-900">Email</p>
+                                            <p class="text-gray-400">legal@medicarepro.com</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark-200 dark:bg-dark-200 bg-white border-t border-gray-800 dark:border-gray-800 border-gray-200 pt-16 pb-8">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                <div>
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 bg-gradient-to-br from-accent-cyan to-accent-blue rounded-xl flex items-center justify-center">
+                            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold gradient-text">MediCare Pro</span>
+                    </div>
+                    <p class="text-gray-400 mb-6">Premium healthcare services with a commitment to excellence and compassionate care.</p>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold mb-6 text-white dark:text-white text-gray-900">Quick Links</h3>
+                    <ul class="space-y-3">
+                        <li><a href="index.html" class="text-gray-400 hover:text-accent-cyan transition-colors">Home</a></li>
+                        <li><a href="services.html" class="text-gray-400 hover:text-accent-cyan transition-colors">Services</a></li>
+                        <li><a href="doctors.html" class="text-gray-400 hover:text-accent-cyan transition-colors">Our Doctors</a></li>
+                        <li><a href="contact.html" class="text-gray-400 hover:text-accent-cyan transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold mb-6 text-white dark:text-white text-gray-900">Legal</h3>
+                    <ul class="space-y-3">
+                        <li><a href="terms.html" class="text-gray-400 hover:text-accent-cyan transition-colors">Terms of Service</a></li>
+                        <li><a href="privacy.html" class="text-gray-400 hover:text-accent-cyan transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-accent-cyan transition-colors">Cookie Policy</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold mb-6 text-white dark:text-white text-gray-900">Contact Us</h3>
+                    <ul class="space-y-4">
+                        <li class="flex gap-3 text-gray-400">
+                            <svg class="w-5 h-5 text-accent-cyan flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                            </svg>
+                            <span>+1 (234) 567-8900</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 dark:border-gray-800 border-gray-200 pt-8 mt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <p class="text-gray-400 text-sm">© 2025 MediCare Pro. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating AI Assistant -->
+    <div class="fixed bottom-8 right-8 z-50">
+        <button class="w-16 h-16 bg-gradient-to-br from-accent-cyan to-accent-blue rounded-full shadow-2xl flex items-center justify-center animate-pulse-slow hover:scale-110 transition-transform group">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+            </svg>
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-ping"></span>
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full"></span>
+        </button>
+    </div>
+
+    <script>
+        // Theme Switcher
+        (function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+            const html = document.documentElement;
+            const body = document.body;
+
+            const currentTheme = localStorage.getItem('theme') || 'dark';
+
+            function applyTheme(theme) {
+                if (theme === 'dark') {
+                    body.classList.add('dark');
+                    html.classList.add('dark');
+                    sunIcon.classList.remove('hidden');
+                    moonIcon.classList.add('hidden');
+                } else {
+                    body.classList.remove('dark');
+                    html.classList.remove('dark');
+                    sunIcon.classList.add('hidden');
+                    moonIcon.classList.remove('hidden');
+                }
+            }
+
+            applyTheme(currentTheme);
+
+            themeToggle.addEventListener('click', function() {
+                const isDark = body.classList.contains('dark');
+                const newTheme = isDark ? 'light' : 'dark';
+                applyTheme(newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+        })();
+
+        // Mobile Menu
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Language Switcher
+        function switchLanguage(lang) {
+            console.log('Language switched to:', lang);
+        }
+
+        // Table of Contents - Highlight active section
+        const sections = document.querySelectorAll('[id]');
+        const tocLinks = document.querySelectorAll('.toc-link');
+
+        function highlightTOC() {
+            let current = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (window.pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', highlightTOC);
+        highlightTOC(); // Initial call
+
+        // Smooth scroll for TOC links
+        tocLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                if (targetSection) {
+                    targetSection.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div style="font-family: Arial, sans-serif; border: 1px solid #ddd; padding: 20px; max-width: 600px;">
+  <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; pb-10px;">Պաշտոնական Բժշկական Քարտ</h2>
+  <p><strong>Բժիշկ:</strong> <span th:text="${'Dr. ' + doctor.firstName + ' ' + doctor.lastName}"></span></p>
+  <p><strong>Պացիենտ:</strong> <span th:text="${patient.firstName + ' ' + patient.lastName}"></span></p>
+  <hr>
+  <div style="background-color: #f9f9f9; padding: 15px;">
+    <p><strong>Ախտորոշում:</strong> <br> <span th:text="${record.diagnosis}"></span></p>
+    <p><strong>Բուժում:</strong> <br> <span th:text="${record.treatment}"></span></p>
+    <p th:if="${record.followUpDate != null}"><strong>Հաջորդ այցը:</strong> <span th:text="${record.followUpDate}"></span></p>
+  </div>
+  <p style="font-size: 12px; color: #777; margin-top: 20px;">Սա ավտոմատ ուղարկված նամակ է հիվանդանոցի համակարգից:</p>
+</div>
+</body>
+</html>

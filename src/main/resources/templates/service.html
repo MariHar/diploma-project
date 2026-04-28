@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Medical Services - MediCare Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            100: '#1E293B',
+                            200: '#0F172A',
+                            300: '#020617',
+                        },
+                        accent: {
+                            cyan: '#06B6D4',
+                            blue: '#3B82F6',
+                            purple: '#8B5CF6',
+                        },
+                        light: {
+                            100: '#F9FAFB',
+                            200: '#F3F4F6',
+                            300: '#E5E7EB',
+                        }
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-in',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Light Mode Variables and Overrides */
+        :root {
+            --transition-theme: all 0.3s ease;
+        }
+
+        body, nav, .service-card, .bg-dark-100, .bg-dark-200, .bg-dark-300, footer {
+            transition: var(--transition-theme);
+        }
+
+        /* Light Mode Specific Styles */
+        body:not(.dark) {
+            background-color: #F9FAFB !important;
+            color: #1E293B !important;
+        }
+
+        body:not(.dark) .bg-dark-300 {
+            background-color: #F9FAFB !important;
+        }
+
+        body:not(.dark) .bg-dark-200 {
+            background-color: #FFFFFF !important;
+            border-color: #E5E7EB !important;
+        }
+
+        body:not(.dark) .bg-dark-100 {
+            background-color: #FFFFFF !important;
+            border-color: #E5E7EB !important;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+        }
+
+        body:not(.dark) .text-gray-100 {
+            color: #1E293B !important;
+        }
+
+        body:not(.dark) .text-gray-300 {
+            color: #4B5563 !important;
+        }
+
+        body:not(.dark) .text-gray-400 {
+            color: #6B7280 !important;
+        }
+
+        body:not(.dark) .text-white {
+            color: #1E293B !important;
+        }
+
+        body:not(.dark) .border-gray-800 {
+            border-color: #E5E7EB !important;
+        }
+
+        body:not(.dark) .border-gray-700 {
+            border-color: #D1D5DB !important;
+        }
+
+        body:not(.dark) .service-card {
+            background-color: #FFFFFF !important;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        body:not(.dark) .service-card:hover {
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        body:not(.dark) nav {
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(12px);
+        }
+
+        body:not(.dark) .nav-link {
+            color: #4B5563 !important;
+        }
+
+        body:not(.dark) .nav-link:hover {
+            color: #1E293B !important;
+        }
+
+        body:not(.dark) footer {
+            background-color: #FFFFFF !important;
+        }
+
+        body:not(.dark) input[type="text"] {
+            background-color: #F3F4F6 !important;
+            border-color: #D1D5DB !important;
+            color: #1E293B !important;
+        }
+
+        body:not(.dark) input[type="text"]:focus {
+            border-color: #06B6D4 !important;
+        }
+
+        body:not(.dark) .dropdown-menu {
+            background-color: #FFFFFF !important;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        body:not(.dark) .filter-pill.active {
+            background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%) !important;
+            color: white !important;
+        }
+
+        body:not(.dark) .filter-pill {
+            background-color: #F3F4F6 !important;
+            border-color: #E5E7EB !important;
+        }
+        /* Header Gradient - Light/Dark Mode Compatible */
+        .header-gradient {
+            background: linear-gradient(to bottom, #0F172A, #020617);
+        }
+
+        body:not(.dark) .header-gradient {
+            background: linear-gradient(to bottom, #F3F4F6, #F9FAFB) !important;
+        }
+
+
+        .gradient-text {
+            background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-8px);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        /* Service Card Glassmorphism */
+        .service-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .service-card:hover {
+            background: rgba(30, 41, 59, 0.7);
+            border-color: rgba(6, 182, 212, 0.5);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(6, 182, 212, 0.15);
+        }
+
+        .service-card:hover .price-badge {
+            background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);
+            transform: scale(1.1);
+        }
+
+        .price-badge {
+            transition: all 0.3s ease;
+        }
+
+        .service-icon {
+            transition: all 0.3s ease;
+        }
+
+        .service-card:hover .service-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* Filter Pills */
+        .filter-pill {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .filter-pill:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
+        }
+
+        .filter-pill.active {
+            background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+        .stagger-5 { animation-delay: 0.5s; }
+        .stagger-6 { animation-delay: 0.6s; }
+    </style>
+</head>
+<body class="bg-dark-300 text-gray-100 font-sans">
+
+    <!-- Top Bar -->
+    <div class="bg-dark-200 border-b border-gray-800">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex flex-wrap justify-between items-center text-sm">
+                <div class="flex flex-wrap gap-6 text-gray-400">
+                    <a href="tel:+1234567890" class="flex items-center gap-2 hover:text-accent-cyan transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                        </svg>
+                        +1 (234) 567-8900
+                    </a>
+                    <a href="#" class="flex items-center gap-2 hover:text-accent-cyan transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        123 Medical Center, New York, NY 10001
+                    </a>
+                </div>
+               
+                <div class="flex gap-3 mt-2 md:mt-0">
+                    <button class="px-3 py-1 rounded hover:bg-dark-100 transition-colors text-gray-300 hover:text-white" onclick="switchLanguage('en')">EN</button>
+                    <button class="px-3 py-1 rounded hover:bg-dark-100 transition-colors text-gray-300 hover:text-white" onclick="switchLanguage('am')">AM</button>
+                    <button class="px-3 py-1 rounded hover:bg-dark-100 transition-colors text-gray-300 hover:text-white" onclick="switchLanguage('ru')">RU</button>
+                
+                 <div class="flex items-center gap-3 border-l border-gray-700 pl-6 ml-3">
+                    <span class="text-xs text-gray-400">Theme:</span>
+                    <button id="themeToggle" class="w-8 h-8 rounded-lg bg-dark-100 hover:bg-dark-300 transition-colors flex items-center justify-center group">
+                        <svg id="sunIcon" class="w-5 h-5 text-yellow-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                        <svg id="moonIcon" class="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                        </svg>
+                    </button>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navigation (Sticky) -->
+    <nav class="bg-dark-200/95 backdrop-blur-md sticky top-0 z-50 border-b border-gray-800">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between py-4">
+                <!-- Logo -->
+                <a href="index.html" class="flex items-center gap-3 group">
+                    <div class="w-12 h-12 bg-gradient-to-br from-accent-cyan to-accent-blue rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <span class="text-xl font-bold gradient-text block">MediCare Pro</span>
+                        <span class="text-xs text-gray-400">Premium Health Services</span>
+                    </div>
+                </a>
+
+                <!-- Desktop Menu -->
+                <div class="hidden lg:flex items-center gap-8">
+                    <a href="index.html#home" class="nav-link text-gray-300 hover:text-white font-medium">Home</a>
+                    <a href="services.html" class="nav-link text-accent-cyan font-semibold">Services</a>
+                    <a href="index.html#doctors" class="nav-link text-gray-300 hover:text-white font-medium">Doctors</a>
+                    <a href="contact.html" class="nav-link text-gray-300 hover:text-white font-medium">Contact</a>
+                    <a href="index.html#about" class="nav-link text-gray-300 hover:text-white font-medium">About</a>
+                    
+                    <!-- Dropdown More -->
+                    <div class="dropdown relative">
+                        <button class="nav-link text-gray-300 hover:text-white font-medium flex items-center gap-1">
+                            More
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div class="dropdown-menu hidden absolute top-full left-0 mt-2 w-56 bg-dark-100 rounded-xl shadow-xl border border-gray-700 py-2">
+                            <a href="index.html#departments" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Departments</a>
+                            <a href="index.html#appointment" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Book Appointment</a>
+                            <a href="index.html#gallery" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Gallery</a>
+                            <a href="ai-chat.html" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">AI Assistant</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search, Login, Register -->
+                <div class="hidden lg:flex items-center gap-4">
+                    <div class="relative">
+                        <input type="text" placeholder="Search services..." class="bg-dark-100 border border-gray-700 rounded-lg px-4 py-2 pl-10 text-sm focus:outline-none focus:border-accent-cyan transition-colors w-48">
+                        <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    <button class="text-gray-300 hover:text-white font-medium transition-colors">Login</button>
+                    <button class="bg-gradient-to-r from-accent-cyan to-accent-blue px-6 py-2 rounded-lg font-medium hover:shadow-lg hover:shadow-accent-cyan/20 transition-all">Register</button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button class="lg:hidden text-gray-300 hover:text-white" onclick="toggleMobileMenu()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="hidden lg:hidden pb-4">
+                <div class="flex flex-col gap-3">
+                    <input type="text" placeholder="Search..." class="bg-dark-100 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-accent-cyan">
+                    <a href="index.html#home" class="text-gray-300 hover:text-white py-2">Home</a>
+                    <a href="services.html" class="text-accent-cyan font-semibold py-2">Services</a>
+                    <a href="index.html#doctors" class="text-gray-300 hover:text-white py-2">Doctors</a>
+                    <a href="contact.html" class="text-gray-300 hover:text-white py-2">Contact</a>
+                    <a href="index.html#about" class="text-gray-300 hover:text-white py-2">About</a>
+                    <a href="ai-chat.html" class="text-gray-300 hover:text-white py-2">AI Assistant</a>
+                    <div class="flex gap-3 pt-3">
+                        <button class="flex-1 border border-gray-700 py-2 rounded-lg hover:bg-dark-100">Login</button>
+                        <button class="flex-1 bg-gradient-to-r from-accent-cyan to-accent-blue py-2 rounded-lg">Register</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+   <!-- Header Section -->
+<section class="py-16 md:py-20 header-gradient">
+    <div class="container mx-auto px-4 text-center">
+        <div class="max-w-3xl mx-auto animate-fade-in">
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+                Our Medical <span class="gradient-text">Services</span>
+            </h1>
+            <p class="text-lg md:text-xl text-gray-400 mb-8">
+                Comprehensive healthcare solutions delivered by expert specialists using state-of-the-art technology and compassionate care.
+            </p>
+            <div class="flex items-center justify-center gap-4 flex-wrap text-sm text-gray-500">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>40+ Specialized Services</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    <span>150+ Expert Doctors</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <!-- Filter Bar -->
+    <section class="py-8 bg-dark-200 border-b border-gray-800 sticky top-[73px] z-40 backdrop-blur-md">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                <span class="text-sm font-semibold text-gray-400 whitespace-nowrap">Filter:</span>
+                <button class="filter-pill active bg-dark-100 border border-gray-700 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap" data-category="all">
+                    All Services
+                </button>
+                <button class="filter-pill bg-dark-100 border border-gray-700 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap" data-category="cardiology">
+                    🫀 Cardiology
+                </button>
+                <button class="filter-pill bg-dark-100 border border-gray-700 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap" data-category="neurology">
+                    🧠 Neurology
+                </button>
+                <button class="filter-pill bg-dark-100 border border-gray-700 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap" data-category="orthopedics">
+                    🦴 Orthopedics
+                </button>
+                <button class="filter-pill bg-dark-100 border border-gray-700 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap" data-category="diagnostics">
+                    🔬 Diagnostics
+                </button>
+                <button class="filter-pill bg-dark-100 border border-gray-700 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap" data-category="surgery">
+                    🏥 Surgery
+                </button>
+                <button class="filter-pill bg-dark-100 border border-gray-700 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap" data-category="pediatrics">
+                    👶 Pediatrics
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Grid -->
+    <section class="py-16 md:py-20 bg-dark-300">
+        <div class="container mx-auto px-4">
+            <div id="servicesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                
+                <!-- Service Card 1 - Cardiology -->
+                <div class="service-card card-hover rounded-2xl p-6 animate-fade-in-up stagger-1" data-category="cardiology">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="service-icon w-14 h-14 bg-gradient-to-br from-red-500/20 to-pink-500/20 rounded-xl flex items-center justify-center">
+                            <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                        </div>
+                        <span class="price-badge bg-gradient-to-r from-accent-cyan/20 to-accent-blue/20 text-accent-cyan px-3 py-1 rounded-full text-sm font-bold">
+                            15,000 AMD
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-white">Heart Ultrasound</h3>
+                    <p class="text-gray-400 text-sm mb-4">Advanced echocardiography for comprehensive cardiac assessment</p>
+                    <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                        <svg class="w-4 h-4 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span>12 Specialists Available</span>
+                    </div>
+                    <button class="w-full bg-dark-100 hover:bg-gradient-to-r hover:from-accent-cyan hover:to-accent-blue border border-gray-700 hover:border-transparent text-white py-3 rounded-xl font-semibold transition-all">
+                        View Details
+                    </button>
+                </div>
+
+                <!-- Service Card 2 - Neurology -->
+                <div class="service-card card-hover rounded-2xl p-6 animate-fade-in-up stagger-2" data-category="neurology">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="service-icon w-14 h-14 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 rounded-xl flex items-center justify-center">
+                            <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                            </svg>
+                        </div>
+                        <span class="price-badge bg-gradient-to-r from-accent-cyan/20 to-accent-blue/20 text-accent-cyan px-3 py-1 rounded-full text-sm font-bold">
+                            25,000 AMD
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-white">Brain MRI Scan</h3>
+                    <p class="text-gray-400 text-sm mb-4">High-resolution imaging for neurological diagnosis</p>
+                    <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                        <svg class="w-4 h-4 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span>8 Specialists Available</span>
+                    </div>
+                    <button class="w-full bg-dark-100 hover:bg-gradient-to-r hover:from-accent-cyan hover:to-accent-blue border border-gray-700 hover:border-transparent text-white py-3 rounded-xl font-semibold transition-all">
+                        View Details
+                    </button>
+                </div>
+
+                <!-- Service Card 3 - Orthopedics -->
+                <div class="service-card card-hover rounded-2xl p-6 animate-fade-in-up stagger-3" data-category="orthopedics">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="service-icon w-14 h-14 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-xl flex items-center justify-center">
+                            <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/>
+                            </svg>
+                        </div>
+                        <span class="price-badge bg-gradient-to-r from-accent-cyan/20 to-accent-blue/20 text-accent-cyan px-3 py-1 rounded-full text-sm font-bold">
+                            18,000 AMD
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-white">Joint X-Ray</h3>
+                    <p class="text-gray-400 text-sm mb-4">Digital imaging for bone and joint assessment</p>
+                    <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                        <svg class="w-4 h-4 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span>15 Specialists Available</span>
+                    </div>
+                    <button class="w-full bg-dark-100 hover:bg-gradient-to-r hover:from-accent-cyan hover:to-accent-blue border border-gray-700 hover:border-transparent text-white py-3 rounded-xl font-semibold transition-all">
+                        View Details
+                    </button>
+                </div>
+
+                <!-- Service Card 4 - Diagnostics -->
+                <div class="service-card card-hover rounded-2xl p-6 animate-fade-in-up stagger-4" data-category="diagnostics">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="service-icon w-14 h-14 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-xl flex items-center justify-center">
+                            <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                            </svg>
+                        </div>
+                        <span class="price-badge bg-gradient-to-r from-accent-cyan/20 to-accent-blue/20 text-accent-cyan px-3 py-1 rounded-full text-sm font-bold">
+                            8,000 AMD
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-white">Blood Test Panel</h3>
+                    <p class="text-gray-400 text-sm mb-4">Comprehensive laboratory analysis for health screening</p>
+                    <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                        <svg class="w-4 h-4 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span>20 Lab Technicians</span>
+                    </div>
+                    <button class="w-full bg-dark-100 hover:bg-gradient-to-r hover:from-accent-cyan hover:to-accent-blue border border-gray-700 hover:border-transparent text-white py-3 rounded-xl font-semibold transition-all">
+                        View Details
+                    </button>
+                </div>
+
+                <!-- Service Card 5 - Surgery -->
+                <div class="service-card card-hover rounded-2xl p-6 animate-fade-in-up stagger-5" data-category="surgery">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="service-icon w-14 h-14 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-xl flex items-center justify-center">
+                            <svg class="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                            </svg>
+                        </div>
+                        <span class="price-badge bg-gradient-to-r from-accent-cyan/20 to-accent-blue/20 text-accent-cyan px-3 py-1 rounded-full text-sm font-bold">
+                            450,000 AMD
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-white">Laparoscopic Surgery</h3>
+                    <p class="text-gray-400 text-sm mb-4">Minimally invasive surgical procedures with quick recovery</p>
+                    <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                        <svg class="w-4 h-4 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span>18 Surgeons Available</span>
+                    </div>
+                    <button class="w-full bg-dark-100 hover:bg-gradient-to-r hover:from-accent-cyan hover:to-accent-blue border border-gray-700 hover:border-transparent text-white py-3 rounded-xl font-semibold transition-all">
+                        View Details
+                    </button>
+                </div>
+
+                <!-- Service Card 6 - Pediatrics -->
+                <div class="service-card card-hover rounded-2xl p-6 animate-fade-in-up stagger-6" data-category="pediatrics">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="service-icon w-14 h-14 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-xl flex items-center justify-center">
+                            <svg class="w-8 h-8 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                        </div>
+                        <span class="price-badge bg-gradient-to-r from-accent-cyan/20 to-accent-blue/20 text-accent-cyan px-3 py-1 rounded-full text-sm font-bold">
+                            12,000 AMD
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-white">Child Health Checkup</h3>
+                    <p class="text-gray-400 text-sm mb-4">Comprehensive pediatric wellness examination</p>
+                    <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                        <svg class="w-4 h-4 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span>10 Pediatricians Available</span>
+                    </div>
+                    <button class="w-full bg-dark-100 hover:bg-gradient-to-r hover:from-accent-cyan hover:to-accent-blue border border-gray-700 hover:border-transparent text-white py-3 rounded-xl font-semibold transition-all">
+                        View Details
+                    </button>
+                </div>
+
+                <!-- Service Card 7 - Cardiology -->
+                <div class="service-card card-hover rounded-2xl p-6 animate-fade-in-up stagger-1" data-category="cardiology">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="service-icon w-14 h-14 bg-gradient-to-br from-red-500/20 to-pink-500/20 rounded-xl flex items-center justify-center">
+                            <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                        </div>
+                        <span class="price-badge bg-gradient-to-r from-accent-cyan/20 to-accent-blue/20 text-accent-cyan px-3 py-1 rounded-full text-sm font-bold">
+                            22,000 AMD
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-white">ECG Monitoring</h3>
+                    <p class="text-gray-400 text-sm mb-4">24-hour heart rhythm analysis and monitoring</p>
+                    <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                        <svg class="w-4 h-4 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span>12 Specialists Available</span>
+                    </div>
+                    <button class="w-full bg-dark-100 hover:bg-gradient-to-r hover:from-accent-cyan hover:to-accent-blue border border-gray-700 hover:border-transparent text-white py-3 rounded-xl font-semibold transition-all">
+                        View Details
+                    </button>
+                </div>
+
+                <!-- Service Card 8 - Diagnostics -->
+                <div class="service-card card-hover rounded-2xl p-6 animate-fade-in-up stagger-2" data-category="diagnostics">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="service-icon w-14 h-14 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-xl flex items-center justify-center">
+                            <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                            </svg>
+                        </div>
+                        <span class="price-badge bg-gradient-to-r from-accent-cyan/20 to-accent-blue/20 text-accent-cyan px-3 py-1 rounded-full text-sm font-bold">
+                            35,000 AMD
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-white">Full Body CT Scan</h3>
+                    <p class="text-gray-400 text-sm mb-4">Advanced imaging for comprehensive health assessment</p>
+                    <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                        <svg class="w-4 h-4 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span>6 Radiologists Available</span>
+                    </div>
+                    <button class="w-full bg-dark-100 hover:bg-gradient-to-r hover:from-accent-cyan hover:to-accent-blue border border-gray-700 hover:border-transparent text-white py-3 rounded-xl font-semibold transition-all">
+                        View Details
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Load More Button -->
+            <div class="text-center mt-12">
+                <button class="bg-dark-100 border border-gray-700 hover:bg-gradient-to-r hover:from-accent-cyan hover:to-accent-blue hover:border-transparent px-8 py-4 rounded-xl font-semibold text-white transition-all hover:shadow-lg hover:shadow-accent-cyan/20">
+                    Load More Services
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-gradient-to-r from-accent-cyan to-accent-blue">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">Need Help Choosing a Service?</h2>
+            <p class="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
+                Our medical experts are here to guide you. Contact us for a personalized consultation.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="contact.html" class="bg-white text-accent-cyan px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all hover:shadow-xl">
+                    Contact Us
+                </a>
+                <a href="ai-chat.html" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-accent-cyan transition-all">
+                    Chat with AI Assistant
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark-200 border-t border-gray-800 pt-16 pb-8">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                <!-- Company Info -->
+                <div>
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 bg-gradient-to-br from-accent-cyan to-accent-blue rounded-xl flex items-center justify-center">
+                            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold gradient-text">MediCare Pro</span>
+                    </div>
+                    <p class="text-gray-400 mb-6">Premium healthcare services with a commitment to excellence and compassionate care.</p>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 bg-dark-100 rounded-lg flex items-center justify-center hover:bg-accent-cyan transition-colors group">
+                            <svg class="w-5 h-5 text-gray-400 group-hover:text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-dark-100 rounded-lg flex items-center justify-center hover:bg-accent-cyan transition-colors group">
+                            <svg class="w-5 h-5 text-gray-400 group-hover:text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-dark-100 rounded-lg flex items-center justify-center hover:bg-accent-cyan transition-colors group">
+                            <svg class="w-5 h-5 text-gray-400 group-hover:text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/></svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="text-lg font-bold mb-6 text-white">Quick Links</h3>
+                    <ul class="space-y-3">
+                        <li><a href="index.html#home" class="text-gray-400 hover:text-accent-cyan transition-colors">Home</a></li>
+                        <li><a href="services.html" class="text-gray-400 hover:text-accent-cyan transition-colors">Services</a></li>
+                        <li><a href="index.html#doctors" class="text-gray-400 hover:text-accent-cyan transition-colors">Our Doctors</a></li>
+                        <li><a href="index.html#about" class="text-gray-400 hover:text-accent-cyan transition-colors">About Us</a></li>
+                        <li><a href="contact.html" class="text-gray-400 hover:text-accent-cyan transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+
+                <!-- Services -->
+                <div>
+                    <h3 class="text-lg font-bold mb-6 text-white">Services</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-accent-cyan transition-colors">Cardiology</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-accent-cyan transition-colors">Neurology</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-accent-cyan transition-colors">Orthopedics</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-accent-cyan transition-colors">Pediatrics</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-accent-cyan transition-colors">Emergency Care</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact Info -->
+                <div>
+                    <h3 class="text-lg font-bold mb-6 text-white">Contact Us</h3>
+                    <ul class="space-y-4">
+                        <li class="flex gap-3 text-gray-400">
+                            <svg class="w-5 h-5 text-accent-cyan flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            <span>123 Medical Center Drive<br>New York, NY 10001</span>
+                        </li>
+                        <li class="flex gap-3 text-gray-400">
+                            <svg class="w-5 h-5 text-accent-cyan flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                            </svg>
+                            <span>+1 (234) 567-8900</span>
+                        </li>
+                        <li class="flex gap-3 text-gray-400">
+                            <svg class="w-5 h-5 text-accent-cyan flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            <span>info@medicarepro.com</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom Footer -->
+            <div class="border-t border-gray-800 pt-8 mt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <p class="text-gray-400 text-sm">© 2025 MediCare Pro. All rights reserved.</p>
+                    <div class="flex gap-6 text-sm">
+                        <a href="#" class="text-gray-400 hover:text-accent-cyan transition-colors">Privacy Policy</a>
+                        <a href="#" class="text-gray-400 hover:text-accent-cyan transition-colors">Terms of Service</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating AI Assistant Icon -->
+    <div class="fixed bottom-8 right-8 z-50">
+        <a href="ai-chat.html" class="block w-16 h-16 bg-gradient-to-br from-accent-cyan to-accent-blue rounded-full shadow-2xl flex items-center justify-center animate-pulse-slow hover:scale-110 transition-transform group">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+            </svg>
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-ping"></span>
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full"></span>
+        </a>
+        <div class="absolute bottom-20 right-0 bg-dark-100 border border-gray-700 rounded-xl p-4 w-64 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            <p class="text-sm text-gray-300">👋 Need help finding a service? Chat with our AI assistant!</p>
+        </div>
+    </div>
+
+    <script>
+        // Theme Switcher Logic
+        (function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+            const html = document.documentElement;
+            const body = document.body;
+
+            const currentTheme = localStorage.getItem('theme') || 'dark';
+
+            function applyTheme(theme) {
+                if (theme === 'dark') {
+                    body.classList.add('dark');
+                    html.classList.add('dark');
+                    sunIcon.classList.remove('hidden');
+                    moonIcon.classList.add('hidden');
+                } else {
+                    body.classList.remove('dark');
+                    html.classList.remove('dark');
+                    sunIcon.classList.add('hidden');
+                    moonIcon.classList.remove('hidden');
+                }
+            }
+
+            applyTheme(currentTheme);
+
+            themeToggle.addEventListener('click', function() {
+                const isDark = body.classList.contains('dark');
+                const newTheme = isDark ? 'light' : 'dark';
+                applyTheme(newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+        })();
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Language Switcher
+        function switchLanguage(lang) {
+            console.log('Language switched to:', lang);
+        }
+
+        // Filter Functionality
+        const filterButtons = document.querySelectorAll('.filter-pill');
+        const serviceCards = document.querySelectorAll('.service-card');
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const category = button.dataset.category;
+
+                // Update active state
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                // Filter cards
+                serviceCards.forEach(card => {
+                    if (category === 'all' || card.dataset.category === category) {
+                        card.style.display = 'block';
+                        setTimeout(() => {
+                            card.style.opacity = '1';
+                            card.style.transform = 'translateY(0)';
+                        }, 10);
+                    } else {
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateY(20px)';
+                        setTimeout(() => {
+                            card.style.display = 'none';
+                        }, 300);
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
