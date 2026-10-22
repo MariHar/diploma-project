@@ -3,10 +3,10 @@ import json
 import os
 import pathlib
 import re
-import anthropic
+from openai import OpenAI
 
-# Note: Using the standard Anthropic Claude 3.5 Sonnet model ID
-MODEL = 'claude-3-5-sonnet-latest'
+# NVIDIA endpoints and models
+MODEL = 'meta/llama-3.3-70b-instruct'
 BATCH_SIZE = int(os.environ.get('BATCH_SIZE', '3'))
 PROGRESS = pathlib.Path('.agent/progress.json')
 REPORT = pathlib.Path('AGENT_REPORT.md')
@@ -19,25 +19,17 @@ APOS = chr(39)
 Q3 = Q * 3
 
 RULES = '''You clean up COMMENTS in Java source files.
-You receive one complete Java file. Return it with only the comments
-improved.
+You receive one complete Java file. Return it with only the comments improved.
 
 STRICT RULES
-1. Never change code. Do not rename, reformat, reorder, add or remove
-anything that is not a comment. Keep imports, annotations, blank lines,
-indentation and the spelling of code exactly as they are.
-2. Remove commented-out code, empty or meaningless comments, noise (like asdf
-or test test), and comments that only repeat the obvious.
-3. Keep license headers and comments that explain WHY something is done, non-obvious logic, or important warnings. Keep Javadoc on public classes and
-methods, and fix it if it is wrong or unclear.
-4. Fix spelling mistakes and make unclear comments short and accurate. Keep
-every comment in its original language.
-5. If a comment is wrong because the code does something else, correct the
-comment to match the code. Never change the code to match the comment.
-6. Do not fix bugs. If you notice bugs, security problems or bad practices,
-list them in the flaws section.
+1. Never change code. Do not rename, reformat, reorder, add or remove anything that is not a comment. Keep imports, annotations, blank lines, indentation and the spelling of code exactly as they are.
+2. Remove commented-out code, empty or meaningless comments, noise (like asdf or test test), and comments that only repeat the obvious.
+3. Keep license headers and comments that explain WHY something is done, non-obvious logic, or important warnings. Keep Javadoc on public classes and methods, and fix it if it is wrong or unclear.
+4. Fix spelling mistakes and make unclear comments short and accurate. Keep every comment in its original language.
+5. If a comment is wrong because the code does something else, correct the comment to match the code. Never change the code to match the comment.
+6. Do not fix bugs. If you notice bugs, security problems or bad practices, list them in the flaws section.
 
-OUTPUT FORMAT (exactly this, nothing before or after):
+OUTPUT FORMAT (strictly only these tags, nothing else):
 <cleaned_file>
 the complete file
 </cleaned_file>
@@ -48,7 +40,6 @@ the complete file
 
 
 def code_only(src):
-    # Returns the code with all comments and all whitespace (outside of strings) removed.
     out = []
     i, n = 0, len(src)
     while i < n:
@@ -96,20 +87,28 @@ def parse_reply(text):
     return body, (f.group(1).strip() if f else '')
 
 
-def ask_claude(client, source):
-    with client.messages.stream(
+def ask_model(client, source):
+    response = client.chat.completions.create(
         model=MODEL,
-        max_tokens=16000,
-        system=RULES,
-        messages=[{'role': 'user', 'content': source}],
-    ) as stream:
-        message = stream.get_final_message()
-    text = ''.join(b.text for b in message.content if b.type == 'text')
-    return text, message.stop_reason
+        messages=[
+            {'role': 'system', 'content': RULES},
+            {'role': 'user', 'content': source}
+        ],
+        temperature=0.2,
+        max_tokens=8192
+    )
+    text = response.choices[0].message.content or ''
+    finish_reason = response.choices[0].finish_reason
+    stop_reason = 'end_turn' if finish_reason in ('stop', None) else finish_reason
+    return text, stop_reason
 
 
 def main():
-    client = anthropic.Anthropic()
+    client = OpenAI(
+        base_url="https://integrate.api.nvidia.com/v1",
+        api_key=os.environ.get("NVIDIA_API_KEY")
+    )
+
     done = json.loads(PROGRESS.read_text(encoding='utf-8')) if PROGRESS.exists() else {}
     files = sorted(pathlib.Path('src').rglob('*.java'))
     todo = [p for p in files if p.as_posix() not in done][:BATCH_SIZE]
@@ -124,11 +123,11 @@ def main():
         flaws = ''
         try:
             original = path.read_bytes().decode('utf-8')
-            reply, stop = ask_claude(client, original)
+            reply, stop = ask_model(client, original)
             cleaned, flaws = parse_reply(reply)
 
             if stop != 'end_turn' or cleaned is None:
-                status, note = 'rejected', 'The answer was incomplete, original kept.'
+                status, note = 'rejected', 'The answer was incomplete or formatting tags were missing, original kept.'
             else:
                 uses_crlf = (CR + NL) in original
                 cleaned = cleaned.replace(CR + NL, NL).rstrip(NL)
