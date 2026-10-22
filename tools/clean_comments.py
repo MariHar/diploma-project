@@ -6,7 +6,7 @@ import re
 from openai import OpenAI
 
 # NVIDIA endpoints and models
-MODEL = 'meta/llama-3.3-70b-instruct'
+MODEL = 'nvidia/llama-3.1-nemotron-70b-instruct'
 BATCH_SIZE = int(os.environ.get('BATCH_SIZE', '3'))
 PROGRESS = pathlib.Path('.agent/progress.json')
 REPORT = pathlib.Path('AGENT_REPORT.md')
