@@ -1,4 +1,4 @@
-package com.example.diplomathesisfinalcollection.newaiclaude;
+package com.example.diplomathesisfinalcollection.aichatbot;
 
 
 //import com.medical.chat.model.Conversation;

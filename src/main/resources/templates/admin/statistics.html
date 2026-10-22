@@ -1,10 +1,118 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hy" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <title>Վիճակագրություն</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    .container { max-width: 1000px; margin: 0 auto; padding: 20px; font-family: sans-serif; }
+    .filter-box { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; gap: 15px; align-items: center; }
+    .dashboard { display: flex; flex-wrap: wrap; gap: 20px; background-color: #ffffff; padding: 20px; border-radius: 12px; }
+    .chart-box { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+    .btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    .btn-primary { background: #007bff; color: white; }
+    .btn-success { background: #28a745; color: white; margin-left: auto; }
+    .btn-light { background: #e2e6ea; color: #333; text-decoration: none; display: inline-block;}
+  </style>
 </head>
 <body>
-$END$
+
+<div class="container">
+  <a th:href="@{/admin/appointments}" style="text-decoration: none; color: #0056b3; margin-bottom: 15px; display: block;">⬅️ Վերադառնալ Գրանցումներին</a>
+
+  <h2>📊 Վիճակագրություն և Հաշվետվություններ</h2>
+
+  <form th:action="@{/admin/statistics}" method="get" class="filter-box">
+    <div>
+      <label>Սկիզբ:</label>
+      <input type="date" name="startDate" th:value="${startDate}" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+    </div>
+    <div>
+      <label>Ավարտ:</label>
+      <input type="date" name="endDate" th:value="${endDate}" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+    </div>
+
+    <button type="submit" class="btn btn-primary">🔍 Ֆիլտրել</button>
+    <a th:href="@{/admin/statistics}" class="btn btn-light">❌ Մաքրել</a>
+
+    <button type="button" onclick="downloadDashboard()" class="btn btn-success">📥 Ներբեռնել հաշվետվությունը</button>
+  </form>
+
+  <div id="exportableDashboard" class="dashboard" style="background-color: #ffffff;">
+
+    <div class="chart-box" style="width: 350px;">
+      <h4 style="text-align: center; color: #333;">Կարգավիճակներ</h4>
+      <canvas id="statusChart"></canvas>
+    </div>
+
+    <div class="chart-box" style="flex-grow: 1; min-width: 400px;">
+      <h4 style="text-align: center; color: #333;">Բաժանմունքների Ծանրաբեռնվածություն</h4>
+      <canvas id="deptChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+
+  // 1. Վերցնում ենք թվերը Model-ից
+  const pending = /*[[${pendingCount}]]*/ 0;
+  const completed = /*[[${completedCount}]]*/ 0;
+  const cancelled = /*[[${cancelledCount}]]*/ 0;
+  const deptLabels = /*[[${deptNames}]]*/ [];
+  const deptData = /*[[${deptValues}]]*/ [];
+
+  // 2. Նկարում ենք Ստատուսների գրաֆիկը (Chart.js-ը շատ է սիրում անիմացիաներ, որոնք երբեմն խանգարում են ներբեռնելուն)
+  const ctxStatus = document.getElementById('statusChart').getContext('2d');
+  new Chart(ctxStatus, {
+    type: 'pie',
+    data: {
+      labels: ['Սպասվող', 'Ավարտված', 'Չեղարկված'],
+      datasets: [{
+        data: [pending, completed, cancelled],
+        backgroundColor: ['#fbbc05', '#34a853', '#ea4335']
+      }]
+    },
+    options: { animation: false } // Անջատում ենք անիմացիան ավելի ճշգրիտ ներբեռնման համար
+  });
+
+  // 3. Նկարում ենք Բաժանմունքների գրաֆիկը
+  const ctxDept = document.getElementById('deptChart').getContext('2d');
+  new Chart(ctxDept, {
+    type: 'bar',
+    data: {
+      labels: deptLabels,
+      datasets: [{
+        label: 'Այցերի քանակ',
+        data: deptData,
+        backgroundColor: '#4285f4'
+      }]
+    },
+    options: {
+      animation: false,
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+
+  // 🔴 4. ՃԻՇՏ ՆԵՐԲԵՌՆՈՒՄ
+  function downloadDashboard() {
+    const dashboardElement = document.getElementById('exportableDashboard');
+
+    // Ավելացնում ենք օպցիաներ, որպեսզի ֆոնը սպիտակ լինի ու որակը բարձր (scale: 2)
+    html2canvas(dashboardElement, {
+      backgroundColor: "#ffffff",
+      scale: 2,
+      logging: true
+    }).then(canvas => {
+      let link = document.createElement('a');
+      link.download = 'Clinic_Statistics_Report.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  }
+
+</script>
+
 </body>
 </html>

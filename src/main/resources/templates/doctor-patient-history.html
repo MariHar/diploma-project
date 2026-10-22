@@ -1,10 +1,168 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org" class="scroll-smooth dark" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <title>Patient Medical History</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { 'sans': ['Inter', 'system-ui', 'sans-serif'] },
+                    animation: {
+                        'fadeIn': 'fadeIn 0.4s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .weglot-container, .wg-default { display: none !important; }
+        body { top: 0px !important; }
+    </style>
+    <script type="text/javascript" src="https://cdn.weglot.com/weglot.min.js"></script>
+    <script>
+        Weglot.initialize({ api_key: 'wg_b1baffa7e7edd217571a0973f1b5b3fa0' });
+    </script>
 </head>
-<body>
-$END$
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+
+<!-- Navigation (Matching Medical Record Form) -->
+<nav class="bg-gray-800 border-b border-gray-700 px-6 py-4 sticky top-0 z-50 shadow-md">
+    <div class="flex flex-wrap justify-between items-center gap-4">
+        <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-3">
+            <span class="text-2xl bg-indigo-500/10 p-2 rounded-lg border border-indigo-500/20">📂</span>
+            Patient Medical History
+        </h1>
+
+        <div class="flex items-center gap-4 flex-wrap">
+            <!-- Premium Language Switcher -->
+<!--            <div class="flex gap-2 items-center border-r border-gray-700 pr-4">-->
+<!--                <button onclick="changeLanguage('en')" class="lang-btn text-xs font-bold px-2.5 py-1.5 rounded-md hover:bg-gray-700 hover:text-cyan-400 text-gray-400 transition-colors" data-lang="en">EN</button>-->
+<!--                <button onclick="changeLanguage('hy')" class="lang-btn text-xs font-bold px-2.5 py-1.5 rounded-md hover:bg-gray-700 hover:text-cyan-400 text-gray-400 transition-colors" data-lang="hy">AM</button>-->
+<!--                <button onclick="changeLanguage('ru')" class="lang-btn text-xs font-bold px-2.5 py-1.5 rounded-md hover:bg-gray-700 hover:text-cyan-400 text-gray-400 transition-colors" data-lang="ru">RU</button>-->
+<!--            </div>-->
+
+            <button onclick="window.close()" class="bg-gray-700/50 hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-600 px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm flex items-center gap-2">
+                Close Tab
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+
+    <!-- Patient Info Header -->
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-6 mb-10 shadow-lg shadow-black/20 flex flex-col md:flex-row md:items-center gap-6 animate-fadeIn">
+        <div class="w-20 h-20 bg-indigo-500/20 rounded-full flex items-center justify-center text-4xl border border-indigo-500/30 shadow-inner shrink-0">
+            👤
+        </div>
+        <div class="flex-1">
+            <h2 class="text-2xl font-extrabold text-white translate-me mb-2" th:text="${patient?.firstName + ' ' + patient?.lastName}">Patient Name</h2>
+
+            <div class="flex flex-wrap gap-4 text-sm text-gray-400 font-medium">
+                <span class="flex items-center gap-2 bg-gray-900/50 px-3 py-1.5 rounded-lg border border-gray-700">
+                    <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    <span class="translate-me" th:text="${patient?.email}">email@example.com</span>
+                </span>
+                <span class="flex items-center gap-2 bg-gray-900/50 px-3 py-1.5 rounded-lg border border-gray-700">
+                    <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                    <span class="translate-me" th:text="${patient?.phone}">+374 XX XXX XXX</span>
+                </span>
+            </div>
+        </div>
+        <div class="shrink-0 flex flex-col items-center justify-center bg-gray-900 border border-gray-700 px-6 py-4 rounded-xl">
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Total Visits</span>
+            <span class="text-3xl font-black text-indigo-400 translate-me" th:text="${history != null ? history.size() : 0}">0</span>
+        </div>
+    </div>
+
+    <h3 class="text-xl font-bold text-white mb-8 flex items-center gap-3">
+        <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Medical Timeline
+    </h3>
+
+    <!-- Empty State -->
+    <div th:if="${history == null or history.isEmpty()}" class="bg-gray-800/50 p-12 rounded-2xl text-center border border-dashed border-gray-700 animate-fadeIn">
+        <div class="w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center text-gray-600 mx-auto mb-4 border border-gray-700">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        </div>
+        <p class="text-gray-400 font-medium">No previous medical records found for this patient.</p>
+    </div>
+
+    <!-- Timeline -->
+    <div th:if="${history != null and !history.isEmpty()}" class="relative border-l-2 border-indigo-500/30 ml-4 md:ml-8 space-y-8 pb-8">
+
+        <div th:each="record : ${history}" class="relative ml-8 md:ml-10 group animate-fadeIn">
+            <!-- Timeline Node -->
+            <span class="absolute flex items-center justify-center w-10 h-10 bg-gray-800 border-2 border-indigo-500 rounded-full -left-[54px] md:-left-[62px] ring-8 ring-gray-900 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.4)] group-hover:bg-indigo-500 group-hover:text-white transition-colors duration-300 z-10">
+                🏥
+            </span>
+
+            <!-- Record Card -->
+            <div class="bg-gray-800/80 border border-gray-700 rounded-2xl p-6 shadow-sm hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300">
+
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-5 border-b border-gray-700/50 pb-5">
+                    <div>
+                        <h4 class="text-xl font-extrabold text-cyan-400 translate-me mb-1" th:text="${record.diagnosis}">Diagnosis Name</h4>
+                        <p class="text-gray-400 text-xs font-bold flex items-center gap-1.5 uppercase tracking-wider">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            <span class="translate-me" th:text="${#temporals.format(record.recordDate, 'dd MMMM yyyy, HH:mm')}">12 May 2025</span>
+                        </p>
+                    </div>
+                    <a th:href="@{/doctor/appointment/{id}/record/view(id=${record.appointmentId})}"
+                       class="text-sm bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 px-4 py-2 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2 whitespace-nowrap">
+                        View Full Record
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </a>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-2">
+                            <span class="text-cyan-500">🩺</span> Symptoms
+                        </span>
+                        <p class="text-gray-300 text-sm bg-gray-900 border border-gray-700 p-4 rounded-xl leading-relaxed translate-me" th:text="${record.symptoms}">Patient complaints...</p>
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-2">
+                            <span class="text-purple-400">💊</span> Treatment / Prescription
+                        </span>
+                        <p class="text-gray-300 text-sm bg-gray-900 border border-gray-700 p-4 rounded-xl leading-relaxed translate-me" th:text="${record.treatment}">Prescribed meds...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    // Language Switcher matching the main form
+    function changeLanguage(lang) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('lang', lang);
+        window.location.href = url.toString();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentLang = urlParams.get('lang') || 'en';
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.classList.remove('bg-gray-700', 'text-cyan-400');
+            if (btn.getAttribute('data-lang') === currentLang) {
+                btn.classList.add('bg-gray-700', 'text-cyan-400');
+            }
+        });
+    });
+</script>
+
 </body>
 </html>

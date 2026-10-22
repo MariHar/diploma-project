@@ -1,10 +1,100 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hy">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ձայնային Մուտքագրում</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #recordButton {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    #recordButton.recording { background-color: #f44336; }
+    #patientNote { width: 100%; height: 150px; margin-top: 20px; font-size: 16px; padding: 10px; }
+    #status { margin-top: 10px; color: #666; font-style: italic; }
+  </style>
 </head>
 <body>
-$END$
+
+<h2>Պացիենտի գանգատները</h2>
+
+<button id="recordButton">🎤 Սկսել ձայնագրումը</button>
+<div id="status"></div>
+
+<textarea id="patientNote" placeholder="Տեքստը կհայտնվի այստեղ..."></textarea>
+
+<script>
+  let mediaRecorder;
+  let audioChunks = [];
+  const recordButton = document.getElementById('recordButton');
+  const patientNote = document.getElementById('patientNote');
+  const statusDiv = document.getElementById('status');
+
+  recordButton.addEventListener('click', async () => {
+    // Եթե արդեն ձայնագրում է, կանգնեցնում ենք
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      recordButton.textContent = '🎤 Սկսել ձայնագրումը';
+      recordButton.classList.remove('recording');
+      statusDiv.textContent = 'Մշակվում է, խնդրում ենք սպասել...';
+      return;
+    }
+
+    // Ստանում ենք միկրոֆոնի հասանելիություն
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+
+      mediaRecorder.ondataavailable = event => {
+        audioChunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        audioChunks = []; // Մաքրում ենք հաջորդ ձայնագրության համար
+
+        // Ստեղծում ենք ֆայլը և ուղարկում Backend
+        const formData = new FormData();
+        formData.append('file', audioBlob, 'recording.webm');
+
+        try {
+          const response = await fetch('http://localhost:8080/api/voice/transcribe', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (response.ok) {
+            const text = await response.text();
+            // Ավելացնում ենք նոր տեքստը արդեն եղած տեքստի վերջում
+            patientNote.value += (patientNote.value ? '\n' : '') + text;
+            statusDiv.textContent = 'Տեքստը հաջողությամբ վերծանվեց:';
+          } else {
+            statusDiv.textContent = 'Սխալ տեղի ունեցավ սերվերի հետ կապի ժամանակ:';
+          }
+        } catch (error) {
+          console.error('Fetch error:', error);
+          statusDiv.textContent = 'Չհաջողվեց կապվել սերվերի հետ:';
+        }
+      };
+
+      // Սկսում ենք ձայնագրությունը
+      audioChunks = [];
+      mediaRecorder.start();
+      recordButton.textContent = '⏹️ Կանգնեցնել ձայնագրումը';
+      recordButton.classList.add('recording');
+      statusDiv.textContent = 'Ձայնագրվում է... Խոսեք:';
+
+    } catch (err) {
+      console.error('Microphone error:', err);
+      statusDiv.textContent = 'Միկրոֆոնի հասանելիությունը մերժված է կամ սարքը բացակայում է:';
+    }
+  });
+</script>
 </body>
 </html>

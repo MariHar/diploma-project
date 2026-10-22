@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="hy" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Անդորրագիր - avelia clinic</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; color: #1f2937; margin: 0; padding: 2rem; display: flex; justify-content: center; }
+        .invoice-box { max-width: 800px; width: 100%; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 30px; }
+        .clinic-info h1 { margin: 0; color: #06B6D4; font-size: 28px; }
+        .clinic-info p { margin: 5px 0; color: #6b7280; font-size: 14px; }
+        .receipt-title h2 { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px; color: #374151; }
+        .receipt-title p { margin: 5px 0 0 0; font-weight: bold; color: #ef4444; }
+        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; background-color: #f9fafb; padding: 20px; border-radius: 8px; }
+        .details-grid div h4 { margin: 0 0 5px 0; color: #9ca3af; font-size: 12px; text-transform: uppercase; }
+        .details-grid div p { margin: 0; font-weight: 600; font-size: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background-color: #f3f4f6; color: #4b5563; font-size: 14px; text-transform: uppercase; }
+        td { font-size: 15px; }
+        .total-row { font-weight: bold; font-size: 18px; color: #111827; }
+        .total-row td { border-bottom: none; border-top: 2px solid #111827; }
+        .footer { text-align: center; color: #6b7280; font-size: 13px; margin-top: 40px; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+        .actions { display: flex; justify-content: center; gap: 15px; margin-top: 30px; }
+        .btn { padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; border: none; text-decoration: none; display: inline-block; }
+        .btn-print { background-color: #06B6D4; color: white; }
+        .btn-back { background-color: #e5e7eb; color: #374151; }
+        @media print {
+            body { background-color: white; padding: 0; }
+            .invoice-box { box-shadow: none; padding: 0; max-width: 100%; }
+            .actions, .success-banner { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!--<div class="max-w-md mx-auto bg-white p-8 border border-gray-200 shadow-lg font-mono">-->
+<!--    <div class="text-center border-b pb-4 mb-4">-->
+<!--        <h2 class="text-xl font-bold">avelia clinic CHECK</h2>-->
+<!--        <p th:text="${#temporals.format(order.orderDate, 'dd-MM-yyyy HH:mm')}"></p>-->
+<!--    </div>-->
+
+<!--    <div class="mb-4">-->
+<!--        <p><strong>Patient:</strong> <span th:text="${patient.firstName + ' ' + patient.lastName}"></span></p>-->
+<!--        <p><strong>Phone:</strong> <span th:text="${order.deliveryPhone}"></span></p>-->
+<!--    </div>-->
+
+<!--    <table class="w-full mb-4">-->
+<!--        <thead>-->
+<!--        <tr class="border-b">-->
+<!--            <th class="text-left">Drug (Boxes)</th>-->
+<!--            <th class="text-right">Price</th>-->
+<!--        </tr>-->
+<!--        </thead>-->
+<!--        <tbody>-->
+<!--        <tr th:each="drug : ${order.purchasedDrugs}">-->
+<!--            <td th:text="${drug}">Aspirin x2</td>-->
+<!--            <td class="text-right">-</td>-->
+<!--        </tr>-->
+<!--        </tbody>-->
+<!--    </table>-->
+
+<!--    <div class="border-t pt-4 flex justify-between font-bold text-lg">-->
+<!--        <span>TOTAL PAID:</span>-->
+<!--        <span th:text="${order.totalAmount} + ' AMD'"></span>-->
+<!--    </div>-->
+
+<!--    <div class="mt-8 text-center text-xs text-gray-400">-->
+<!--        <p>Status: PAID VIA STRIPE</p>-->
+<!--        <p>Keep this check for delivery verification.</p>-->
+<!--    </div>-->
+<!--</div>-->
+
+<div class="invoice-box">
+    <div th:if="${param.success}" class="success-banner" style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 6px; margin-bottom: 20px; text-align: center; font-weight: bold;">
+        ✅ Ձեր վճարումը բարեհաջող հաստատվել է:
+    </div>
+
+    <div class="header">
+        <div class="clinic-info">
+            <h1>avelia clinic Pharmacy</h1>
+            <p>📍 123 Medical Center, New York</p>
+            <p>📞 +1 (234) 567-8900</p>
+        </div>
+        <div class="receipt-title text-right">
+            <h2>Անդորրագիր</h2>
+            <p th:text="'#INV-' + ${#strings.substring(order.id, order.id.length() - 8).toUpperCase()}">#INV-ABC12345</p>
+        </div>
+    </div>
+
+    <div class="details-grid">
+        <div>
+            <h4>Պացիենտ (Վճարող)</h4>
+            <p th:text="${patient.firstName + ' ' + patient.lastName}">John Doe</p>
+            <p th:text="${order.deliveryPhone}">+37499123456</p>
+            <p th:text="${order.deliveryAddress}">Երևան</p>
+        </div>
+        <div>
+            <h4>Տվյալներ</h4>
+            <p>Ամսաթիվ: <span th:text="${#temporals.format(order.orderDate, 'dd-MM-yyyy HH:mm')}">01-01-2024</span></p>
+            <p>Բժիշկ: <span th:text="${order.prescribingDoctor}">Dr. Smith</span></p>
+            <p>Կարգավիճակ: <span style="color: #10b981;">ՎՃԱՐՎԱԾ</span></p>
+        </div>
+    </div>
+
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;">
+        <thead>
+        <tr style="border-bottom: 2px solid #e5e7eb;">
+            <th style="text-align: left; padding: 12px 0; color: #374151;">Դեղամիջոց</th>
+            <th style="text-align: center; padding: 12px 0; color: #374151;">Քանակ</th>
+            <th style="text-align: right; padding: 12px 0; color: #374151;">Գումար</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="drugInfo : ${order.purchasedDrugs}"
+            th:with="priceSplit=${#strings.arraySplit(drugInfo, ':')},
+                     nameQtySplit=${#strings.arraySplit(priceSplit[0], 'x')}"
+            style="border-bottom: 1px solid #f3f4f6;">
+
+            <td style="padding: 12px 0; font-weight: 500; color: #1f2937;"
+                th:text="${#strings.trim(nameQtySplit[0])}">Դեղի անուն</td>
+
+            <td style="text-align: center; padding: 12px 0;">
+                <span style="background-color: #e0f2fe; color: #0284c7; padding: 4px 10px; border-radius: 9999px; font-size: 0.875rem; font-weight: bold;"
+                      th:text="${#strings.trim(nameQtySplit[1])} + ' հատ'">2 հատ</span>
+            </td>
+
+            <td style="text-align: right; color: #4b5563; padding: 12px 0; font-weight: bold;"
+                th:text="${#arrays.length(priceSplit) > 1 ? #strings.trim(priceSplit[1]) + ' ֏' : '-'}">3000 ֏</td>
+        </tr>
+
+        <tr class="total-row" style="font-size: 1.125rem; font-weight: bold;">
+            <td colspan="2" style="padding-top: 20px; border-top: 2px solid #d1d5db; color: #374151;">ԸՆԴՀԱՆՈՒՐ:</td>
+            <td style="text-align: right; color: #06B6D4; padding-top: 20px; border-top: 2px solid #d1d5db;"
+                th:text="${order.totalAmount + ' ֏'}">5000 ֏</td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="actions">
+        <a th:href="@{/profile}" class="btn btn-back">Վերադառնալ Պրոֆիլ</a>
+        <button onclick="window.print()" class="btn btn-print">🖨️ Տպել / Պահպանել PDF</button>
+    </div>
+</div>
+
+</body>
+</html>

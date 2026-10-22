@@ -1,10 +1,476 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hy" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ադմին Վահանակ - Գրանցումներ</title>
+
+  <!-- Գրադարաններ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind Կարգավորումներ -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            accent: { cyan: '#06B6D4', blue: '#3B82F6', purple: '#8B5CF6' }
+          },
+          fontFamily: { 'sans':['Inter', 'system-ui', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body, input, select { transition: all 0.3s ease; }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    .overflow-x-auto {
+      display: block;
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Optional: Make buttons smaller on mobile so they fit */
+    @media (max-width: 640px) {
+      table button {
+        padding: 4px 8px !important;
+        font-size: 10px !important;
+      }
+    }
+  </style>
 </head>
-<body>
-$END$
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen">
+
+<!-- HEADER / NAVIGATION -->
+<header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 md:px-8 h-20 flex items-center justify-between">
+
+    <div class="flex items-center gap-6">
+      <!-- Back to Dashboard -->
+      <a th:href="@{/admin/dashboard}" class="flex items-center gap-2 text-gray-500 hover:text-accent-cyan transition-colors font-semibold">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Վերադառնալ Գլխավոր Վահանակ
+      </a>
+      <div class="h-6 w-px bg-gray-200 hidden md:block"></div>
+      <h1 class="text-xl font-bold text-gray-800 hidden md:block">Գրանցումների Կառավարում</h1>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <!-- Logout Button -->
+      <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="m-0">
+        <button type="submit" class="flex items-center gap-2 border border-red-200 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white px-5 py-2 rounded-xl font-semibold transition-all shadow-sm hover:shadow-md">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          Ելք
+        </button>
+      </form>
+    </div>
+  </div>
+</header>
+
+<div class="max-w-7xl mx-auto space-y-6 p-4 md:p-8">
+
+  <!-- Վերնագիր -->
+  <div class="mb-8 md:hidden">
+    <h2 class="text-3xl font-bold text-gray-900">Գրանցումների Կառավարում</h2>
+    <p class="text-sm text-gray-500 mt-1">Հետևեք և կառավարեք պացիենտների բոլոր այցերը մեկ տեղում</p>
+  </div>
+
+  <!-- Վիճակագրության Քարտեր -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="statsBoard">
+    <!-- Քարտ 1 -->
+    <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+      <div class="w-14 h-14 rounded-xl bg-accent-cyan/10 text-accent-cyan flex items-center justify-center shrink-0">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Ընդհանուր Գրանցումներ</p>
+        <p class="text-3xl font-bold text-gray-900" id="totalApps">0</p>
+      </div>
+    </div>
+
+    <!-- Քարտ 2 -->
+    <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+      <div class="w-14 h-14 rounded-xl bg-accent-blue/10 text-accent-blue flex items-center justify-center shrink-0">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Այս Ամսվա Այցեր</p>
+        <p class="text-3xl font-bold text-gray-900" id="monthApps">0</p>
+      </div>
+    </div>
+
+    <!-- Վիճակագրության Կոճակ -->
+    <div class="flex items-center justify-center">
+      <a th:href="@{/admin/statistics}" class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-purple-500 to-indigo-600 text-white rounded-2xl p-6 shadow-md hover:shadow-lg hover:scale-[1.02] transition-all">
+        <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
+        <span class="font-bold text-lg">Դիտել Վիճակագրությունը</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Ֆիլտրման Վահանակ -->
+  <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm space-y-4">
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Բժիշկ -->
+      <select id="doctorFilter" onchange="fetchAppointments()" class="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-accent-cyan transition-all cursor-pointer">
+        <option value="">Բոլոր բժիշկները</option>
+      </select>
+
+      <!-- Բաժանմունք -->
+      <select id="deptFilter" onchange="onDepartmentChange()" class="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-accent-cyan transition-all cursor-pointer">
+        <option value="">Բոլոր բաժանմունքները</option>
+      </select>
+
+      <!-- Ծառայություն -->
+      <select id="serviceFilter" onchange="fetchAppointments()" class="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-accent-cyan transition-all cursor-pointer">
+        <option value="">Բոլոր ծառայությունները</option>
+      </select>
+
+      <!-- Կարգավիճակ -->
+      <select id="statusFilter" onchange="fetchAppointments()" class="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-accent-cyan transition-all cursor-pointer">
+        <option value="">Բոլոր կարգավիճակները</option>
+        <option value="PENDING">Սպասվող</option>
+        <option value="CONFIRMED">Հաստատված</option>
+        <option value="COMPLETED">Ավարտված</option>
+        <option value="CANCELLED">Չեղարկված</option>
+      </select>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+      <!-- Ժամանակահատված -->
+      <div class="md:col-span-8 flex flex-col sm:flex-row gap-4 items-center bg-gray-50 p-3 rounded-xl border border-gray-200">
+        <div class="flex items-center gap-2 w-full">
+          <label class="text-sm font-semibold text-gray-500 whitespace-nowrap">Սկիզբ:</label>
+          <input type="datetime-local" id="startDate" onchange="fetchAppointments()" class="w-full bg-transparent border-none outline-none text-gray-900 text-sm">
+        </div>
+        <div class="hidden sm:block w-px h-8 bg-gray-200"></div>
+        <div class="flex items-center gap-2 w-full">
+          <label class="text-sm font-semibold text-gray-500 whitespace-nowrap">Ավարտ:</label>
+          <input type="datetime-local" id="endDate" onchange="fetchAppointments()" class="w-full bg-transparent border-none outline-none text-gray-900 text-sm">
+        </div>
+      </div>
+
+      <!-- Որոնում -->
+      <div class="md:col-span-4 relative w-full">
+        <input type="text" id="globalSearch" placeholder="Որոնել..." onkeyup="fetchAppointments()" class="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3 pl-10 outline-none focus:ring-2 focus:ring-accent-cyan transition-all">
+        <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Արտահանման Վահանակ & Ամփոփագիր -->
+  <div class="flex flex-col md:flex-row justify-between items-center bg-white rounded-2xl p-4 border border-gray-200 shadow-sm gap-4">
+    <div id="reportSummary" class="text-sm font-medium text-accent-cyan">
+      <!-- Դինամիկ տեքստը կգեներացվի այստեղ JS-ի միջոցով -->
+    </div>
+    <div class="flex gap-3 w-full md:w-auto">
+      <button onclick="exportToPDF()" class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 px-4 py-2 rounded-xl text-sm font-bold transition-all">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
+        PDF
+      </button>
+      <button onclick="exportToCSV()" class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200 px-4 py-2 rounded-xl text-sm font-bold transition-all">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        Excel
+      </button>
+    </div>
+  </div>
+
+  <!-- Աղյուսակ -->
+  <div id="printableArea" class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table id="appointmentsTable" class="w-full text-left border-collapse">
+        <thead class="bg-gray-50 border-b border-gray-200">
+        <tr>
+          <th class="py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Պացիենտ</th>
+          <th class="py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Բժիշկ</th>
+          <th class="py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Ծառայություն</th>
+          <th class="py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Բաժանմունք</th>
+          <th class="py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Ամսաթիվ</th>
+          <th class="py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Կարգավիճակ</th>
+          <th class="py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Գործողություն</th>
+        </tr>
+        </thead>
+        <tbody id="tableBody" class="divide-y divide-gray-100">
+        <!-- Javascript Տվյալները կգեներացվեն այստեղ -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Էջանշում (Pagination) -->
+  <div class="flex justify-center items-center gap-4 mt-6 pb-12">
+    <button id="prevPage" onclick="changePage(-1)" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+      ⬅️ Նախորդ
+    </button>
+    <span id="pageInfo" class="text-sm font-bold text-gray-600 bg-white px-4 py-2.5 border border-gray-200 rounded-xl shadow-sm">
+            Էջ 1 / 1
+        </span>
+    <button id="nextPage" onclick="changePage(1)" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+      Հաջորդ ➡️
+    </button>
+  </div>
+
+</div>
+
+<!-- JAVASCRIPT (ՄԻԱՅՆ Light Mode Tailwind գույներն են թարմացված) -->
+<script>
+  let allServices =[];
+  let currentPage = 0;
+  const pageSize = 10;
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadFilterOptions();
+    fetchAppointments();
+    fetchStats();
+  });
+
+  async function loadFilterOptions() {
+    try {
+      const response = await fetch('/admin/api/filter-data');
+      const data = await response.json();
+
+      allServices = data.services;
+
+      fillSelectObjects('doctorFilter', data.doctors);
+      fillSelectObjects('deptFilter', data.departments);
+      fillServiceDropdown('');
+    } catch (error) {
+      console.error("Սխալ ֆիլտրները բեռնելիս:", error);
+    }
+  }
+
+  function fillSelectObjects(elementId, items) {
+    const select = document.getElementById(elementId);
+    select.innerHTML = select.options[0].outerHTML;
+
+    if (items) {
+      items.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.id;
+        option.textContent = item.name;
+        select.appendChild(option);
+      });
+    }
+  }
+
+  function fillServiceDropdown(selectedDeptId) {
+    const select = document.getElementById('serviceFilter');
+    select.innerHTML = select.options[0].outerHTML;
+
+    const filteredServices = selectedDeptId
+            ? allServices.filter(s => s.departmentId === selectedDeptId)
+            : allServices;
+
+    filteredServices.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.id;
+      option.textContent = item.name;
+      select.appendChild(option);
+    });
+  }
+
+  function onDepartmentChange() {
+    const deptId = document.getElementById('deptFilter').value;
+    document.getElementById('serviceFilter').value = '';
+    fillServiceDropdown(deptId);
+    fetchAppointments();
+  }
+
+  async function fetchAppointments() {
+    const doctorId = document.getElementById('doctorFilter').value;
+    const deptId = document.getElementById('deptFilter').value;
+    const serviceId = document.getElementById('serviceFilter').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const searchQuery = document.getElementById('globalSearch').value;
+    const status = document.getElementById('statusFilter').value;
+
+    let params = new URLSearchParams();
+    if (doctorId) params.append('doctorId', doctorId);
+    if (deptId) params.append('departmentId', deptId);
+    if (serviceId) params.append('serviceId', serviceId);
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    if (searchQuery) params.append('searchQuery', searchQuery);
+    if (status) params.append('status', status);
+    params.append('page', currentPage);
+    params.append('size', pageSize);
+
+    try {
+      const response = await fetch('/admin/api/appointments?' + params.toString());
+      const data = await response.json();
+      renderTable(data.appointments);
+      updatePaginationUI(data.currentPage, data.totalPages);
+      generateReportSummary(data.appointments);
+    } catch (error) {
+      console.error("Սխալ:", error);
+    }
+  }
+
+  function generateReportSummary(data) {
+    const total = data.length;
+    const confirmed = data.filter(a => a.status === 'CONFIRMED').length;
+    const cancelled = data.filter(a => a.status === 'CANCELLED').length;
+    const completed = data.filter(a => a.status === 'COMPLETED').length;
+
+    const summaryText = `Ընտրված ժամանակահատվածում կա ${total} գրանցում:
+                         Ավարտված՝ ${completed}, Հաստատված՝ ${confirmed}, Չեղարկված՝ ${cancelled}։`;
+
+    document.getElementById('reportSummary').innerText = summaryText;
+  }
+
+  function exportToPDF() {
+    const element = document.getElementById('printableArea');
+    const opt = {
+      margin:       10,
+      filename:     'Clinic_Report.pdf',
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    };
+    html2pdf().set(opt).from(element).save();
+  }
+
+  function exportToCSV() {
+    const table = document.getElementById("appointmentsTable");
+    let csv =[];
+
+    for (let i = 0; i < table.rows.length; i++) {
+      let row = [], cols = table.rows[i].querySelectorAll("td, th");
+
+      for (let j = 0; j < cols.length; j++) {
+        let text = cols[j].innerText.replace(/,/g, "");
+        row.push(text);
+      }
+      csv.push(row.join(","));
+    }
+
+    downloadCSV(csv.join("\n"), 'Clinic_Report.csv');
+  }
+
+  function downloadCSV(csv, filename) {
+    let csvFile = new Blob(["\uFEFF" + csv], {type: "text/csv;charset=utf-8;"});
+    let downloadLink = document.createElement("a");
+    downloadLink.download = filename;
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+  }
+
+  function renderTable(data) {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+
+    if (data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-gray-500">Տվյալներ չեն գտնվել</td></tr>`;
+      return;
+    }
+
+    data.forEach(app => {
+      let statusClass = '';
+      let statusText = app.status || '-';
+
+      // Light Mode Badge Colors
+      if (app.status === 'PENDING') { statusClass = 'bg-yellow-100 text-yellow-800'; statusText = 'Սպասվող'; }
+      else if (app.status === 'CONFIRMED') { statusClass = 'bg-green-100 text-green-800'; statusText = 'Հաստատված'; }
+      else if (app.status === 'CANCELLED') { statusClass = 'bg-red-100 text-red-800'; statusText = 'Չեղարկված'; }
+      else if (app.status === 'COMPLETED') { statusClass = 'bg-blue-100 text-blue-800'; statusText = 'Ավարտված'; }
+
+      let actionButtons = '';
+
+      if (app.status === 'PENDING' || app.status === 'CONFIRMED') {
+        actionButtons = `
+        <div class="flex justify-end gap-2">
+            <button class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-sm font-semibold transition-colors border border-blue-200 shadow-sm" onclick="updateStatus('${app.id}', 'COMPLETED')">🏁 Ավարտել</button>
+            <button class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-semibold transition-colors border border-red-200 shadow-sm" onclick="updateStatus('${app.id}', 'CANCELLED')">❌ Չեղարկել</button>
+        </div>
+      `;
+      } else if (app.status === 'COMPLETED') {
+        actionButtons = `<div class="text-right"><span class="text-blue-600 text-sm font-bold">✔️ Ավարտված է</span></div>`;
+      } else if (app.status === 'CANCELLED') {
+        actionButtons = `<div class="text-right"><span class="text-red-600 text-sm font-bold">❌ Չեղարկված է</span></div>`;
+      }
+
+      const row = `<tr class="hover:bg-gray-50 transition-colors">
+      <td class="py-4 px-4 font-bold text-gray-900">${app.patientName || 'Անուն չկա'}</td>
+      <td class="py-4 px-4 text-gray-600 font-medium">${app.doctorName || 'Բժիշկ չկա'}</td>
+      <td class="py-4 px-4 text-gray-600">${app.serviceName || '-'}</td>
+      <td class="py-4 px-4 text-gray-600"><span class="bg-gray-100 text-gray-600 border border-gray-200 px-2 py-1 rounded-md text-xs font-bold">${app.departmentId || '-'}</span></td>
+      <td class="py-4 px-4 text-gray-500 text-sm whitespace-nowrap">${app.date ? new Date(app.date).toLocaleDateString('hy-AM', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' }) : '-'}</td>
+      <td class="py-4 px-4"><span class="px-3 py-1 rounded-full text-xs font-bold border border-white/20 ${statusClass}">${statusText}</span></td>
+      <td class="py-4 px-4 whitespace-nowrap">${actionButtons}</td>
+    </tr>`;
+
+      tbody.innerHTML += row;
+    });
+  }
+
+  async function updateStatus(appId, newStatus) {
+    if (!confirm("Վստա՞հ եք, որ ցանկանում եք փոխել կարգավիճակը:")) return;
+
+    try {
+      const response = await fetch(`/admin/api/appointments/${appId}/status?status=${newStatus}`, {
+        method: 'PUT'
+      });
+
+      if (response.ok) {
+        fetchAppointments();
+        fetchStats();
+      } else {
+        const errorText = await response.text();
+        alert(`Սխալ հարցում!\nՍտատուս: ${response.status}\nՊատճառ: ${errorText}`);
+      }
+    } catch (error) {
+      console.error("Սխալ:", error);
+      alert("Ցանցի սխալ: Ստուգեք Console-ը:");
+    }
+  }
+
+  async function fetchStats() {
+    try {
+      const response = await fetch('/admin/api/stats');
+      const stats = await response.json();
+      const currentMonth = new Date().toISOString().substring(0, 7);
+      let total = 0;
+      for (let month in stats) {
+        total += stats[month];
+      }
+      document.getElementById('totalApps').innerText = total;
+      document.getElementById('monthApps').innerText = stats[currentMonth] || 0;
+    } catch (error) {
+      console.log("Վիճակագրության սխալ:", error);
+    }
+  }
+
+  function changePage(direction) {
+    currentPage += direction;
+    fetchAppointments();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updatePaginationUI(current, total) {
+    document.getElementById('pageInfo').innerText = `Էջ ${current + 1} / ${Math.max(1, total)}`;
+
+    const prevBtn = document.getElementById('prevPage');
+    const nextBtn = document.getElementById('nextPage');
+
+    prevBtn.disabled = (current === 0);
+    nextBtn.disabled = (current >= total - 1 || total === 0);
+  }
+
+  function onFilterChange() {
+    currentPage = 0;
+    fetchAppointments();
+  }
+
+</script>
+
 </body>
 </html>

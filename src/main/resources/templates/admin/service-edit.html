@@ -1,10 +1,131 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hy" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Խմբագրել Ծառայությունը - Ադմին</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        accent: { cyan: '#06B6D4', blue: '#3B82F6', purple: '#8B5CF6' }
+                    },
+                    fontFamily: { 'sans':['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body, input, textarea, select, button { transition: all 0.3s ease; }
+    </style>
 </head>
-<body>
-$END$
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
+
+<!-- ՀԵԴԵՐ / ՆԱՎԻԳԱՑԻԱ -->
+<header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm shrink-0">
+    <div class="max-w-7xl mx-auto px-4 md:px-8 h-20 flex items-center justify-between">
+
+        <div class="flex items-center gap-6">
+            <!-- Վերադառնալ Գլխավոր Վահանակ -->
+            <a th:href="@{/admin/dashboard}" class="flex items-center gap-2 text-gray-500 hover:text-accent-cyan transition-colors font-semibold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                Գլխավոր Վահանակ
+            </a>
+            <div class="h-6 w-px bg-gray-200 hidden md:block"></div>
+            <!-- Վերադառնալ Ծառայություններ -->
+            <a th:href="@{/admin/services}" class="flex items-center gap-2 text-gray-500 hover:text-accent-cyan transition-colors font-semibold hidden md:flex">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                Բոլոր Ծառայությունները
+            </a>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <!-- Անվտանգ Ելք -->
+            <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="m-0">
+                <button type="submit" class="flex items-center gap-2 border border-red-200 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white px-5 py-2 rounded-xl font-semibold transition-all shadow-sm hover:shadow-md">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    Ելք
+                </button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<!-- ԳԼԽԱՎՈՐ ԲՈՎԱՆԴԱԿՈՒԹՅՈՒՆ -->
+<div class="flex-1 flex items-start justify-center p-4 md:p-8 mt-4 md:mt-8">
+    <div class="max-w-2xl w-full bg-white p-8 md:p-10 rounded-3xl border border-gray-200 shadow-lg relative overflow-hidden">
+
+        <!-- Դեկորատիվ գրադիենտ գիծ վերևում -->
+        <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-accent-cyan to-accent-blue"></div>
+
+        <div class="flex justify-between items-center mb-8 border-b border-gray-100 pb-5">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-accent-cyan/10 text-accent-cyan rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900">Խմբագրել Ծառայությունը</h2>
+            </div>
+            <a th:href="@{/admin/services}" class="text-gray-500 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-xl font-medium transition flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                Չեղարկել
+            </a>
+        </div>
+
+        <form th:action="@{/admin/services/update/{id}(id=${service.id})}" th:object="${service}" method="post" class="space-y-6">
+
+            <!-- Բաժանմունքի ընտրություն -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-600 mb-1.5">Ընտրել Բաժանմունքը</label>
+                <select th:field="*{departmentId}" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-cyan cursor-pointer">
+                    <option th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.name}"></option>
+                </select>
+            </div>
+
+            <!-- Անվանում -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-600 mb-1.5">Ծառայության Անվանում</label>
+                <input type="text" th:field="*{name}" required placeholder="օրինակ՝ Ընդհանուր ստուգում"
+                       class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-cyan">
+            </div>
+
+            <!-- Արժեք & Տևողություն -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1.5">Արժեք (֏)</label>
+                    <input type="number" step="0.01" th:field="*{price}" required placeholder="5000"
+                           class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-cyan">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1.5">Տևողություն (Րոպե)</label>
+                    <input type="number" th:field="*{durationMinutes}" required placeholder="30"
+                           class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-cyan">
+                </div>
+            </div>
+
+            <!-- Նկարագրություն -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-600 mb-1.5">Նկարագրություն</label>
+                <textarea th:field="*{description}" required rows="4" placeholder="Մանրամասնեք ծառայությունը..."
+                          class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-cyan resize-none"></textarea>
+            </div>
+
+            <!-- Հաստատման կոճակ -->
+            <div class="pt-4 border-t border-gray-100">
+                <button type="submit" class="w-full bg-gradient-to-r from-accent-cyan to-accent-blue hover:shadow-lg text-white font-bold py-3.5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Պահպանել Փոփոխությունները
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
 </body>
 </html>

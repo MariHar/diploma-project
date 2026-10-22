@@ -1,7 +1,6 @@
-package com.example.diplomathesisfinalcollection.medicalrecorder;
+package com.example.diplomathesisfinalcollection.medicine;
 
-
-import com.example.diplomathesisfinalcollection.medicalrecorder.PharmacyOrder;
+import com.example.diplomathesisfinalcollection.medicine.PharmacyOrder;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,10 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface PharmacyOrderRepository extends MongoRepository<PharmacyOrder, String> {
-
-    // Գտնել պացիենտի բոլոր պատվերները
     List<PharmacyOrder> findByPatientIdOrderByOrderDateDesc(String patientId);
-
-    // Ստուգել՝ արդյոք այս դեղատոմսի համար արդեն կա պատվեր, թե ոչ
-    Optional<PharmacyOrder> findByMedicalRecordId(String medicalRecordId);
-}
+    List<PharmacyOrder> findByStatusOrderByOrderDateDesc(String status);
+    // Inside PharmacyOrderRepository.java
+    List<PharmacyOrder> findByMedicalRecordIdOrderByOrderDateDesc(String medicalRecordId);}

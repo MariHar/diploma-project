@@ -1,10 +1,146 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <title>My Appointments</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-$END$
+<body class="bg-gray-900 text-gray-100">
+
+<nav class="bg-gray-800 border-b border-gray-700 px-6 py-4">
+    <div class="flex justify-between items-center">
+        <h1 class="text-xl font-bold text-cyan-400">🏥 Doctor Dashboard</h1>
+        <div class="flex gap-4 items-center">
+            <a href="/doctor/dashboard" class="text-gray-400 hover:text-white transition">Dashboard</a>
+            <a href="/doctor/appointments" class="text-cyan-400 font-semibold transition">Appointments</a>
+            <a href="/doctor/profile" class="text-gray-400 hover:text-white transition">Profile</a>
+
+            <!-- 🛠️ SECURE LOGOUT FIX: Must be a POST form -->
+            <form th:action="@{/logout}" method="post" class="m-0 p-0 inline">
+                <button type="submit" class="text-red-400 hover:text-red-300 font-medium transition cursor-pointer bg-transparent border-none">
+                    Logout
+                </button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container mx-auto px-6 py-8">
+    <h1 class="text-2xl font-bold text-white mb-8">All Appointments</h1>
+
+    <div th:if="${appointments == null or appointments.isEmpty()}" class="bg-gray-800 rounded-xl border border-gray-700 p-12 text-center">
+        <p class="text-4xl mb-4">📅</p>
+        <p class="text-gray-400">No appointments scheduled yet.</p>
+    </div>
+
+    <div th:if="${appointments != null and !appointments.isEmpty()}" class="space-y-12">
+
+        <div>
+            <h2 class="text-xl font-bold text-cyan-400 mb-4 border-b border-gray-700 pb-2">Upcoming Appointments</h2>
+
+            <div class="space-y-4">
+                <div th:each="appt : ${appointments}" th:if="${appt.status == 'CONFIRMED' or appt.status == 'PENDING'}" class="bg-gray-800 rounded-xl border border-cyan-500/30 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-lg shadow-cyan-500/10">
+
+                    <div class="flex items-center gap-6">
+                        <div class="w-16 h-16 bg-cyan-500/20 rounded-full flex items-center justify-center">
+                            <span class="text-2xl">👤</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white" th:text="${appt.patientName}">Patient Name</h3>
+                            <p class="text-gray-400 text-sm">
+                                <span th:text="${#temporals.format(appt.date, 'yyyy-MM-dd')}">2026-04-04</span>
+                                at
+                                <span th:text="${#temporals.format(appt.date, 'HH:mm')}">09:00</span>
+                            </p>
+                            <p class="text-gray-400 text-sm" th:text="${appt.patientEmail}">patient@email.com</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <span th:if="${appt.status == 'CONFIRMED'}" class="bg-green-500/20 text-green-400 px-4 py-1 rounded-full text-sm font-semibold">Confirmed</span>
+                        <span th:if="${appt.status == 'PENDING'}" class="bg-yellow-500/20 text-yellow-400 px-4 py-1 rounded-full text-sm font-semibold">Pending</span>
+
+                        <div class="flex items-center gap-2">
+                            <div th:with="now=${#temporals.createNow()}, canComplete=${now.isAfter(appt.date.plusMinutes(20))}">
+                                <span th:if="${appt.status == 'CONFIRMED' and !canComplete}"
+                                      class="inline-block px-3 py-1 bg-gray-700 text-gray-400 text-xs rounded-lg border border-gray-600"
+                                      title="Button activates 20 mins after appointment time">
+                                    ⏳ In Progress...
+                                </span>
+
+                                <a th:if="${canComplete}" th:href="@{/doctor/appointment/{id}/record(id=${appt.id})}"
+                                   class="bg-cyan-500 text-gray-900 px-4 py-2 rounded-lg font-bold hover:bg-cyan-400 transition-colors shadow-lg shadow-cyan-500/20 inline-block text-center">
+                                    📝 FILL THE CARD
+                                </a>
+                            </div>
+
+                            <form th:action="@{/doctor/appointment/cancel/{id}(id=${appt.id})}" method="post" onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
+                                <button type="submit" class="bg-red-500/10 text-red-500 border border-red-500/50 px-4 py-2 rounded-lg font-bold hover:bg-red-500/20 transition-colors">
+                                    Cancel
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-bold text-green-500 mb-4 border-b border-gray-700 pb-2">Completed Appointments</h2>
+
+            <div class="space-y-4">
+                <div th:each="appt : ${appointments}" th:if="${appt.status == 'COMPLETED'}" class="bg-gray-800/80 rounded-xl border border-gray-700 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 opacity-90">
+
+                    <div class="flex items-center gap-6">
+                        <div class="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center">
+                            <span class="text-2xl opacity-70">👤</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-300" th:text="${appt.patientName}">Patient Name</h3>
+                            <p class="text-gray-500 text-sm">
+                                <span th:text="${#temporals.format(appt.date, 'yyyy-MM-dd')}">2026-04-04</span> at <span th:text="${#temporals.format(appt.date, 'HH:mm')}">09:00</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <span class="bg-blue-500/20 text-blue-400 px-4 py-1 rounded-full text-sm font-semibold">Completed</span>
+                        <a th:href="@{/doctor/appointment/{id}/record/view(id=${appt.id})}"
+                           class="bg-blue-500/20 text-blue-400 border border-blue-500/50 px-4 py-1 rounded-full text-sm font-semibold hover:bg-blue-500/40 transition">
+                            👁️ VIEW THE CARD
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-bold text-gray-500 mb-4 border-b border-gray-700 pb-2">Cancelled Appointments</h2>
+
+            <div class="space-y-4">
+                <div th:each="appt : ${appointments}" th:if="${appt.status == 'CANCELLED'}" class="bg-gray-900 rounded-xl border border-gray-800 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 opacity-60 grayscale">
+
+                    <div class="flex items-center gap-6">
+                        <div class="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center">
+                            <span class="text-xl">👤</span>
+                        </div>
+                        <div>
+                            <h3 class="text-md font-bold text-gray-500 line-through" th:text="${appt.patientName}">Patient Name</h3>
+                            <p class="text-gray-600 text-sm">
+                                <span th:text="${#temporals.format(appt.date, 'yyyy-MM-dd')}">2026-04-04</span> at <span th:text="${#temporals.format(appt.date, 'HH:mm')}"></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <span class="bg-red-500/10 text-red-500/50 border border-red-500/20 px-4 py-1 rounded-full text-sm font-semibold uppercase">Cancelled</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 </body>
 </html>

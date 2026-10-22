@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Financial Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+<div class="max-w-6xl mx-auto">
+    <h1 class="text-3xl font-bold mb-8">Financial Overview</h1>
+
+    <!-- Stats Grid -->
+    <div class="bg-white p-6 rounded shadow">
+        <h2 class="text-2xl font-bold mb-4">Clinic Revenue: <span th:text="${totalRevenue}"></span> AMD</h2>
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+            <tr>
+                <th>Patient ID</th>
+                <th>Invoice ID</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="tx : ${transactions}">
+                <td th:text="${tx.patientId}"></td>
+                <td th:text="${tx.invoiceId}"></td>
+                <td th:text="${tx.amount}"></td>
+                <td th:text="${tx.status}"></td>
+                <td th:text="${#temporals.format(tx.createdAt, 'dd-MM-yyyy HH:mm')}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

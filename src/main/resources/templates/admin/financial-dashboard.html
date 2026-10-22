@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="hy" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ֆինանսական Վահանակ | Avelia Clinic</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            accent: { cyan: '#06B6D4', blue: '#3B82F6', purple: '#8B5CF6' }
+          },
+          fontFamily: { 'sans':['Inter', 'system-ui', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans flex h-screen overflow-hidden">
+
+<!-- ԳԼԽԱՎՈՐ ՄԱՍ -->
+<main class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50">
+  <header class="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 shrink-0">
+    <a th:href="@{/admin/dashboard}" class="flex items-center gap-2 text-gray-500 hover:text-accent-cyan transition-colors font-semibold">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Վերադառնալ Գլխավոր Վահանակ
+    </a>
+    <div class="text-center">
+      <h1 class="text-2xl font-bold text-gray-800">Ֆինանսական Կառավարում</h1>
+      <p class="text-sm text-gray-500">Եկամուտների և հաշիվների վերահսկում</p>
+    </div>
+    <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post">
+      <button type="submit" class="flex items-center gap-2 border border-red-200 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white px-5 py-2 rounded-xl font-semibold transition-all">
+        Ելք
+      </button>
+    </form>
+  </header>
+
+  <div class="flex-1 overflow-y-auto p-8">
+
+    <!-- Վիճակագրության Քարտեր -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex items-center gap-4">
+        <div class="w-14 h-14 rounded-xl bg-green-100 text-green-600 flex items-center justify-center shrink-0">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-gray-400 uppercase">Ընդհանուր Եկամուտ (Վճարված)</p>
+          <p class="text-2xl font-bold text-green-600" th:text="${#numbers.formatDecimal(totalPaid, 0, 'COMMA', 0, 'POINT')} + ' ֏'">0 ֏</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex items-center gap-4">
+        <div class="w-14 h-14 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-gray-400 uppercase">Չվճարված/Սպասվող Գումար</p>
+          <p class="text-2xl font-bold text-amber-600" th:text="${#numbers.formatDecimal(totalOutstanding, 0, 'COMMA', 0, 'POINT')} + ' ֏'">0 ֏</p>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-br from-accent-blue to-blue-700 rounded-2xl p-6 text-white shadow-md flex items-center gap-4">
+        <div class="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-semibold opacity-80 uppercase">Ցուցադրվող Հաշիվներ</p>
+          <p class="text-2xl font-bold" th:text="${report.size()}">0</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⚡ ԱՐԱԳ ՖԻԼՏՐՆԵՐԻ ԲԼՈԿ (PILLS) -->
+    <div class="flex justify-between items-center mb-6">
+      <div class="flex gap-2 bg-white border border-gray-200 p-1.5 rounded-xl shadow-sm">
+        <a th:href="@{/admin/invoices/dashboard}"
+           class="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+           th:classappend="${currentStatusFilter == null} ? 'bg-blue-600 text-white shadow' : 'text-gray-600 hover:bg-gray-100'">
+          Բոլորը
+        </a>
+        <a th:href="@{/admin/invoices/dashboard(status='PAID')}"
+           class="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+           th:classappend="${currentStatusFilter == 'PAID'} ? 'bg-green-600 text-white shadow' : 'text-gray-600 hover:bg-gray-100'">
+          Վճարված
+        </a>
+        <a th:href="@{/admin/invoices/dashboard(status='PENDING')}"
+           class="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+           th:classappend="${currentStatusFilter == 'PENDING'} ? 'bg-yellow-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'">
+          Սպասվող (< 24ժ)
+        </a>
+        <a th:href="@{/admin/invoices/dashboard(status='UNPAID')}"
+           class="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+           th:classappend="${currentStatusFilter == 'UNPAID'} ? 'bg-red-600 text-white shadow' : 'text-gray-600 hover:bg-gray-100'">
+          ⚠️ Ժամկետանց (Պարտքեր)
+        </a>
+      </div>
+
+      <a th:href="@{/admin/invoices/export}" class="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition flex items-center gap-2">
+        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l3-3m-3 3l-3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Արտահանել Excel
+      </a>
+    </div>
+
+    <!-- Աղյուսակ -->
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead class="bg-gray-50 border-b border-gray-200">
+          <tr>
+            <th class="py-4 px-6 text-xs font-bold text-gray-500 uppercase">Պացիենտ</th>
+            <th class="py-4 px-6 text-xs font-bold text-gray-500 uppercase">Բժիշկ / Բաժանմունք</th>
+            <th class="py-4 px-6 text-xs font-bold text-gray-500 uppercase">Ծառայություններ</th>
+            <th class="py-4 px-6 text-xs font-bold text-gray-500 uppercase">Գումար</th>
+            <th class="py-4 px-6 text-xs font-bold text-gray-500 uppercase">Ամսաթիվ</th>
+            <th class="py-4 px-6 text-xs font-bold text-gray-500 uppercase text-center">Կարգավիճակ</th>
+          </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+          <tr th:each="row : ${report}" class="hover:bg-gray-50/80 transition-colors">
+            <!-- Պացիենտ -->
+            <td class="py-4 px-6 font-bold text-gray-900" th:text="${row.patientName}"></td>
+
+            <!-- Բժիշկ և Բաժանմունք (ՆՈՐ ՍՅՈՒՆԱԿ) -->
+            <td class="py-4 px-6 text-sm">
+              <span class="block font-medium text-gray-800" th:text="${row.doctorName}"></span>
+              <span class="block text-xs text-gray-400" th:text="${row.departmentName}"></span>
+            </td>
+
+            <!-- Ծառայություններ -->
+            <td class="py-4 px-6 text-gray-600 text-sm max-w-xs truncate" th:text="${row.serviceName}"></td>
+
+            <!-- Գումար -->
+            <td class="py-4 px-6 font-black text-blue-600" th:text="${#numbers.formatDecimal(row.amount, 0, 'COMMA', 0, 'POINT')} + ' ֏'"></td>
+
+            <!-- Ամսաթիվ -->
+            <td class="py-4 px-6 text-gray-500 text-sm" th:text="${#temporals.format(row.issueDate, 'dd MMM yyyy, HH:mm')}"></td>
+
+            <!-- Կարգավիճակ -->
+            <td class="py-4 px-6 text-center">
+              <span th:if="${row.status == 'PAID'}" class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">ՎՃԱՐՎԱԾ</span>
+              <span th:if="${row.status == 'PENDING'}" class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">ՍՊԱՍՎՈՂ</span>
+              <span th:if="${row.status == 'UNPAID'}" class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold shadow-sm animate-pulse">ԺԱՄԿԵՏԱՆՑ</span>
+            </td>
+          </tr>
+
+          <!-- Եթե ցուցակը դատարկ է -->
+          <tr th:if="${#lists.isEmpty(report)}">
+            <td colspan="6" class="py-12 text-center text-gray-400 font-medium">
+              Այս կարգավիճակով հաշիվներ չեն գտնվել
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>

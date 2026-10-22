@@ -1,12 +1,22 @@
-package com.example.diplomathesisfinalcollection.service;
+package com.example.diplomathesisfinalcollection.clinicservice;
+
+
 
 import lombok.AllArgsConstructor;
+
 import lombok.Builder;
+
 import lombok.Data;
+
 import lombok.NoArgsConstructor;
+
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
+
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.HashMap;
+import java.util.Map;
+
 
 @Data
 @Builder
@@ -17,30 +27,16 @@ public class ClinicService {
     @Id
     private String id;
 
-    @Indexed(unique = true)
-    private String code; // 🔴 Եզակի կոդ (օր.՝ ECG_01)
+    private String code;
+    private String departmentId;
 
-    private String departmentId; // Կապը Department-ի հետ
+    private String name;
+    private String description;
 
-    // Եռալեզու դաշտեր
-    private String nameAm;
-    private String nameRu;
-    private String nameEn;
-
-    private String descriptionAm;
-    private String descriptionRu;
-    private String descriptionEn;
-
-    private String preparationRulesAm; // Նախապատրաստման կանոններ (օր.՝ քաղցած գալ)
-    private String preparationRulesRu;
-    private String preparationRulesEn;
+    private String preparationRules;
 
     private Double price;
     private Integer durationMinutes;
-
-    @Builder.Default
-    private boolean isOnlineBookable = true; // Կարո՞ղ է հիվանդն ինքնուրույն գրանցվել
-
     @Builder.Default
     private boolean active = true;
 }

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="hy" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Պատվերների Կառավարում</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+    .kanban-col { min-height: 70vh; }
+  </style>
+</head>
+<body class="p-4 md:p-8 overflow-x-hidden">
+
+<div class="max-w-screen-2xl mx-auto mb-8 flex justify-between items-center">
+  <div>
+    <a th:href="@{/pharmacy-admin/dashboard}" class="text-blue-500 hover:text-blue-700 flex items-center gap-2 mb-2 font-semibold">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i> Վերադառնալ Պահեստ
+    </a>
+    <h1 class="text-3xl font-bold text-slate-800">🚚 Առաքումների Կառավարում</h1>
+  </div>
+</div>
+
+<div class="max-w-screen-2xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6">
+
+  <div class="bg-slate-100 rounded-2xl p-4 border border-slate-200 kanban-col">
+    <h2 class="font-bold text-slate-700 mb-4 flex items-center gap-2 border-b-2 border-blue-400 pb-2">
+      <span class="w-3 h-3 bg-blue-500 rounded-full"></span> Նոր Պատվերներ
+    </h2>
+    <div class="space-y-4">
+      <div th:each="order : ${pendingOrders}" class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <p class="text-xs text-slate-400 font-mono mb-2" th:text="'ID: ' + ${#strings.substring(order.id, 18, 24)}">ID</p>
+
+        <div class="mb-3">
+          <p class="font-bold text-slate-800 text-sm mb-1">
+            <i data-lucide="user" class="w-4 h-4 inline text-indigo-500"></i>
+            <span th:text="${order.patientName != null ? order.patientName : 'Անհայտ Պացիենտ'}">Պացիենտ</span>
+          </p>
+          <p class="text-sm text-slate-600 mb-3 border-b pb-2">
+            <i data-lucide="stethoscope" class="w-4 h-4 inline text-teal-500"></i>
+            <span class="font-semibold" th:text="${order.prescribingDoctor != null ? order.prescribingDoctor : '-'}">Բժիշկ</span>
+            <span class="text-xs" th:text="${order.doctorSpecialization != null ? '(' + order.doctorSpecialization + ')' : ''}"></span>
+          </p>
+
+          <p class="font-bold text-slate-800"><i data-lucide="map-pin" class="w-4 h-4 inline text-blue-500"></i> <span th:text="${order.deliveryAddress}">Հասցե</span></p>
+          <p class="text-sm text-slate-600"><i data-lucide="phone" class="w-4 h-4 inline text-green-500"></i> <span th:text="${order.deliveryPhone}">Հեռախոս</span></p>
+        </div>
+
+        <div class="bg-slate-50 p-2 rounded mb-3 text-xs text-slate-700 font-medium">
+          <ul class="list-disc list-inside">
+            <li th:each="drug : ${order.purchasedDrugs}" th:text="${drug}">Դեղ</li>
+          </ul>
+        </div>
+        <div class="flex justify-between items-center border-t pt-3">
+          <span class="font-bold text-lg text-slate-800" th:text="${order.totalAmount + ' ֏'}">Գումար</span>
+          <form th:action="@{/pharmacy-admin/orders/{id}/change-status(id=${order.id})}" method="post">
+            <input type="hidden" name="newStatus" value="PROCESSING">
+            <button type="submit" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-bold transition">Հաստատել</button>
+          </form>
+        </div>
+      </div>
+      <p th:if="${pendingOrders.empty}" class="text-center text-slate-400 italic text-sm mt-10">Նոր պատվերներ չկան</p>
+    </div>
+  </div>
+
+  <div class="bg-slate-100 rounded-2xl p-4 border border-slate-200 kanban-col">
+    <h2 class="font-bold text-slate-700 mb-4 flex items-center gap-2 border-b-2 border-amber-400 pb-2">
+      <span class="w-3 h-3 bg-amber-500 rounded-full"></span> Փաթեթավորվում է
+    </h2>
+    <div class="space-y-4">
+      <div th:each="order : ${processingOrders}" class="bg-white p-4 rounded-xl shadow-sm border border-amber-200">
+        <p class="text-xs text-slate-400 font-mono mb-2" th:text="'ID: ' + ${#strings.substring(order.id, 18, 24)}"></p>
+
+        <div class="mb-3">
+          <p class="font-bold text-slate-800 text-sm mb-1">
+            <i data-lucide="user" class="w-4 h-4 inline text-indigo-500"></i>
+            <span th:text="${order.patientName != null ? order.patientName : 'Անհայտ Պացիենտ'}">Պացիենտ</span>
+          </p>
+          <p class="text-sm text-slate-600 mb-3 border-b pb-2">
+            <i data-lucide="stethoscope" class="w-4 h-4 inline text-teal-500"></i>
+            <span class="font-semibold" th:text="${order.prescribingDoctor != null ? order.prescribingDoctor : '-'}">Բժիշկ</span>
+            <span class="text-xs" th:text="${order.doctorSpecialization != null ? '(' + order.doctorSpecialization + ')' : ''}"></span>
+          </p>
+
+          <p class="font-bold text-slate-800"><i data-lucide="map-pin" class="w-4 h-4 inline text-blue-500"></i> <span th:text="${order.deliveryAddress}"></span></p>
+          <p class="text-sm text-slate-600"><i data-lucide="phone" class="w-4 h-4 inline text-green-500"></i> <span th:text="${order.deliveryPhone}"></span></p>
+        </div>
+
+        <div class="flex justify-end border-t pt-3">
+          <form th:action="@{/pharmacy-admin/orders/{id}/change-status(id=${order.id})}" method="post">
+            <input type="hidden" name="newStatus" value="OUT_FOR_DELIVERY">
+            <button type="submit" class="bg-amber-100 hover:bg-amber-200 text-amber-700 px-3 py-1.5 rounded-lg text-sm font-bold transition">Ուղարկել Առաքման</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-slate-100 rounded-2xl p-4 border border-slate-200 kanban-col">
+    <h2 class="font-bold text-slate-700 mb-4 flex items-center gap-2 border-b-2 border-orange-400 pb-2">
+      <span class="w-3 h-3 bg-orange-500 rounded-full"></span> Առաքվում է
+    </h2>
+    <div class="space-y-4">
+      <div th:each="order : ${outForDeliveryOrders}" class="bg-white p-4 rounded-xl shadow-sm border border-orange-200">
+        <p class="text-xs text-slate-400 font-mono mb-2" th:text="'ID: ' + ${#strings.substring(order.id, 18, 24)}"></p>
+
+        <div class="mb-3">
+          <p class="font-bold text-slate-800 text-sm mb-1">
+            <i data-lucide="user" class="w-4 h-4 inline text-indigo-500"></i>
+            <span th:text="${order.patientName != null ? order.patientName : 'Անհայտ Պացիենտ'}">Պացիենտ</span>
+          </p>
+          <p class="text-sm text-slate-600 mb-3 border-b pb-2">
+            <i data-lucide="stethoscope" class="w-4 h-4 inline text-teal-500"></i>
+            <span class="font-semibold" th:text="${order.prescribingDoctor != null ? order.prescribingDoctor : '-'}">Բժիշկ</span>
+            <span class="text-xs" th:text="${order.doctorSpecialization != null ? '(' + order.doctorSpecialization + ')' : ''}"></span>
+          </p>
+
+          <p class="font-bold text-slate-800"><i data-lucide="map-pin" class="w-4 h-4 inline text-blue-500"></i> <span th:text="${order.deliveryAddress}"></span></p>
+          <p class="text-sm text-slate-600"><i data-lucide="phone" class="w-4 h-4 inline text-green-500"></i> <span th:text="${order.deliveryPhone}"></span></p>
+        </div>
+
+        <div class="flex justify-end border-t pt-3">
+          <form th:action="@{/pharmacy-admin/orders/{id}/change-status(id=${order.id})}" method="post">
+            <input type="hidden" name="newStatus" value="DELIVERED">
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm font-bold transition shadow-md">Ավարտել (Հանձնված է)</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-slate-100 rounded-2xl p-4 border border-slate-200 kanban-col opacity-70">
+    <h2 class="font-bold text-slate-700 mb-4 flex items-center gap-2 border-b-2 border-green-400 pb-2">
+      <span class="w-3 h-3 bg-green-500 rounded-full"></span> Ավարտված
+    </h2>
+    <div class="space-y-4">
+      <div th:each="order : ${deliveredOrders}" class="bg-white p-4 rounded-xl shadow-sm border border-green-200">
+        <p class="text-xs text-slate-400 font-mono mb-2" th:text="'ID: ' + ${#strings.substring(order.id, 18, 24)}"></p>
+
+        <div class="mb-3">
+          <p class="font-bold text-slate-600 text-sm mb-1">
+            <i data-lucide="user" class="w-4 h-4 inline text-indigo-400"></i>
+            <span th:text="${order.patientName != null ? order.patientName : 'Անհայտ Պացիենտ'}">Պացիենտ</span>
+          </p>
+          <p class="text-sm text-slate-500 mb-2 border-b pb-2">
+            <i data-lucide="stethoscope" class="w-4 h-4 inline text-teal-400"></i>
+            <p class="text-sm font-bold text-slate-700" th:text="${order.prescribingDoctor}">Բժիշկ</p>
+            <p class="text-xs text-slate-500" th:text="${order.doctorSpecialization}">Բաժանմունք</p>
+          </p>
+          <p class="font-bold text-slate-500 line-through"><i data-lucide="map-pin" class="w-4 h-4 inline text-slate-400"></i> <span th:text="${order.deliveryAddress}"></span></p>
+        </div>
+
+        <p class="text-green-600 font-bold text-sm text-right flex justify-end items-center gap-1"><i data-lucide="check-circle" class="w-4 h-4"></i> Հանձնված է</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  lucide.createIcons();
+</script>
+</body>
+</html>

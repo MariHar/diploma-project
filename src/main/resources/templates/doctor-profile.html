@@ -1,10 +1,103 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <title>My Profile - Doctor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-$END$
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+
+<nav class="bg-gray-800 border-b border-gray-700 px-6 py-4 shadow-md">
+  <div class="flex justify-between items-center">
+    <h1 class="text-xl font-bold text-cyan-400">🏥 My Profile</h1>
+    <div class="flex gap-4 items-center">
+      <a href="/doctor/dashboard" class="text-gray-400 hover:text-white transition">Dashboard</a>
+      <a href="/doctor/appointments" class="text-gray-400 hover:text-white transition">Appointments</a>
+      <a href="/doctor/profile" class="text-cyan-400 font-semibold transition">Profile</a>
+
+      <!-- 🛠️ SECURE LOGOUT FIX: Must be a POST form in Spring Security 6+ -->
+      <form th:action="@{/logout}" method="post" class="m-0 p-0 inline">
+        <button type="submit" class="text-red-400 hover:text-red-300 font-medium transition cursor-pointer bg-transparent border-none">
+          Logout
+        </button>
+      </form>
+    </div>
+  </div>
+</nav>
+
+<div class="container mx-auto px-6 py-8 max-w-5xl">
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+    <!-- 🌟 Profile Card (Left Side) -->
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-8 text-center shadow-lg h-fit">
+
+      <!-- Photo Rendering -->
+      <div class="w-40 h-40 rounded-full overflow-hidden border-4 border-cyan-500/30 shadow-xl mx-auto mb-6 bg-gray-900 flex items-center justify-center relative">
+        <img th:if="${doctor?.photoUrl != null and !doctor.photoUrl.isEmpty()}"
+             th:src="@{${doctor.photoUrl}}" alt="Profile Photo"
+             class="w-full h-full object-cover">
+        <span th:unless="${doctor?.photoUrl != null and !doctor.photoUrl.isEmpty()}" class="text-6xl">👨‍⚕️</span>
+      </div>
+
+      <h2 class="text-2xl font-bold text-white mb-2">
+        Dr. <span th:text="${doctor?.firstName}">First</span>
+        <span th:if="${doctor?.patronymic != null and !doctor.patronymic.isEmpty()}" th:text="${doctor.patronymic}">Middle</span>
+        <span th:text="${doctor?.lastName}">Last</span>
+      </h2>
+
+      <p class="text-cyan-400 font-semibold text-lg mb-4" th:text="${doctor?.specialization}">Specialty</p>
+
+      <span th:if="${doctor?.experienceYears != null}" class="inline-block bg-indigo-500/20 text-indigo-300 px-4 py-1.5 rounded-full border border-indigo-500/30 font-bold text-sm tracking-wide">
+                <span th:text="${doctor.experienceYears}"></span> Years Experience
+            </span>
+    </div>
+
+    <!-- 🌟 Profile Details (Right Side) -->
+    <div class="md:col-span-2 bg-gray-800 rounded-xl border border-gray-700 p-8 shadow-lg">
+      <h3 class="text-xl font-bold text-white mb-6 border-b border-gray-700 pb-3 flex items-center gap-2">
+        <span>📋</span> Personal Information
+      </h3>
+
+      <!-- Biography / Description -->
+      <div th:if="${doctor?.description != null and !doctor.description.isEmpty()}" class="mb-8">
+        <p class="text-gray-400 text-sm font-semibold uppercase tracking-wider mb-2">About Me</p>
+        <div class="p-4 bg-gray-900/60 rounded-xl border border-gray-700/50 text-gray-300 text-sm italic leading-relaxed shadow-inner">
+          "<span th:text="${doctor.description}">Doctor's detailed biography goes here...</span>"
+        </div>
+      </div>
+
+      <!-- Details Grid -->
+      <div class="space-y-5">
+        <div class="flex justify-between items-center border-b border-gray-700/50 pb-4">
+          <span class="text-gray-400 font-medium flex items-center gap-2"><span class="text-lg">✉️</span> Email Address</span>
+          <span class="text-white font-semibold" th:text="${doctor?.email ?: user?.email}">email@example.com</span>
+        </div>
+
+        <div class="flex justify-between items-center border-b border-gray-700/50 pb-4">
+          <span class="text-gray-400 font-medium flex items-center gap-2"><span class="text-lg">📞</span> Phone Number</span>
+          <span class="text-white font-semibold" th:text="${doctor?.phone ?: user?.phone ?: 'Not provided'}">+374 XX XXX XXX</span>
+        </div>
+
+        <div class="flex justify-between items-center border-b border-gray-700/50 pb-4">
+          <span class="text-gray-400 font-medium flex items-center gap-2"><span class="text-lg">⚕️</span> Specialization</span>
+          <span class="text-white font-semibold" th:text="${doctor?.specialization}">Cardiology</span>
+        </div>
+
+        <div class="flex justify-between items-center border-b border-gray-700/50 pb-4">
+          <span class="text-gray-400 font-medium flex items-center gap-2"><span class="text-lg">🏢</span> Department</span>
+          <span class="text-white font-semibold bg-gray-900 px-3 py-1 rounded-lg border border-gray-700" th:text="${department?.name ?: 'General'}">Department</span>
+        </div>
+
+        <div class="flex justify-between items-center pt-2">
+          <span class="text-gray-400 font-medium flex items-center gap-2"><span class="text-lg">✅</span> Account Status</span>
+          <span class="bg-green-500/10 text-green-400 border border-green-500/20 px-4 py-1.5 rounded-full text-sm font-bold tracking-wider uppercase">Active</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 </body>
 </html>

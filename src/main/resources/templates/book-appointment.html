@@ -1,10 +1,256 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+<!--<!DOCTYPE html>-->
+<!--<html lang="en" xmlns:th="http://www.thymeleaf.org">-->
+<!--<head>-->
+<!--  <meta charset="UTF-8">-->
+<!--  <title>Book Appointment - avelia clinic</title>-->
+<!--  <script src="https://cdn.tailwindcss.com"></script>-->
+<!--  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">-->
+<!--  <style>-->
+<!--    body { font-family: 'Inter', sans-serif; background-color: #0F172A; color: white; }-->
+<!--    .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }-->
+<!--    .doctor-card { cursor: pointer; transition: all 0.3s ease; }-->
+<!--    .doctor-card.selected { border-color: #06B6D4; background: rgba(6, 182, 212, 0.1); transform: scale(1.02); box-shadow: 0 10px 25px rgba(6, 182, 212, 0.2); }-->
+<!--  </style>-->
+<!--</head>-->
+<!--<body class="min-h-screen p-4 md:p-8 flex justify-center">-->
+
+<!--<div class="w-full max-w-4xl">-->
+<!--  <div class="text-center mb-8">-->
+<!--    <h2 class="text-3xl md:text-4xl font-bold mb-2">Book Your Appointment</h2>-->
+<!--    <p class="text-gray-400">Step-by-step simple booking</p>-->
+<!--  </div>-->
+<!--  <div class="flex justify-between items-center mb-8">-->
+<!--    <h1 class="text-3xl font-bold text-purple-400"> </h1>-->
+<!--    <a href="/profile" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg transition">-->
+<!--      &larr; Back to Profile-->
+<!--    </a>-->
+<!--  </div>-->
+
+<!--  <form th:action="@{/appointment/save}" method="post" class="space-y-8 glass-card rounded-3xl p-6 md:p-10">-->
+
+<!--    <div th:if="${param.error}" class="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-xl flex items-start gap-3 text-red-400 shadow-lg animate-pulse">-->
+<!--      <svg class="w-6 h-6 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>-->
+<!--      </svg>-->
+<!--      <div>-->
+<!--        <h4 class="font-bold text-red-500">Booking Failed</h4>-->
+<!--        <p th:if="${param.error[0] == 'DailyBookingLimitReached'}" class="text-sm mt-1">-->
+<!--          You already have an active appointment on this day. You can only book 1 appointment per day.-->
+<!--        </p>-->
+<!--        <p th:if="${param.error[0] == 'TimeSlotAlreadyBooked'}" class="text-sm mt-1">-->
+<!--          This time slot was just booked by someone else. Please select another available time.-->
+<!--        </p>-->
+<!--        <p th:if="${param.error[0] == 'PastTimeNotAllowed'}" class="text-sm mt-1">-->
+<!--          You cannot book an appointment in the past. Please select a valid future time.-->
+<!--        </p>-->
+<!--        <p th:if="${param.error[0] == 'DoctorNotFound'}" class="text-sm mt-1">-->
+<!--          The selected doctor could not be found. Please try again.-->
+<!--        </p>-->
+<!--        <p th:if="${param.error[0] == 'GlobalBookingLimitReached'}" class="text-sm mt-1">-->
+<!--          You have reached the maximum limit of active appointments (3). Please attend or cancel your upcoming visits before booking a new one.-->
+<!--        </p>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--    <div>-->
+<!--      <div class="flex items-center gap-3 mb-4">-->
+<!--        <span class="bg-cyan-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">1</span>-->
+<!--        <h3 class="text-xl font-semibold">Select Department</h3>-->
+<!--      </div>-->
+<!--      <select id="departmentSelect" onchange="filterServicesByDepartment()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none transition">-->
+<!--        <option value="" disabled selected>&#45;&#45; Choose Medical Department &#45;&#45;</option>-->
+<!--        <option th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.name}"></option>-->
+<!--      </select>-->
+<!--    </div>-->
+
+<!--    <div id="step2" class="hidden opacity-0 transition-opacity duration-500">-->
+<!--      <div class="flex items-center gap-3 mb-4">-->
+<!--        <span class="bg-cyan-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">2</span>-->
+<!--        <h3 class="text-xl font-semibold">Select Service</h3>-->
+<!--      </div>-->
+<!--      <select id="serviceSelect" name="serviceId" required onchange="filterDoctorsByService()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none transition">-->
+<!--        <option value="" disabled selected>&#45;&#45; Choose Service &#45;&#45;</option>-->
+<!--      </select>-->
+<!--    </div>-->
+
+<!--    <div id="step3" class="hidden opacity-0 transition-opacity duration-500">-->
+<!--      <div class="flex items-center gap-3 mb-4">-->
+<!--        <span class="bg-cyan-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">3</span>-->
+<!--        <h3 class="text-xl font-semibold">Choose Your Doctor</h3>-->
+<!--      </div>-->
+<!--      <div id="doctorGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">-->
+<!--      </div>-->
+<!--      <input type="hidden" id="selectedDoctorId" name="doctorId" required>-->
+<!--    </div>-->
+
+<!--    <div id="step4" class="hidden opacity-0 transition-opacity duration-500 space-y-6">-->
+<!--      <div class="flex items-center gap-3 mb-4">-->
+<!--        <span class="bg-cyan-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">4</span>-->
+<!--        <h3 class="text-xl font-semibold">Date & Time</h3>-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-sm text-gray-400 mb-2">Preferred Date</label>-->
+<!--        <input type="date" id="dateSelect" name="appointmentDate" required onchange="fetchAvailableTimeSlots()"-->
+<!--               class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none transition">-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <label class="block text-sm text-gray-400 mb-2">Available Times</label>-->
+<!--        <div id="timeSlotsContainer" class="flex flex-wrap gap-2 p-4 bg-slate-800 border border-slate-700 rounded-xl min-h-[80px] items-center">-->
+<!--          <p class="text-gray-500 text-sm italic">Select a date to see available times.</p>-->
+<!--        </div>-->
+<!--        <input type="hidden" id="selectedTime" name="appointmentTime" required>-->
+<!--      </div>-->
+<!--    </div>-->
+
+<!--    <button type="submit" id="submitBtn" disabled class="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-4 rounded-xl font-bold text-lg opacity-50 cursor-not-allowed mt-8 transition-all">-->
+<!--      Confirm & Book Appointment-->
+<!--    </button>-->
+<!--  </form>-->
+<!--</div>-->
+
+<!--<script th:inline="javascript">-->
+<!--  /*<![CDATA[*/-->
+<!--  const allDoctors = /*[[${doctors}]]*/ [];-->
+<!--  const allServices = /*[[${services}]]*/ [];-->
+<!--  /*]]>*/-->
+
+<!--  // Քայլ 1 -> Քայլ 2: Ֆիլտրել ծառայությունները ըստ Բաժանմունքի-->
+<!--  function filterServicesByDepartment() {-->
+<!--    const deptId = document.getElementById('departmentSelect').value;-->
+<!--    const serviceSelect = document.getElementById('serviceSelect');-->
+
+<!--    // Մաքրում ենք հաջորդ քայլերը-->
+<!--    serviceSelect.innerHTML = '<option value="" disabled selected>&#45;&#45; Choose Service &#45;&#45;</option>';-->
+<!--    document.getElementById('step3').classList.add('hidden', 'opacity-0');-->
+<!--    document.getElementById('step4').classList.add('hidden', 'opacity-0');-->
+<!--    document.getElementById('selectedDoctorId').value = '';-->
+
+<!--    const filteredServices = allServices.filter(srv => srv.departmentId === deptId);-->
+
+<!--    if(filteredServices.length === 0) {-->
+<!--      serviceSelect.innerHTML = '<option value="" disabled selected>No services available in this department.</option>';-->
+<!--    } else {-->
+<!--      filteredServices.forEach(srv => {-->
+<!--        const opt = document.createElement('option');-->
+<!--        opt.value = srv.id;-->
+<!--        opt.text = `${srv.name} - $${srv.price} (${srv.durationMinutes} min)`;-->
+<!--        serviceSelect.appendChild(opt);-->
+<!--      });-->
+<!--    }-->
+
+<!--    const step2 = document.getElementById('step2');-->
+<!--    step2.classList.remove('hidden');-->
+<!--    setTimeout(() => step2.classList.remove('opacity-0'), 50);-->
+<!--  }-->
+
+<!--  // Քայլ 2 -> Քայլ 3: Ֆիլտրել Բժիշկներին ըստ Ընտրված Ծառայության-->
+<!--  function filterDoctorsByService() {-->
+<!--    const deptId = document.getElementById('departmentSelect').value;-->
+<!--    const serviceId = document.getElementById('serviceSelect').value;-->
+<!--    const docGrid = document.getElementById('doctorGrid');-->
+
+<!--    // Մաքրում ենք հաջորդ քայլերը-->
+<!--    docGrid.innerHTML = '';-->
+<!--    document.getElementById('step4').classList.add('hidden', 'opacity-0');-->
+<!--    document.getElementById('selectedDoctorId').value = '';-->
+
+<!--    // Գտնում ենք բժիշկներին, ովքեր այս բաժանմունքից են ԵՎ իրենց serviceIds ցանկում ունեն այս ծառայությունը-->
+<!--    const filteredDocs = allDoctors.filter(doc =>-->
+<!--            doc.departmentId === deptId &&-->
+<!--            doc.active &&-->
+<!--            doc.serviceIds &&-->
+<!--            doc.serviceIds.includes(serviceId)-->
+<!--    );-->
+
+<!--    if(filteredDocs.length === 0) {-->
+<!--      docGrid.innerHTML = '<p class="text-red-400 p-4 bg-red-900/20 rounded-lg">No doctors currently provide this specific service.</p>';-->
+<!--    } else {-->
+<!--      filteredDocs.forEach(doc => {-->
+<!--        const card = document.createElement('div');-->
+<!--        card.className = 'doctor-card bg-slate-800 border border-slate-700 p-5 rounded-xl flex items-center gap-4';-->
+<!--        card.innerHTML = `-->
+<!--                  <div class="w-14 h-14 bg-slate-700 rounded-full flex items-center justify-center text-lg font-bold text-cyan-400">Dr.</div>-->
+<!--                  <div>-->
+<!--                      <h4 class="font-bold text-lg text-white">${doc.firstName} ${doc.lastName}</h4>-->
+<!--                      <p class="text-sm text-cyan-400">${doc.specialization}</p>-->
+<!--                      <p class="text-xs text-gray-400 mt-1">${doc.experienceYears} Years Experience</p>-->
+<!--                  </div>-->
+<!--              `;-->
+<!--        card.onclick = () => selectDoctor(card, doc.id);-->
+<!--        docGrid.appendChild(card);-->
+<!--      });-->
+<!--    }-->
+
+<!--    const step3 = document.getElementById('step3');-->
+<!--    step3.classList.remove('hidden');-->
+<!--    setTimeout(() => step3.classList.remove('opacity-0'), 50);-->
+<!--  }-->
+
+<!--  // Քայլ 3 -> Քայլ 4: Ընտրել Բժշկին-->
+<!--  function selectDoctor(cardElement, doctorId) {-->
+<!--    document.querySelectorAll('.doctor-card').forEach(c => c.classList.remove('selected'));-->
+<!--    cardElement.classList.add('selected');-->
+<!--    document.getElementById('selectedDoctorId').value = doctorId;-->
+
+<!--    const step4 = document.getElementById('step4');-->
+<!--    step4.classList.remove('hidden');-->
+<!--    setTimeout(() => step4.classList.remove('opacity-0'), 50);-->
+
+<!--    if(document.getElementById('dateSelect').value) {-->
+<!--      fetchAvailableTimeSlots();-->
+<!--    }-->
+<!--  }-->
+
+<!--  // Date Logic-->
+<!--  document.addEventListener("DOMContentLoaded", function() {-->
+<!--    let today = new Date().toISOString().split('T')[0];-->
+<!--    document.getElementById("dateSelect").min = today;-->
+<!--  });-->
+
+<!--  // Fetch Slots-->
+<!--  function fetchAvailableTimeSlots() {-->
+<!--    const doctorId = document.getElementById("selectedDoctorId").value;-->
+<!--    const date = document.getElementById("dateSelect").value;-->
+<!--    const container = document.getElementById("timeSlotsContainer");-->
+<!--    const hiddenTimeInput = document.getElementById("selectedTime");-->
+<!--    const submitBtn = document.getElementById("submitBtn");-->
+
+<!--    hiddenTimeInput.value = "";-->
+<!--    submitBtn.disabled = true;-->
+<!--    submitBtn.classList.add("opacity-50", "cursor-not-allowed");-->
+
+<!--    if (!doctorId || !date) return;-->
+
+<!--    container.innerHTML = '<p class="text-cyan-400 text-sm animate-pulse">Loading schedule...</p>';-->
+
+<!--    fetch(`/appointment/api/available-slots?doctorId=${doctorId}&date=${date}`)-->
+<!--            .then(res => res.json())-->
+<!--            .then(slots => {-->
+<!--              container.innerHTML = "";-->
+<!--              if (slots.length === 0) {-->
+<!--                container.innerHTML = '<p class="text-red-400 text-sm">Doctor is fully booked or off duty on this date.</p>';-->
+<!--                return;-->
+<!--              }-->
+<!--              slots.forEach(time => {-->
+<!--                const btn = document.createElement("button");-->
+<!--                btn.type = "button";-->
+<!--                btn.innerText = time;-->
+<!--                btn.className = "px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm text-gray-200 time-btn hover:border-cyan-400 transition";-->
+<!--                btn.onclick = function() {-->
+<!--                  document.querySelectorAll('.time-btn').forEach(b => {-->
+<!--                    b.className = "px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm text-gray-200 time-btn hover:border-cyan-400 transition";-->
+<!--                  });-->
+<!--                  this.className = "px-4 py-2 bg-cyan-500 text-white rounded-lg text-sm font-bold time-btn shadow-lg transform scale-105 transition";-->
+<!--                  hiddenTimeInput.value = time;-->
+<!--                  submitBtn.disabled = false;-->
+<!--                  submitBtn.classList.remove("opacity-50", "cursor-not-allowed");-->
+<!--                };-->
+<!--                container.appendChild(btn);-->
+<!--              });-->
+<!--            }).catch(() => container.innerHTML = '<p class="text-red-400 text-sm">Error loading schedule.</p>');-->
+<!--  }-->
+<!--  /*]]>*/-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->

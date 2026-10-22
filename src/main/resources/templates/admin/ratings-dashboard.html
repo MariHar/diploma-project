@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Ratings & Feedback | Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 font-sans p-8">
+
+<div class="max-w-7xl mx-auto">
+  <!-- Header Section -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-slate-800 uppercase tracking-tight">Որակի Վերահսկողություն</h1>
+    <p class="text-slate-500 mt-2 text-lg">Բժիշկների գնահատականներ և պացիենտների հետադարձ կապ</p>
+  </div>
+
+  <!-- Feedback Table Card -->
+  <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+    <table class="w-full text-left">
+      <thead class="bg-slate-50 border-b border-slate-200">
+      <tr>
+        <th class="py-5 px-6 text-xs font-bold text-slate-400 uppercase tracking-widest">Պացիենտ</th>
+        <th class="py-5 px-6 text-xs font-bold text-slate-400 uppercase tracking-widest">Բժիշկ</th>
+        <th class="py-5 px-6 text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Միավոր</th>
+        <th class="py-5 px-6 text-xs font-bold text-slate-400 uppercase tracking-widest">Մեկնաբանություն</th>
+        <th class="py-5 px-6 text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Ամսաթիվ</th>
+      </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+      <tr th:each="r : ${ratings}" class="hover:bg-slate-50/80 transition-colors">
+        <!-- 1. Patient Name (Privacy Handling) -->
+        <td class="py-5 px-6">
+          <div th:if="${r.isAnonymous}" class="flex items-center gap-2">
+            <span class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 text-xs font-bold">A</span>
+            <span class="text-slate-400 italic font-medium">Անանուն</span>
+          </div>
+          <div th:unless="${r.isAnonymous}" class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-xs"
+                 th:text="${#strings.substring(userRepo.findById(r.patientId).get().firstName,0,1)}"></div>
+            <span class="font-semibold text-slate-900"
+                  th:text="${userRepo.findById(r.patientId).get().firstName + ' ' + userRepo.findById(r.patientId).get().lastName}"></span>
+          </div>
+        </td>
+
+        <!-- 2. Doctor Name -->
+        <td class="py-5 px-6">
+          <div class="text-slate-700 font-bold"
+               th:text="${'Բժ. ' + doctorRepo.findById(r.doctorId).get().firstName + ' ' + doctorRepo.findById(r.doctorId).get().lastName}"></div>
+        </td>
+
+        <!-- 3. Star Score -->
+        <td class="py-5 px-6 text-center">
+          <div class="inline-flex items-center bg-yellow-50 px-3 py-1 rounded-full border border-yellow-100">
+            <span class="text-yellow-600 font-black mr-1" th:text="${r.score}"></span>
+            <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+          </div>
+        </td>
+
+        <!-- 4. Patient's Review Comment -->
+        <td class="py-5 px-6">
+          <p class="text-sm text-slate-600 leading-relaxed max-w-md">
+            "[[${r.comment != null and r.comment != '' ? r.comment : 'Մեկնաբանություն չկա'}]]"
+          </p>
+        </td>
+
+        <!-- 5. Created Date -->
+        <td class="py-5 px-6 text-right">
+                        <span class="text-xs font-mono text-slate-400 bg-slate-50 px-2 py-1 rounded"
+                              th:text="${#temporals.format(r.createdAt, 'dd.MM.yyyy HH:mm')}"></span>
+        </td>
+      </tr>
+
+      <!-- Empty State -->
+      <tr th:if="${#lists.isEmpty(ratings)}">
+        <td colspan="5" class="py-20 text-center">
+          <p class="text-slate-400 italic">Գնահատականներ դեռևս չկան:</p>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</body>
+</html>

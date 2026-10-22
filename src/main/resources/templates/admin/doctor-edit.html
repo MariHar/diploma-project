@@ -1,10 +1,195 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hy" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Բժշկի Խմբագրում - Ադմին</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        accent: { cyan: '#06B6D4', blue: '#3B82F6', purple: '#8B5CF6' }
+                    },
+                    fontFamily: { 'sans':['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body, input, textarea, select, button { transition: all 0.3s ease; }
+    </style>
 </head>
-<body>
-$END$
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen p-4 md:p-8 flex items-center justify-center">
+
+<div class="max-w-4xl w-full bg-white p-6 md:p-8 rounded-3xl border border-gray-200 shadow-sm">
+
+    <!-- Վերնագիր և վերադարձի կոճակ -->
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-gray-100 pb-5 gap-4">
+        <div class="flex items-center gap-4">
+            <img th:if="${doctor.photoUrl != null}" th:src="${doctor.photoUrl}" class="w-16 h-16 rounded-2xl object-cover border-2 border-accent-cyan/50 shadow-sm">
+            <div th:unless="${doctor.photoUrl != null}" class="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-cyan to-accent-blue flex items-center justify-center text-white font-bold text-xl shadow-sm border-2 border-transparent">
+                <span th:text="${#strings.substring(doctor.firstName,0,1) + #strings.substring(doctor.lastName,0,1)}"></span>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900" th:text="'Բժ. ' + ${doctor.firstName} + ' ' + ${doctor.lastName}">Խմբագրել Բժշկին</h2>
+                <p class="text-sm font-medium text-gray-500">Ամբողջական Պրոֆիլ և Կարգավորումներ</p>
+            </div>
+        </div>
+        <a href="/admin/doctors" class="flex items-center gap-2 text-gray-500 hover:text-accent-cyan transition-colors font-semibold bg-gray-50 border border-gray-200 px-5 py-2.5 rounded-xl shadow-sm hover:shadow-md text-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            Վերադառնալ Ցանկ
+        </a>
+    </div>
+
+    <!-- Խմբագրման Ֆորմա -->
+    <form th:action="@{/admin/doctors/update/{id}(id=${doctor.id})}" th:object="${doctor}" method="post" enctype="multipart/form-data" class="space-y-6">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Մուտք և Կապ -->
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                <h3 class="text-xs font-bold text-accent-cyan border-b border-gray-100 pb-2 mb-4 uppercase tracking-widest">Մուտք և Կապ</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5">Էլ․ Հասցե (Փոխելու դեպքում կստեղծվի նոր PIN)</label>
+                        <input type="email" name="email" th:value="${doctor.email}" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-cyan transition-shadow">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5">Հեռախոսահամար</label>
+                        <input type="text" th:field="*{phone}" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-cyan transition-shadow">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Անձնական Տվյալներ -->
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                <h3 class="text-xs font-bold text-accent-cyan border-b border-gray-100 pb-2 mb-4 uppercase tracking-widest">Անձնական Տվյալներ</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5">Անուն</label>
+                        <input type="text" th:field="*{firstName}" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-cyan transition-shadow">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5">Ազգանուն</label>
+                        <input type="text" th:field="*{lastName}" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-cyan transition-shadow">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5">Հայրանուն (կամընտիր)</label>
+                        <input type="text" th:field="*{patronymic}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-cyan transition-shadow">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Մասնագիտական Տվյալներ -->
+        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+            <h3 class="text-xs font-bold text-accent-cyan border-b border-gray-100 pb-2 mb-4 uppercase tracking-widest">Մասնագիտական Տվյալներ</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5">Կցել Բաժանմունքին</label>
+                        <select th:field="*{departmentId}" id="departmentSelect" onchange="renderServices()" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-cyan cursor-pointer transition-shadow">
+                            <option th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.name}"></option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1.5">Մասնագիտացում</label>
+                            <input type="text" th:field="*{specialization}" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-cyan transition-shadow">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1.5">Փորձ (Տարի)</label>
+                            <input type="number" th:field="*{experienceYears}" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-cyan transition-shadow">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1.5">Տրամադրվող Ծառայություններ (Ավտոմատ ֆիլտրված)</label>
+                    <div id="servicesContainer" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 h-[120px] overflow-y-auto space-y-1">
+                        <!-- Լրացվում է JS-ի կողմից -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Որակավորում և Հմտություններ -->
+        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+            <h3 class="text-xs font-bold text-accent-cyan border-b border-gray-100 pb-2 mb-4 uppercase tracking-widest">Որակավորում և Հմտություններ</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1.5">Կրթություն և Գիտական Կոչումներ</label>
+                    <textarea th:field="*{education}" rows="3" placeholder="օր․ Երևանի Պետական Բժշկական Համալսարան (2010-2016)..."
+                              class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-cyan resize-none transition-shadow"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1.5">Տիրապետած Լեզուներ</label>
+                    <input type="text" th:field="*{languagesSpoken}" placeholder="օր․ Հայերեն, Ռուսերեն, Անգլերեն"
+                           class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-cyan transition-shadow">
+                </div>
+            </div>
+        </div>
+
+        <!-- Լրացուցիչ տվյալներ -->
+        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1.5">Թարմացնել Նկարը (Թողեք դատարկ նախկինը պահելու համար)</label>
+                    <input type="file" name="photoFile" accept="image/*" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-600 focus:outline-none focus:ring-2 focus:ring-accent-cyan file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1.5">Նկարագրություն և Կենսագրություն</label>
+                    <textarea th:field="*{description}" rows="2" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-cyan resize-none transition-shadow"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Պահպանման Կոճակ -->
+        <button type="submit" class="w-full bg-gradient-to-r from-accent-cyan to-accent-blue text-white font-bold py-4 rounded-xl hover:shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2 mt-6">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Պահպանել Փոփոխությունները
+        </button>
+    </form>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const allServices = /*[[${services}]]*/ [];
+    const doctorServiceIds = /*[[${doctor.serviceIds}]]*/ [];
+    /*]]>*/
+
+    function renderServices() {
+        const deptId = document.getElementById('departmentSelect').value;
+        const container = document.getElementById('servicesContainer');
+        container.innerHTML = '';
+
+        const filteredServices = allServices.filter(s => s.departmentId === deptId);
+
+        if (filteredServices.length === 0) {
+            container.innerHTML = '<p class="text-xs text-red-400">No services found for this department.</p>';
+        } else {
+            filteredServices.forEach(srv => {
+                const isChecked = doctorServiceIds.includes(srv.id) ? 'checked' : '';
+                const label = document.createElement('label');
+                label.className = 'flex items-center space-x-2 text-sm text-gray-300 cursor-pointer p-1 hover:bg-gray-700 rounded';
+                label.innerHTML = `
+                    <input type="checkbox" name="serviceIds" value="${srv.id}" ${isChecked} class="rounded bg-gray-800 border-gray-600 text-purple-500">
+                    <span>${srv.name}</span>
+                `;
+                container.appendChild(label);
+            });
+        }
+    }
+
+    // Երբ էջը բացվում է, ավտոմատ նկարում է նախկինում ընտրված բաժանմունքի ծառայությունները
+    window.onload = function() {
+        renderServices();
+    };
+</script>
 </body>
 </html>

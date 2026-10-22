@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="hy" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Պահեստ - Բժշկական Դեղատուն</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; overflow-x: hidden; }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 50; }
+    @media print { .no-print { display: none !important; } .print-only { display: block !important; } }
+
+    /* Տոստի Անիմացիա */
+    @keyframes slideInUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .toast-animate { animation: slideInUp 0.5s ease-out forwards; }
+  </style>
+</head>
+<body class="p-4 md:p-8">
+
+<div class="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
+
+  <div th:if="${lowStockCount > 0}" id="lowStockAlert" class="bg-white border-l-4 border-rose-500 shadow-2xl rounded-r-xl p-5 toast-animate max-w-sm w-80 flex items-start gap-4">
+    <div class="bg-rose-100 p-2 rounded-full text-rose-500 shrink-0">
+      <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+    </div>
+    <div class="flex-1">
+      <h4 class="font-bold text-slate-800 text-sm mb-1">Ուշադրություն. Քանակ</h4>
+      <p class="text-xs text-slate-600 font-medium">Առկա է <span class="text-rose-600 font-bold text-sm" th:text="${lowStockCount}">0</span> դեղ, որոնց քանակը հասել է կրիտիկական շեմի:</p>
+      <a th:href="@{/pharmacy-admin/pharmacy/dashboard(quickFilter='low')}" class="inline-block mt-2 text-xs font-bold text-blue-600 hover:text-blue-800 underline transition-colors">Դիտել ցանկը</a>
+    </div>
+    <button type="button" onclick="document.getElementById('lowStockAlert').style.display='none'" class="text-slate-400 hover:text-slate-700 ml-auto transition-colors">
+      <i data-lucide="x" class="w-4 h-4"></i>
+    </button>
+  </div>
+
+  <div th:if="${expiringCount > 0}" id="expiringAlert" class="bg-white border-l-4 border-amber-500 shadow-2xl rounded-r-xl p-5 toast-animate max-w-sm w-80 flex items-start gap-4" style="animation-delay: 0.1s;">
+    <div class="bg-amber-100 p-2 rounded-full text-amber-500 shrink-0">
+      <i data-lucide="clock" class="w-6 h-6"></i>
+    </div>
+    <div class="flex-1">
+      <h4 class="font-bold text-slate-800 text-sm mb-1">Մոտեցող Ժամկետ</h4>
+      <p class="text-xs text-slate-600 font-medium">Առկա է <span class="text-amber-600 font-bold text-sm" th:text="${expiringCount}">0</span> դեղ, որոնց պիտանիությունը կսպառվի &lt; 30 օրում:</p>
+      <a th:href="@{/pharmacy-admin/pharmacy/dashboard(quickFilter='expiring')}" class="inline-block mt-2 text-xs font-bold text-blue-600 hover:text-blue-800 underline transition-colors">Դիտել ցանկը</a>
+    </div>
+    <button type="button" onclick="document.getElementById('expiringAlert').style.display='none'" class="text-slate-400 hover:text-slate-700 ml-auto transition-colors">
+      <i data-lucide="x" class="w-4 h-4"></i>
+    </button>
+  </div>
+
+</div>
+
+<div class="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-4 no-print">
+  <div>
+    <a th:href="@{/pharmacy-admin/dashboard}" class="text-blue-500 hover:text-blue-700 flex items-center gap-2 mb-2 font-semibold transition">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i> Վերադառնալ Գլխավոր էջ
+    </a>
+    <h1 class="text-3xl font-bold text-slate-800">💊 Դեղերի Պահեստ</h1>
+  </div>
+
+  <div class="flex flex-wrap gap-3 items-center">
+    <form th:action="@{/pharmacy-admin/medicines/archive-expired}" method="post" onsubmit="return confirm('Համոզվա՞ծ եք։ Բոլոր այն դեղերը, որոնց պիտանիության ժամկետն արդեն անցել է, կտեղափոխվեն արխիվ և այլևս չեն վաճառվի։');">
+      <button type="submit" class="bg-rose-100 text-rose-700 border border-rose-200 px-4 py-2.5 rounded-lg shadow-sm hover:bg-rose-200 font-bold flex items-center gap-2 transition" title="Արխիվացնել բոլոր ժամկետանց դեղերը">
+        <i data-lucide="trash-2" class="w-4 h-4"></i> Մաքրել Ժամկետանցները
+      </button>
+    </form>
+    <a th:href="@{/pharmacy-admin/medicines/print-preview(search=${searchQ}, category=${selectedCat}, active=${activeStatus}, quickFilter=${quickFilter})}"
+       target="_blank"
+       class="bg-white border px-4 py-2.5 rounded-lg shadow-sm hover:bg-slate-50 text-slate-700 font-semibold flex items-center gap-2 transition" title="Տպել կամ պահպանել PDF">
+      <i data-lucide="printer" class="w-4 h-4 text-blue-600"></i> Տպել / PDF
+    </a>
+
+    <a th:href="@{/pharmacy-admin/medicines/export/excel(search=${searchQ}, category=${selectedCat}, active=${activeStatus}, startEntry=${param.startEntry}, endEntry=${param.endEntry}, startExp=${param.startExp}, endExp=${param.endExp}, quickFilter=${quickFilter})}"
+       class="bg-white border px-4 py-2.5 rounded-lg shadow-sm hover:bg-slate-50 text-slate-700 font-semibold flex items-center gap-2 transition">
+      <i data-lucide="download" class="w-4 h-4 text-green-600"></i> Արտահանել Excel
+    </a>
+
+    <form th:action="@{/pharmacy-admin/medicines/upload-excel}" method="post" enctype="multipart/form-data" id="excelForm" class="hidden">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf != null}"/>
+      <input type="file" name="file" id="excelFile" accept=".xlsx, .xls" onchange="document.getElementById('excelForm').submit()">
+    </form>
+    <button type="button" onclick="document.getElementById('excelFile').click()" class="bg-green-100 text-green-700 border border-green-200 px-4 py-2.5 rounded-lg shadow-sm hover:bg-green-200 font-bold flex items-center gap-2 transition">
+      <i data-lucide="upload-cloud" class="w-4 h-4"></i> Ներբեռնել Excel
+    </button>
+
+    <button onclick="openModal('medicineModal')" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 flex items-center gap-2 transition">
+      <i data-lucide="plus" class="w-4 h-4"></i> Ավելացնել Դեղ
+    </button>
+  </div>
+</div>
+
+<div class="max-w-7xl mx-auto">
+
+  <div th:if="${successMsg}" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative mb-6 flex items-center gap-2 font-semibold shadow-sm no-print">
+    <i data-lucide="check-circle" class="w-5 h-5"></i>
+    <span th:text="${successMsg}"></span>
+  </div>
+  <div th:if="${errorMsg}" class="bg-rose-100 border border-rose-400 text-rose-700 px-4 py-3 rounded-lg relative mb-6 flex items-center gap-2 font-semibold shadow-sm no-print">
+    <i data-lucide="alert-circle" class="w-5 h-5"></i>
+    <span th:text="${errorMsg}"></span>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 no-print">
+
+    <a th:href="@{/pharmacy-admin/pharmacy/dashboard}" class="block bg-white p-6 rounded-2xl shadow-sm border-b-4 border-blue-400 hover:shadow-md hover:-translate-y-1 transition duration-200">
+      <p class="text-slate-500 text-sm font-semibold uppercase tracking-wide">Ընդհանուր Ակտիվ Խմբաքանակներ</p>
+      <h3 class="text-3xl font-bold text-slate-800 mt-1" th:text="${totalMedicinesCount}">0</h3>
+    </a>
+
+    <a th:href="@{/pharmacy-admin/pharmacy/dashboard(quickFilter='low')}"
+       class="block bg-white p-6 rounded-2xl shadow-sm border-b-4 border-amber-400 hover:shadow-md hover:-translate-y-1 transition duration-200"
+       th:classappend="${quickFilter == 'low' ? 'ring-2 ring-amber-400' : ''}">
+      <p class="text-slate-500 text-sm font-semibold uppercase tracking-wide">Քիչ քանակ (< 10 հատ)</p>
+      <h3 class="text-3xl font-bold text-amber-600 mt-1" th:text="${lowStockCount}">0</h3>
+    </a>
+
+    <a th:href="@{/pharmacy-admin/pharmacy/dashboard(quickFilter='expiring')}"
+       class="block bg-white p-6 rounded-2xl shadow-sm border-b-4 border-rose-400 hover:shadow-md hover:-translate-y-1 transition duration-200"
+       th:classappend="${quickFilter == 'expiring' ? 'ring-2 ring-rose-400' : ''}">
+      <p class="text-slate-500 text-sm font-semibold uppercase tracking-wide">Ժամկետն անցնող (30 օր)</p>
+      <h3 class="text-3xl font-bold text-rose-600 mt-1" th:text="${expiringCount}">0</h3>
+    </a>
+  </div>
+
+  <form th:action="@{/pharmacy-admin/pharmacy/dashboard}" method="get" class="bg-white p-6 rounded-2xl shadow-sm mb-6 no-print grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+    <input type="hidden" name="quickFilter" th:value="${quickFilter}" th:if="${quickFilter != null}"/>
+    <div>
+      <label class="block text-xs font-bold text-slate-400 mb-1 uppercase">Արագ Որոնում</label>
+      <input type="text" id="liveSearchInput" name="search" th:value="${searchQ}" placeholder="Գրեք դեղի անունը..."
+             class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-400 transition"
+             onkeyup="filterTable()">
+    </div>
+    <div>
+      <label class="block text-xs font-bold text-slate-400 mb-1 uppercase">Կատեգորիա</label>
+      <select name="category" class="w-full border rounded-lg p-2.5 outline-none transition">
+        <option value="">Բոլորը</option>
+        <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat}" th:selected="${cat == selectedCat}"></option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-xs font-bold text-slate-400 mb-1 uppercase">Մուտքի ժամանակահատված</label>
+      <div class="flex gap-1">
+        <input type="date" name="startEntry" th:value="${param.startEntry}" class="w-1/2 border rounded-lg p-2 text-sm outline-none focus:border-blue-400 transition">
+        <input type="date" name="endEntry" th:value="${param.endEntry}" class="w-1/2 border rounded-lg p-2 text-sm outline-none focus:border-blue-400 transition">
+      </div>
+    </div>
+    <div>
+      <label class="block text-xs font-bold text-slate-400 mb-1 uppercase">Պիտանելիության ժամկետ</label>
+      <div class="flex gap-1">
+        <input type="date" name="startExp" th:value="${param.startExp}" class="w-1/2 border rounded-lg p-2 text-sm outline-none focus:border-blue-400 transition">
+        <input type="date" name="endExp" th:value="${param.endExp}" class="w-1/2 border rounded-lg p-2 text-sm outline-none focus:border-blue-400 transition">
+      </div>
+    </div>
+    <div class="flex items-center gap-2 mt-2">
+      <input type="checkbox" name="active" value="false" th:checked="${!activeStatus}" onchange="this.form.submit()" class="w-4 h-4 text-blue-600 rounded cursor-pointer">
+      <label class="text-sm font-semibold text-slate-600 cursor-pointer">Ցուցադրել միայն արխիվը (Ապաակտիվացված)</label>
+    </div>
+    <div class="md:col-span-3 flex gap-3 justify-end mt-2">
+      <button type="submit" class="bg-slate-800 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-slate-900 transition shadow-md">Կիրառել ֆիլտրերը</button>
+      <a th:href="@{/pharmacy-admin/pharmacy/dashboard}" class="bg-slate-100 text-slate-600 px-6 py-2.5 rounded-lg font-semibold hover:bg-slate-200 transition">Մաքրել</a>
+    </div>
+  </form>
+
+  <div class="bg-white rounded-2xl shadow-sm overflow-hidden border">
+    <div class="overflow-x-auto">
+      <table id="medicineTable" class="w-full text-left border-collapse">
+        <thead class="bg-slate-50 border-b">
+        <tr>
+          <th class="p-4 font-semibold text-slate-600 text-sm">Անվանում / Նկարագրություն</th>
+          <th class="p-4 font-semibold text-slate-600 text-sm">Կատեգորիա</th>
+          <th class="p-4 font-semibold text-slate-600 text-sm">Գին</th>
+          <th class="p-4 font-semibold text-slate-600 text-sm">Մնացորդ</th>
+          <th class="p-4 font-semibold text-slate-600 text-sm">Մուտքի Օր</th>
+          <th class="p-4 font-semibold text-slate-600 text-sm">Ժամկետ</th>
+          <th class="p-4 font-semibold text-slate-600 text-sm text-right no-print">Գործողություն</th>
+        </tr>
+        </thead>
+        <tbody id="medicineTableBody">
+        <tr th:each="med : ${medicines}" class="border-b hover:bg-slate-50 transition medicine-row" th:style="${!med.active ? 'opacity: 0.5; background-color: #f8fafc;' : ''}">
+          <td class="p-4">
+            <div class="font-bold text-slate-800 text-base medicine-name" th:text="${med.name}">Անուն</div>
+            <div class="text-xs text-slate-400 mt-1 line-clamp-2 medicine-desc" th:text="${med.description != null && !med.description.isEmpty() ? med.description : 'Նկարագրություն չկա'}"></div>
+          </td>
+          <td class="p-4">
+            <span class="bg-blue-50 text-blue-600 border border-blue-100 px-2 py-1 rounded-md text-xs font-semibold" th:text="${med.category}"></span>
+          </td>
+          <td class="p-4 font-semibold text-slate-700" th:text="${med.price + ' ֏'}"></td>
+          <td class="p-4">
+                        <span th:class="${med.stock < 10 ? 'text-rose-600 font-bold bg-rose-50 border border-rose-200 px-2 py-1 rounded-md flex items-center gap-1 w-max' : 'text-slate-700 font-semibold'}">
+                            <i th:if="${med.stock < 10}" data-lucide="alert-circle" class="w-3 h-3"></i>
+                            <span th:text="${med.stock + ' հատ'}"></span>
+                        </span>
+          </td>
+          <td class="p-4 text-sm text-slate-600 font-medium">
+            <span th:if="${med.addedDate != null}" th:text="${#temporals.format(med.addedDate, 'dd.MM.yyyy')}"></span>
+            <span th:unless="${med.addedDate != null}">-</span>
+          </td>
+          <td class="p-4 text-sm font-medium">
+                        <span th:if="${med.expirationDate != null}" th:text="${#temporals.format(med.expirationDate, 'dd.MM.yyyy')}"
+                              th:class="${med.expirationDate.isBefore(#temporals.createToday().plusDays(30)) ? 'text-rose-500 font-bold' : 'text-slate-600'}"></span>
+            <span th:unless="${med.expirationDate != null}" class="text-slate-400">-</span>
+          </td>
+          <td class="p-4 text-right no-print flex justify-end gap-2">
+            <button class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition" title="Խմբագրել Տվյալները"
+                    th:onclick="editMedicine([[${med.id}]], [[${med.name}]], [[${med.category}]], [[${med.price}]], [[${med.stock}]], [[${med.expirationDate}]], [[${med.description}]])">
+              <i data-lucide="edit-2" class="w-4 h-4"></i>
+            </button>
+            <form th:action="@{/pharmacy-admin/medicines/toggle-status/{id}(id=${med.id})}" method="post">
+              <button type="submit" class="p-2 hover:bg-slate-200 rounded-lg transition" th:classappend="${med.active ? 'text-rose-600' : 'text-green-600'}" th:title="${med.active ? 'Արխիվացնել' : 'Վերականգնել'}">
+                <i th:data-lucide="${med.active ? 'archive' : 'refresh-cw'}" class="w-4 h-4"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
+        <tr th:if="${medicines.empty}" id="noDataRow">
+          <td colspan="7" class="p-10 text-center text-slate-400 italic font-medium">Այս ֆիլտրերով դեղեր չգտնվեցին:</td>
+        </tr>
+        <tr id="noSearchResult" style="display: none;">
+          <td colspan="7" class="p-10 text-center text-rose-400 italic font-medium bg-rose-50">Ձեր որոնման բառով այս էջում ոչինչ չգտնվեց:</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="p-4 bg-slate-50 flex justify-center gap-2 no-print border-t" th:if="${totalPages > 0}">
+      <a th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+         th:href="@{/pharmacy-admin/pharmacy/dashboard(page=${i}, search=${searchQ}, category=${selectedCat}, active=${activeStatus}, quickFilter=${quickFilter}, startEntry=${param.startEntry}, endEntry=${param.endEntry}, startExp=${param.startExp}, endExp=${param.endExp})}"
+         th:text="${i + 1}"
+         class="px-4 py-2 border rounded-lg bg-white hover:bg-blue-50 text-sm font-bold transition shadow-sm"
+         th:classappend="${currentPage == i ? 'bg-blue-600 text-white border-blue-600' : 'text-slate-600'}"></a>
+    </div>
+  </div>
+</div>
+
+<div id="medicineModal" class="modal">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 relative">
+    <button onclick="closeModal('medicineModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition">
+      <i data-lucide="x" class="w-6 h-6"></i>
+    </button>
+
+    <h2 id="modalTitle" class="text-2xl font-bold mb-6 text-slate-800">Դեղի Տվյալներ</h2>
+    <form th:action="@{/pharmacy-admin/medicines/save}" th:object="${newMedicine}" method="post" class="space-y-4">
+      <input type="hidden" th:field="*{id}" id="medId">
+
+      <div>
+        <label class="block text-sm font-semibold text-slate-600 mb-1">Անվանում <span class="text-rose-500">*</span></label>
+        <input type="text" th:field="*{name}" id="medName" required class="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-slate-600 mb-1">Նկարագրություն / Դոզա</label>
+        <textarea th:field="*{description}" id="medDesc" class="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 h-20 resize-none transition" placeholder="Օրինակ՝ 500մգ, ուտելուց հետո..."></textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-600 mb-1">Կատեգորիա <span class="text-rose-500">*</span></label>
+          <input type="text" th:field="*{category}" id="medCat" required placeholder="Օր. Հակաբիոտիկ" class="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-600 mb-1">Գին (֏) <span class="text-rose-500">*</span></label>
+          <input type="number" th:field="*{price}" id="medPrice" required min="0" class="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-600 mb-1">Քանակ <span class="text-rose-500">*</span></label>
+          <input type="number" th:field="*{stock}" id="medStock" required min="0" class="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-600 mb-1">Պիտանիության ժամկետ</label>
+          <input type="date" th:field="*{expirationDate}" id="medExp" required class="w-full border border-slate-300 rounded-lg p-2.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 mt-8 pt-4 border-t border-slate-100">
+        <button type="button" onclick="closeModal('medicineModal')" class="px-5 py-2.5 text-slate-600 font-semibold hover:bg-slate-100 rounded-lg transition">Չեղարկել</button>
+        <button type="submit" class="bg-blue-600 text-white px-8 py-2.5 rounded-lg font-bold hover:bg-blue-700 shadow-md transition">Պահպանել Բազայում</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  lucide.createIcons();
+
+  function openModal(id) {
+    document.getElementById(id).style.display = 'flex';
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+    document.getElementById('medId').value = '';
+    document.getElementById('modalTitle').innerText = 'Ավելացնել Նոր Դեղ';
+  }
+
+  function editMedicine(id, name, cat, price, stock, exp, desc) {
+    document.getElementById('modalTitle').innerText = 'Խմբագրել Դեղը';
+    document.getElementById('medId').value = id;
+    document.getElementById('medName').value = name;
+    document.getElementById('medCat').value = cat;
+    document.getElementById('medPrice').value = price;
+    document.getElementById('medStock').value = stock;
+    document.getElementById('medExp').value = exp;
+    document.getElementById('medDesc').value = desc || '';
+    openModal('medicineModal');
+  }
+
+  // 🔴 ԽԵԼԱՑԻ ՈՐՈՆՈՒՄ (Real-time Filtering)
+  function filterTable() {
+    let input = document.getElementById("liveSearchInput");
+    let filter = input.value.toLowerCase();
+    let tbody = document.getElementById("medicineTableBody");
+    let rows = tbody.getElementsByClassName("medicine-row");
+    let noResultMsg = document.getElementById("noSearchResult");
+    let found = false;
+
+    for (let i = 0; i < rows.length; i++) {
+      let nameCell = rows[i].getElementsByClassName("medicine-name")[0];
+      let descCell = rows[i].getElementsByClassName("medicine-desc")[0];
+
+      if (nameCell || descCell) {
+        let nameValue = nameCell.textContent || nameCell.innerText;
+        let descValue = descCell.textContent || descCell.innerText;
+
+        if (nameValue.toLowerCase().indexOf(filter) > -1 || descValue.toLowerCase().indexOf(filter) > -1) {
+          rows[i].style.display = "";
+          found = true;
+        } else {
+          rows[i].style.display = "none";
+        }
+      }
+    }
+
+    // Ցույց տալ գրություն, եթե ոչինչ չի գտնվել
+    noResultMsg.style.display = found ? "none" : "table-row";
+  }
+</script>
+</body>
+</html>

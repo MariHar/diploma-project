@@ -1,17 +1,149 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Բժշկական Հետազոտության Եզրակացություն</title>
+  <style>
+    body {
+      font-family: 'DejaVu Sans', sans-serif; /* Կարևոր է հայերենի համար */
+      background-color: #f8fafc;
+      margin: 0;
+      padding: 0;
+      color: #1e293b;
+    }
+    table { border-collapse: collapse; width: 100%; }
+    .email-wrapper { width: 100%; background-color: #f8fafc; padding: 20px 0; }
+    .email-container {
+      max-width: 650px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 40px;
+    }
+    .header-table { margin-bottom: 35px; border-bottom: 1px solid #e2e8f0; padding-bottom: 24px; }
+    .clinic-brand { font-size: 20px; font-weight: bold; color: #0f172a; text-transform: uppercase; }
+    .clinic-subtitle { font-size: 11px; color: #64748b; margin-top: 4px; text-transform: uppercase; }
+    .clinic-contact { font-size: 12px; color: #64748b; text-align: right; line-height: 1.5; }
+    .meta-card { background-color: #f8fafc; border-radius: 6px; padding: 20px; margin-bottom: 35px; }
+    .meta-table td { padding-bottom: 10px; font-size: 13px; color: #475569; }
+    .meta-label { color: #64748b; font-size: 12px; width: 110px; display: inline-block; }
+    .meta-value { font-weight: bold; color: #0f172a; }
+    .section-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #0f172a;
+      text-transform: uppercase;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+      margin-top: 30px;
+    }
+    .diagnosis-box { background: #f8fafc; padding: 12px 16px; border-left: 3px solid #0ea5e9; margin-top: 8px; }
+    .med-table th { background-color: #f1f5f9; padding: 10px; font-size: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; }
+    .med-table td { padding: 12px 10px; font-size: 13px; border-bottom: 1px solid #e2e8f0; }
+    .lab-item { padding: 16px 0; border-bottom: 1px dashed #cbd5e1; }
+    .warning-box { background-color: #fef2f2; border-left: 3px solid #ef4444; padding: 16px; margin: 25px 0; }
+    .disclaimer-box { font-size: 11px; color: #94a3b8; margin-top: 40px; text-align: center; }
+  </style>
+</head>
 <body>
-<div style="font-family: Arial, sans-serif; border: 1px solid #ddd; padding: 20px; max-width: 600px;">
-  <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; pb-10px;">Պաշտոնական Բժշկական Քարտ</h2>
-  <p><strong>Բժիշկ:</strong> <span th:text="${'Dr. ' + doctor.firstName + ' ' + doctor.lastName}"></span></p>
-  <p><strong>Պացիենտ:</strong> <span th:text="${patient.firstName + ' ' + patient.lastName}"></span></p>
-  <hr>
-  <div style="background-color: #f9f9f9; padding: 15px;">
-    <p><strong>Ախտորոշում:</strong> <br> <span th:text="${record.diagnosis}"></span></p>
-    <p><strong>Բուժում:</strong> <br> <span th:text="${record.treatment}"></span></p>
-    <p th:if="${record.followUpDate != null}"><strong>Հաջորդ այցը:</strong> <span th:text="${record.followUpDate}"></span></p>
+
+<div class="email-wrapper">
+  <div class="email-container">
+    <!-- Header -->
+    <table class="header-table">
+      <tr>
+        <td>
+          <div class="clinic-brand">Avelia Clinic</div>
+          <div class="clinic-subtitle">Բժշկական Եզրակացություն</div>
+        </td>
+        <td class="clinic-contact">
+          Medical District, Yerevan<br />
+          Հեռ: +374 (00) 00-00-00<br />
+          www.avelia.clinic
+        </td>
+      </tr>
+    </table>
+
+    <!-- Meta -->
+    <div class="meta-card">
+      <table class="meta-table">
+        <tr>
+          <td width="50%" style="vertical-align: top;">
+            <div><span class="meta-label">Պացիենտ:</span> <span class="meta-value" th:text="${patient.firstName + ' ' + patient.lastName}"></span></div>
+            <div><span class="meta-label">Ամսաթիվ:</span> <span class="meta-value" th:text="${#temporals.format(record.recordDate, 'dd MMM yyyy')}"></span></div>
+          </td>
+          <td width="50%" style="vertical-align: top;">
+            <div><span class="meta-label">Բժիշկ:</span> <span class="meta-value" th:text="${'Dr. ' + doctor.firstName + ' ' + doctor.lastName}"></span></div>
+            <div><span class="meta-label">Մասնագիտություն:</span> <span class="meta-value" th:text="${doctor.specialization}"></span></div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Assessment -->
+    <div>
+      <div class="section-title">Կլինիկական Գնահատում</div>
+      <div style="margin-bottom: 10px;">
+        <strong>Գանգատներ:</strong> <span th:text="${record.symptoms}"></span>
+      </div>
+      <div class="diagnosis-box">
+        <strong style="color: #0369a1;">Ախտորոշում:</strong> <span th:text="${record.diagnosis}"></span>
+      </div>
+    </div>
+
+    <!-- Treatment -->
+    <div>
+      <div class="section-title">Բուժման Պլան</div>
+      <div style="white-space: pre-line; font-size: 14px;" th:text="${record.treatment}"></div>
+    </div>
+
+    <!-- Prescriptions -->
+    <div th:if="${record.prescriptions != null and !record.prescriptions.isEmpty()}">
+      <div class="section-title">Նշանակված Դեղորայք</div>
+      <table class="med-table">
+        <thead>
+        <tr>
+          <th>Անվանում</th>
+          <th>Չափաբաժին</th>
+          <th>Կարգ</th>
+          <th>Տևողություն</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="drug : ${record.prescriptions}">
+          <td th:text="${drug.name}"></td>
+          <td th:text="${drug.dosage}"></td>
+          <td th:text="${drug.frequency}"></td>
+          <td th:text="${drug.duration}"></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Lab Results -->
+    <div th:if="${labTests != null and !labTests.isEmpty()}">
+      <div class="section-title">Լաբորատոր Հետազոտություններ</div>
+      <div th:each="test : ${labTests}" class="lab-item">
+        <div style="font-weight: bold;" th:text="${test.testName}"></div>
+        <div th:if="${test.status == 'COMPLETED'}" style="color: #10b981; font-size: 13px;">
+          Ավարտված է (Տե՛ս կցված ֆայլը)
+        </div>
+        <div th:if="${test.status == 'PENDING'}" style="color: #d97706; font-size: 13px;">
+          Պատասխանը ընթացքի մեջ է
+        </div>
+      </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer-box">
+      Սույն փաստաթուղթը պաշտպանված է բժշկական գաղտնիքի մասին օրենքով:<br />
+      Գեներացված է ավտոմատ: Ամսաթիվ՝ <span th:text="${#temporals.format(T(java.time.LocalDateTime).now(), 'dd-MM-yyyy HH:mm')}"></span>
+    </div>
   </div>
-  <p style="font-size: 12px; color: #777; margin-top: 20px;">Սա ավտոմատ ուղարկված նամակ է հիվանդանոցի համակարգից:</p>
 </div>
+
 </body>
 </html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="hy" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ավարտված Անալիզներ - Լաբորատորիա</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+    .modal-enter { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+  </style>
+</head>
+<body class="p-4 md:p-8 text-slate-800">
+
+<div class="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+  <div>
+    <a th:href="@{/lab/dashboard}" class="text-blue-500 hover:text-blue-700 flex items-center gap-2 mb-2 font-semibold transition-colors">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i> Վերադառնալ Սպասվողներին
+    </a>
+    <h1 class="text-3xl font-bold text-slate-800 flex items-center gap-3">
+      <span class="bg-indigo-100 text-indigo-600 p-2 rounded-xl"><i data-lucide="archive" class="w-6 h-6"></i></span>
+      Ավարտված Հետազոտություններ
+    </h1>
+    <p class="text-slate-500 text-sm mt-1">Ձեր կողմից մուտքագրված և հաստատված անալիզների արխիվ</p>
+  </div>
+
+  <div class="flex items-center gap-4">
+        <span class="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-full text-sm font-bold border border-emerald-200 shadow-sm flex items-center gap-2">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+            Ավարտված՝ <span th:text="${tests.size()}">0</span>
+        </span>
+  </div>
+</div>
+
+<div class="max-w-7xl mx-auto">
+
+  <!-- ՈՐՈՆՄԱՆ ԴԱՇՏ -->
+  <div class="bg-white p-4 rounded-2xl border border-slate-200 mb-6 flex items-center gap-3 shadow-sm">
+    <i data-lucide="search" class="w-5 h-5 text-slate-400"></i>
+    <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Որոնել ըստ պացիենտի, բժշկի կամ անալիզի..."
+           class="w-full bg-transparent border-none text-sm font-semibold text-slate-800 placeholder-slate-400 outline-none focus:ring-0">
+  </div>
+  <!-- ԳԼԽԱՎՈՐ ԱՂՅՈՒՍԱԿ -->
+  <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-slate-50 border-b border-slate-200">
+        <tr>
+          <th class="p-4 font-semibold text-slate-500 text-xs uppercase tracking-wider">Պացիենտ</th>
+          <th class="p-4 font-semibold text-slate-500 text-xs uppercase tracking-wider">Ուղեգրող Բժիշկ</th>
+          <th class="p-4 font-semibold text-slate-500 text-xs uppercase tracking-wider">Հետազոտություն</th>
+          <th class="p-4 font-semibold text-slate-500 text-xs uppercase tracking-wider">Ավարտվել է</th>
+          <th class="p-4 font-semibold text-slate-500 text-xs uppercase tracking-wider text-right">Գործողություն</th>
+        </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+        <tr th:each="test : ${tests}" class="hover:bg-slate-50 transition-colors group">
+          <td class="p-4">
+            <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
+              <i data-lucide="user" class="w-4 h-4 text-slate-400"></i>
+              <span th:text="${test.patientFullName}">Պացիենտի Անուն</span>
+            </div>
+          </td>
+          <td class="p-4">
+            <div class="font-bold text-slate-700 text-sm" th:text="${test.doctorFullName}">Բժիշկ</div>
+            <div class="text-xs text-slate-500" th:text="${test.doctorSpecialization}">Մասնագիտություն</div>
+          </td>
+          <td class="p-4">
+            <span class="inline-block px-3 py-1 bg-slate-100 text-slate-700 rounded-lg border border-slate-200 text-xs font-bold" th:text="${test.testName}">Անալիզ</span>
+          </td>
+          <td class="p-4">
+            <div class="text-sm font-bold text-emerald-600" th:text="${#temporals.format(test.completionDate, 'dd.MM.yyyy')}">Ամսաթիվ</div>
+            <div class="text-xs font-medium text-slate-400" th:text="${#temporals.format(test.completionDate, 'HH:mm')}">Ժամ</div>
+          </td>
+          <td class="p-4 text-right">
+            <!-- ԱՆՎՏԱՆԳ ԿՈՃԱԿԸ -->
+            <!-- ԱՆՎՏԱՆԳ ԿՈՃԱԿԸ -->
+            <button type="button" th:data-target="'viewModal-' + ${test.id}"
+                    onclick="openModal(this.getAttribute('data-target'))"
+                    class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-5 py-2 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2 ml-auto">
+              <i data-lucide="eye" class="w-4 h-4 text-indigo-500"></i> Դիտել Արդյունքը
+            </button>
+          </td>
+        </tr>
+        <tr th:if="${tests.empty}">
+          <td colspan="5" class="p-12 text-center">
+            <div class="flex flex-col items-center justify-center text-slate-400">
+              <i data-lucide="inbox" class="w-12 h-12 mb-3 opacity-50"></i>
+              <p class="text-lg font-medium">Արխիվում դեռևս ավարտված անալիզներ չկան:</p>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 🔴 THYMELEAFԸ ՍՏԵՂԾՈՒՄ Է ՄՈԴԱԼ ԱՄԵՆ ՄԻ ՀԻՆ ԱՆԱԼԻԶԻ ՀԱՄԱՐ (ԱՌԱՆՑ JS ԽՆԴԻՐՆԵՐԻ) -->
+<th:block th:each="test : ${tests}">
+  <div th:id="'viewModal-' + ${test.id}" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl w-full max-w-4xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col modal-enter border border-slate-200">
+
+      <!-- Header -->
+      <div class="p-6 border-b border-slate-100 flex flex-col gap-4 bg-slate-50 relative">
+        <div class="flex justify-between items-center w-full">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center">
+              <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-slate-800" th:text="${test.testName}">Անալիզի Արդյունքներ</h3>
+              <p class="text-slate-500 text-sm font-semibold mt-1 flex items-center gap-1.5">
+                <i data-lucide="calendar" class="w-4 h-4 text-indigo-400"></i>
+                <span>Արխիվացված՝ </span>
+                <span class="text-slate-700 font-bold" th:text="${#temporals.format(test.completionDate, 'dd.MM.yyyy HH:mm')}">Ամսաթիվ</span>
+              </p>            </div>
+          </div>
+          <button type="button" onclick="closeModal(this)" class="text-slate-400 hover:text-slate-700 bg-white hover:bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors border border-slate-200">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- ՊԱՑԻԵՆՏ / ԲԺԻՇԿ ԻՆՖՈՐՄԱՑԻԱ -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm mt-2">
+          <div>
+            <p class="text-xs text-slate-400 font-bold uppercase mb-1">Պացիենտ</p>
+            <p class="text-sm font-bold text-slate-800 flex items-center gap-2"><i data-lucide="user" class="w-4 h-4 text-indigo-500"></i> <span th:text="${test.patientFullName}"></span></p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-400 font-bold uppercase mb-1">Ուղեգրող Բժիշկ</p>
+            <div class="flex items-start gap-2">
+              <i data-lucide="stethoscope" class="w-4 h-4 text-emerald-500 mt-0.5"></i>
+              <div>
+                <p class="text-sm font-bold text-slate-800" th:text="${test.doctorFullName}"></p>
+                <p class="text-xs text-slate-500" th:text="${test.doctorSpecialization}"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="flex-1 overflow-y-auto bg-white p-6">
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-sm text-left border-collapse">
+            <thead class="bg-slate-50 text-slate-500 border-b border-slate-200 uppercase text-xs">
+            <tr>
+              <th class="px-4 py-3 font-semibold">Ցուցանիշ</th>
+              <th class="px-4 py-3 font-semibold text-center">Արդյունք</th>
+              <th class="px-4 py-3 font-semibold text-center">Միավոր</th>
+              <th class="px-4 py-3 font-semibold text-center">Նորմա</th>
+              <th class="px-4 py-3 font-semibold text-right">Շեղում</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+            <!-- ՈՒՂԻՂ ԼՑՎՈՒՄ Է ԲԱԶԱՅԻՑ -->
+            <tr th:each="res : ${test.detailedResults}" class="hover:bg-slate-50/50">
+              <td class="px-4 py-3 font-bold text-slate-800 border-b border-slate-100" th:text="${res.name}"></td>
+              <td class="px-4 py-3 text-center border-b border-slate-100">
+                <span class="inline-block px-3 py-1 bg-white border border-slate-200 rounded-lg font-bold text-slate-800 shadow-sm" th:text="${res.value}"></span>
+              </td>
+              <td class="px-4 py-3 text-center text-slate-500 font-mono text-xs font-semibold border-b border-slate-100" th:text="${res.unit}"></td>
+              <td class="px-4 py-3 text-center text-slate-600 text-xs font-bold border-b border-slate-100" th:text="${res.norms}"></td>
+              <td class="px-4 py-3 text-right border-b border-slate-100">
+                <span th:text="${res.status}" th:class="${res.statusClass}"></span>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Լաբորանտի նշումը -->
+        <div th:if="${test.resultNotes != null and !test.resultNotes.trim().isEmpty()}" class="mt-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <p class="text-xs font-bold text-slate-500 uppercase mb-1">Մեկնաբանություն:</p>
+          <p class="text-sm text-slate-700 italic" th:text="${test.resultNotes}"></p>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <!-- Footer -->
+      <div class="p-6 bg-slate-50 flex justify-between items-center border-t border-slate-200">
+        <div class="flex gap-3">
+          <button type="button" onclick="printModalContent(this)" class="px-5 py-2.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl font-bold shadow-sm transition-all flex items-center gap-2">
+            <i data-lucide="printer" class="w-4 h-4 text-slate-500"></i> Տպել
+          </button>
+          <!-- Այս հղումը հետո կկապենք քո PDF գեներացնող Controller-ի հետ -->
+          <a th:href="@{/lab/test/{id}/pdf(id=${test.id})}"  class="px-5 py-2.5 bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-xl font-bold shadow-sm transition-all flex items-center gap-2">
+            <i data-lucide="file-down" class="w-4 h-4"></i> Ներբեռնել PDF
+          </a>
+        </div>
+        <button type="button" onclick="closeModal(this)" class="px-8 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold shadow-md transition-all">Փակել</button>
+      </div>
+    </div>
+  </div>
+</th:block>
+
+<script>
+  lucide.createIcons();
+
+  // Պարզագույն JS՝ ընդամենը պատուհանը բացելու/փակելու համար
+  function openModal(modalId) {
+    document.getElementById(modalId).classList.remove('hidden');
+  }
+
+  function closeModal(button) {
+    button.closest('.fixed').classList.add('hidden');
+  }
+  // ԽԵԼԱՑԻ ՈՐՈՆՈՒՄ ԱՂՅՈՒՍԱԿՈՒՄ
+  function filterTable() {
+    const input = document.getElementById("searchInput").value.toLowerCase();
+    // Գտնում ենք աղյուսակի տողերը (բացի header-ից)
+    const rows = document.querySelectorAll("table tbody tr:not(.empty-message)");
+
+    let hasVisibleRows = false;
+
+    rows.forEach(row => {
+      // Վերցնում ենք տողի ամբողջ տեքստը
+      const rowText = row.innerText.toLowerCase();
+
+      if (rowText.includes(input)) {
+        row.style.display = ""; // Ցույց տալ
+        hasVisibleRows = true;
+      } else {
+        row.style.display = "none"; // Թաքցնել
+      }
+    });
+  }
+
+  function printModalContent(button) {
+    // Գտնում ենք այն մոդալը, որի մեջ գտնվում է սեղմված կոճակը
+    const modalContent = button.closest('.bg-white.rounded-3xl');
+
+    // Ստեղծում ենք ժամանակավոր տպելու պատուհան
+    const printWindow = window.open('', '', 'height=800,width=800');
+
+    printWindow.document.write('<html><head><title>Տպել Արդյունքը</title>');
+    // Կցում ենք Tailwind-ը, որ դիզայնը պահպանվի
+    printWindow.document.write('<script src="https://cdn.tailwindcss.com"><\/script>');
+    printWindow.document.write('</head><body class="p-8">');
+
+    // Պատճենում ենք մոդալի HTML-ը (բացի Footer-ի կոճակներից)
+    const contentToPrint = modalContent.cloneNode(true);
+    const footer = contentToPrint.querySelector('.bg-slate-50.flex.justify-between');
+    if(footer) footer.remove();
+
+    printWindow.document.write(contentToPrint.innerHTML);
+    printWindow.document.write('</body></html>');
+
+    printWindow.document.close();
+
+    // Սպասում ենք վայրկյանի մի մաս, որ Tailwind-ը բեռնվի, ու կանչում ենք print
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 500);
+  }
+
+</script>
+
+</body>
+</html>

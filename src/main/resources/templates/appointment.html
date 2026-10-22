@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth dark" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Appointment - MediCare Pro</title>
+    <title th:text="#{head.title.book_appointment}">Book Appointment - Avelia Clinic</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,1026 +14,929 @@
             theme: {
                 extend: {
                     colors: {
-                        dark: {
-                            100: '#1E293B',
-                            200: '#0F172A',
-                            300: '#020617',
-                        },
-                        accent: {
-                            cyan: '#06B6D4',
-                            blue: '#3B82F6',
-                            purple: '#8B5CF6',
-                        },
-                        light: {
-                            100: '#F9FAFB',
-                            200: '#F3F4F6',
-                            300: '#E5E7EB',
-                        }
+                        dark: { 100: '#1E293B', 200: '#0F172A', 300: '#020617' },
+                        accent: { cyan: '#06B6D4', blue: '#3B82F6', purple: '#8B5CF6' },
+                        light: { 100: '#F9FAFB', 200: '#F3F4F6', 300: '#E5E7EB' }
                     },
-                    fontFamily: {
-                        'sans': ['Inter', 'system-ui', 'sans-serif'],
-                    },
+                    fontFamily: { 'sans': ['Inter', 'system-ui', 'sans-serif'] },
                     animation: {
-                        'fade-in': 'fadeIn 0.6s ease-in',
-                        'slide-up': 'slideUp 0.5s ease-out',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'scale-in': 'scaleIn 0.4s ease-out',
+                        'fade-in': 'fadeIn 0.5s ease-in',
                     },
                     keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' },
-                        },
-                        slideUp: {
-                            '0%': { transform: 'translateY(20px)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' },
-                        },
-                        scaleIn: {
-                            '0%': { transform: 'scale(0.9)', opacity: '0' },
-                            '100%': { transform: 'scale(1)', opacity: '1' },
-                        }
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }
                     }
                 }
             }
         }
     </script>
     <style>
-        .gradient-text {
-            background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .nav-link {
-            position: relative;
-            transition: color 0.3s ease;
-        }
-        
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);
-            transition: width 0.3s ease;
-        }
-        
-        .nav-link:hover::after {
-            width: 100%;
-        }
-        
-        .dropdown:hover .dropdown-menu {
-            display: block;
-        }
+        :root { --transition-theme: all 0.3s ease; }
+        body, nav, .bg-dark-100, .bg-dark-200, .bg-dark-300, footer { transition: var(--transition-theme); }
 
-        .step {
-            display: none;
-        }
+        body:not(.dark) { background-color: #F9FAFB !important; color: #1E293B !important; }
+        body:not(.dark) .bg-dark-300 { background-color: #F9FAFB !important; }
+        body:not(.dark) .bg-dark-200 { background-color: #FFFFFF !important; border-color: #E5E7EB !important; }
+        body:not(.dark) .bg-dark-100 { background-color: #FFFFFF !important; border-color: #E5E7EB !important; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1); }
+        body:not(.dark) .text-gray-100 { color: #1E293B !important; }
+        body:not(.dark) .text-gray-300 { color: #4B5563 !important; }
+        body:not(.dark) .text-white { color: #1E293B !important; }
+        body:not(.dark) input, body:not(.dark) select { background-color: #F3F4F6 !important; border-color: #D1D5DB !important; color: #1E293B !important; }
+        body:not(.dark) input:focus, body:not(.dark) select:focus { border-color: #06B6D4 !important; background-color: #FFFFFF !important;}
 
-        .step.active {
-            display: block;
-            animation: fadeIn 0.5s ease-in;
-        }
+        .gradient-text { background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        .step-indicator {
-            transition: all 0.3s ease;
-        }
+        .step { display: none; }
+        .step.active { display: block; animation: fadeIn 0.4s ease-in; }
+        .step-indicator { transition: all 0.3s ease; }
+        .step-indicator.completed { background: linear-gradient(135deg, #06B6D4, #3B82F6); color: white; }
+        .step-indicator.active { background: linear-gradient(135deg, #06B6D4, #3B82F6); color: white; transform: scale(1.1); box-shadow: 0 0 15px rgba(6, 182, 212, 0.4); }
 
-        .step-indicator.completed {
-            background: linear-gradient(135deg, #06B6D4, #3B82F6);
-            color: white;
-        }
+        .doctor-card { transition: all 0.3s ease; cursor: pointer; border: 2px solid transparent; }
+        .doctor-card:hover { transform: translateY(-4px); border-color: rgba(6, 182, 212, 0.5); }
+        .doctor-card.selected { border-color: #06B6D4; background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(59, 130, 246, 0.1)); }
 
-        .step-indicator.active {
-            background: linear-gradient(135deg, #06B6D4, #3B82F6);
-            color: white;
-            transform: scale(1.1);
-        }
+        .time-btn { transition: all 0.2s ease; cursor: pointer; }
+        .time-btn:hover:not(:disabled) { border-color: #06B6D4; transform: scale(1.05); }
+        .time-btn.selected { background: linear-gradient(135deg, #06B6D4, #3B82F6); color: white; border-color: transparent; box-shadow: 0 4px 10px rgba(6, 182, 212, 0.3); }
 
-        .service-card, .doctor-card {
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
+        select { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em; }
 
-        .service-card:hover, .doctor-card:hover {
-            transform: translateY(-4px);
-        }
-
-        .service-card.selected, .doctor-card.selected {
-            border-color: #06B6D4;
-            background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(59, 130, 246, 0.1));
-        }
-
-        .time-slot {
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .time-slot:hover:not(.disabled) {
-            transform: scale(1.05);
-            border-color: #06B6D4;
-        }
-
-        .time-slot.selected {
-            background: linear-gradient(135deg, #06B6D4, #3B82F6);
-            color: white;
-        }
-
-        .time-slot.disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
-        .calendar-day {
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-
-        .calendar-day:hover:not(.disabled):not(.other-month) {
-            background: rgba(6, 182, 212, 0.2);
-        }
-
-        .calendar-day.selected {
-            background: linear-gradient(135deg, #06B6D4, #3B82F6);
-            color: white;
-        }
-
-        .calendar-day.disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        .calendar-day.other-month {
-            opacity: 0.3;
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -1000px 0; }
-            100% { background-position: 1000px 0; }
-        }
-
-        .shimmer {
-            animation: shimmer 2s infinite;
-            background: linear-gradient(to right, transparent 0%, rgba(6, 182, 212, 0.1) 50%, transparent 100%);
-            background-size: 1000px 100%;
-        }
-
-        /* Light Mode Styles */
-        body:not(.dark) {
-            background-color: #F9FAFB !important;
-            color: #1E293B !important;
-        }
-
-        body:not(.dark) .bg-dark-300 {
-            background-color: #F9FAFB !important;
-        }
-
-        body:not(.dark) .bg-dark-200 {
-            background-color: #FFFFFF !important;
-            border-color: #E5E7EB !important;
-        }
-
-        body:not(.dark) .bg-dark-100 {
-            background-color: #FFFFFF !important;
-            border-color: #E5E7EB !important;
-            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-        }
-
-        body:not(.dark) .text-gray-100,
-        body:not(.dark) .text-gray-200 {
-            color: #1E293B !important;
-        }
-
-        body:not(.dark) .text-gray-300 {
-            color: #4B5563 !important;
-        }
-
-        body:not(.dark) .text-gray-400 {
-            color: #6B7280 !important;
-        }
-
-        body:not(.dark) .text-white {
-            color: #1E293B !important;
-        }
-
-        body:not(.dark) .border-gray-800,
-        body:not(.dark) .border-gray-700 {
-            border-color: #E5E7EB !important;
-        }
-
-        body:not(.dark) nav {
-            background-color: rgba(255, 255, 255, 0.95) !important;
-        }
-
-        body:not(.dark) .nav-link {
-            color: #4B5563 !important;
-        }
-
-        body:not(.dark) .nav-link:hover {
-            color: #1E293B !important;
-        }
-
-        body:not(.dark) footer {
-            background-color: #FFFFFF !important;
-        }
-
-        body:not(.dark) .dropdown-menu {
-            background-color: #FFFFFF !important;
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-        }
-
-        body:not(.dark) .shimmer {
-            background: linear-gradient(to right, transparent 0%, rgba(6, 182, 212, 0.05) 50%, transparent 100%);
-        }
-
-        body:not(.dark) input[type="text"],
-        body:not(.dark) input[type="email"],
-        body:not(.dark) input[type="tel"] {
-            background-color: #F3F4F6 !important;
-            border-color: #D1D5DB !important;
-            color: #1E293B !important;
-        }
-
-        body:not(.dark) input:focus {
-            background-color: #FFFFFF !important;
-            border-color: #06B6D4 !important;
-        }
-
-        body:not(.dark) .service-card,
-        body:not(.dark) .doctor-card,
-        body:not(.dark) .time-slot {
-            box-shadow: 0 2px 4px rgb(0 0 0 / 0.05);
-        }
+        /* Fixed Language Switcher Overrides */
+        .language-switcher { backdrop-filter: blur(10px); background: rgba(30, 41, 59, 0.8); }
+        body:not(.dark) .language-switcher { background: rgba(255, 255, 255, 0.9) !important; border-color: #E5E7EB !important; }
+        .lang-btn { color: #94A3B8; transition: all 0.3s ease; }
+        .lang-btn:hover { color: #06B6D4; }
+        .lang-btn.active { background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%); color: white; transform: scale(1.05); }
+        body:not(.dark) .lang-btn { color: #64748B; }
+        body:not(.dark) .lang-btn.active { color: white; }
     </style>
 </head>
-<body class="bg-dark-300 text-gray-100 font-sans dark">
+<body class="bg-light-100 dark:bg-dark-300 text-gray-800 dark:text-gray-100 font-sans">
 
-    <!-- Top Bar & Navigation (same as previous pages) -->
-    <div class="bg-dark-200 dark:bg-dark-200 bg-white border-b border-gray-800 dark:border-gray-800 border-gray-200">
-        <div class="container mx-auto px-4 py-3">
-            <div class="flex flex-wrap justify-between items-center text-sm">
-                <div class="flex flex-wrap gap-6 text-gray-400">
-                    <a href="tel:+1234567890" class="flex items-center gap-2 hover:text-accent-cyan transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+<div class="bg-white dark:bg-dark-200 border-b border-gray-200 dark:border-gray-800 transition-all duration-300">
+    <div class="container mx-auto px-4 py-3">
+        <div class="flex flex-wrap justify-between items-center text-sm">
+            <div class="flex flex-wrap gap-6 text-gray-500 dark:text-gray-400">
+                <a href="tel:+37410501010" class="flex items-center gap-2 hover:text-accent-cyan transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                    </svg>
+                    +374 10 50 10 10
+                </a>
+                <a href="#" class="flex items-center gap-2 hover:text-accent-cyan transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <span th:text="#{topbar.address}">Baghramyan 1</span>
+                </a>
+            </div>
+
+            <div class="flex gap-3 mt-2 md:mt-0 items-center">
+                <button class="px-3 py-1.5 text-xs font-semibold rounded-md shadow-sm border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 hover:bg-accent-cyan hover:border-accent-cyan hover:text-white transition-all duration-300 text-gray-600 dark:text-gray-300" onclick="changeLanguage('en')">EN</button>
+                <button class="px-3 py-1.5 text-xs font-semibold rounded-md shadow-sm border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 hover:bg-accent-cyan hover:border-accent-cyan hover:text-white transition-all duration-300 text-gray-600 dark:text-gray-300" onclick="changeLanguage('hy')">HY</button>
+                <button class="px-3 py-1.5 text-xs font-semibold rounded-md shadow-sm border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 hover:bg-accent-cyan hover:border-accent-cyan hover:text-white transition-all duration-300 text-gray-600 dark:text-gray-300" onclick="changeLanguage('ru')">RU</button>
+
+                <div class="flex items-center gap-3 border-l border-gray-300 dark:border-gray-700 pl-6 ml-3 transition-all duration-300">
+                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400" th:text="#{topbar.theme}">Theme:</span>
+                    <button id="themeToggle" class="w-8 h-8 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-100 hover:bg-gray-200 dark:hover:bg-dark-300 transition-all flex items-center justify-center group">
+                        <svg id="sunIcon" class="w-5 h-5 text-yellow-500 dark:text-yellow-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
                         </svg>
-                        +1 (234) 567-8900
-                    </a>
-                    <a href="#" class="flex items-center gap-2 hover:text-accent-cyan transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <svg id="moonIcon" class="w-5 h-5 text-indigo-500 dark:text-indigo-400 group-hover:scale-110 transition-transform hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
                         </svg>
-                        123 Medical Center, New York, NY 10001
-                    </a>
-                </div>
-                <div class="flex items-center gap-3 mt-2 md:mt-0">
-                    <div class="flex gap-3">
-                        <button class="px-3 py-1 rounded hover:bg-dark-100 dark:hover:bg-dark-100 hover:bg-gray-100 transition-colors text-gray-300 dark:text-gray-300 text-gray-600 hover:text-white dark:hover:text-white" onclick="switchLanguage('en')">EN</button>
-                        <button class="px-3 py-1 rounded hover:bg-dark-100 dark:hover:bg-dark-100 hover:bg-gray-100 transition-colors text-gray-300 dark:text-gray-300 text-gray-600 hover:text-white dark:hover:text-white" onclick="switchLanguage('am')">AM</button>
-                        <button class="px-3 py-1 rounded hover:bg-dark-100 dark:hover:bg-dark-100 hover:bg-gray-100 transition-colors text-gray-300 dark:text-gray-300 text-gray-600 hover:text-white dark:hover:text-white" onclick="switchLanguage('ru')">RU</button>
-                    </div>
-                    <div class="flex items-center gap-3 border-l border-gray-700 dark:border-gray-700 border-gray-300 pl-6 ml-3">
-                        <span class="text-xs text-gray-400">Theme:</span>
-                        <button id="themeToggle" class="w-8 h-8 rounded-lg bg-dark-100 dark:bg-dark-100 bg-gray-100 hover:bg-dark-300 dark:hover:bg-dark-300 hover:bg-gray-200 transition-colors flex items-center justify-center group">
-                            <svg id="sunIcon" class="w-5 h-5 text-yellow-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-                            </svg>
-                            <svg id="moonIcon" class="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-                            </svg>
-                        </button>
-                    </div>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Main Navigation (Sticky) -->
-    <nav class="bg-dark-200/95 backdrop-blur-md sticky top-0 z-50 border-b border-gray-800">
-        <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between py-4">
-                <!-- Logo -->
-                <a href="#" class="flex items-center gap-3 group">
-                    <div class="w-12 h-12 bg-gradient-to-br from-accent-cyan to-accent-blue rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
+<nav class="bg-white/90 dark:bg-dark-200/90 backdrop-blur-xl sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800 transition-all duration-300 shadow-sm">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between py-4">
+            <a th:href="@{/}" class="flex items-center gap-3 group">
+                <div class="w-12 h-12 bg-gradient-to-br from-accent-cyan to-accent-blue rounded-xl shadow-lg shadow-cyan-500/30 flex items-center justify-center transform group-hover:scale-110 transition-all duration-300">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <span class="text-xl font-bold gradient-text block" th:text="#{nav.logo.title}">Avelia</span>
+                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400" th:text="#{nav.logo.subtitle}">Premium Health Services</span>
+                </div>
+            </a>
+
+            <div class="hidden lg:flex items-center gap-8">
+                <a th:href="@{/}" class="nav-link text-gray-600 dark:text-gray-300 hover:text-accent-cyan dark:hover:text-accent-cyan font-medium transition-all" th:text="#{nav.home}">Home</a>
+                <a th:href="@{/departments}" class="nav-link text-gray-600 dark:text-gray-300 hover:text-accent-cyan dark:hover:text-accent-cyan font-medium transition-all" th:text="#{nav.departments}">Departments</a>
+                <a th:href="@{/doctors}" class="nav-link text-gray-600 dark:text-gray-300 hover:text-accent-cyan dark:hover:text-accent-cyan font-medium transition-all" th:text="#{nav.doctors}">Doctors</a>
+                <a th:href="@{/contact}" class="nav-link text-gray-600 dark:text-gray-300 hover:text-accent-cyan dark:hover:text-accent-cyan font-medium transition-all" th:text="#{nav.contact}">Contact</a>
+                <a th:href="@{/about}" class="nav-link text-gray-600 dark:text-gray-300 hover:text-accent-cyan dark:hover:text-accent-cyan font-medium transition-all" th:text="#{nav.about}">About</a>
+
+                <div class="dropdown relative group pb-4 -mb-4 pt-4 -mt-4 flex items-center">
+                    <button class="nav-link text-gray-600 dark:text-gray-300 group-hover:text-accent-cyan font-medium flex items-center gap-1 transition-all">
+                        <span th:text="#{nav.more}">More</span>
+                        <svg class="w-4 h-4 transform group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div class="dropdown-menu absolute top-full left-0 mt-2 w-56 bg-white dark:bg-dark-100 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 py-3 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-50">
+                        <a th:href="@{/service}" class="block px-5 py-2.5 font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-200 hover:text-accent-cyan transition-all" th:text="#{nav.services}">Services</a>
+                        <a th:href="@{/appointments}" class="block px-5 py-2.5 font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-200 hover:text-accent-cyan transition-all" th:text="#{nav.book_appointment}">Book Appointment</a>
+                        <a th:href="@{/gallery}" class="block px-5 py-2.5 font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-200 hover:text-accent-cyan transition-all" th:text="#{nav.gallery}">Gallery</a>
+                        <div class="border-t border-gray-100 dark:border-gray-700 my-2"></div>
+                        <a th:href="@{/terms}" class="block px-5 py-2.5 font-medium text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-200 hover:text-accent-cyan transition-all" th:text="#{nav.terms}">Terms & Conditions</a>
+                        <a th:href="@{/privacy}" class="block px-5 py-2.5 font-medium text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-200 hover:text-accent-cyan transition-all" th:text="#{nav.privacy}">Privacy Policy</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hidden lg:flex items-center gap-4">
+                <form th:action="@{/search}" method="get" class="relative group">
+                    <input type="text" name="q" th:placeholder="#{nav.search.placeholder}" required
+                           class="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 dark:bg-dark-100 dark:border-gray-700 rounded-full text-sm focus:ring-2 focus:ring-accent-cyan focus:border-accent-cyan focus:outline-none w-64 transition-all duration-300 shadow-inner group-hover:shadow-md">
+                    <button type="submit" class="absolute left-3 top-2.5 text-gray-400 hover:text-accent-cyan transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </button>
+                </form>
+
+                <a sec:authorize="isAnonymous()" th:href="@{/login}" class="px-4 py-2 font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-100 hover:text-accent-cyan transition-all" th:text="#{nav.login}">Login</a>
+                <a sec:authorize="isAnonymous()" th:href="@{/register}" class="bg-gradient-to-r from-accent-cyan to-accent-blue px-6 py-2.5 rounded-lg font-medium text-white shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transform hover:-translate-y-0.5 transition-all duration-300" th:text="#{nav.register}">Register</a>
+
+                <a sec:authorize="isAuthenticated()" th:href="@{/profile}" class="text-accent-cyan font-semibold transition-all hover:opacity-80" th:text="#{nav.profile}">My Profile</a>
+                <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="m-0 p-0 flex items-center">
+                    <button type="submit" class="border-2 border-red-500 text-red-500 px-5 py-2 rounded-lg font-bold hover:bg-red-500 hover:text-white transition-all transform hover:-translate-y-0.5 shadow-sm hover:shadow-md" th:text="#{nav.logout}">Logout</button>
+                </form>
+            </div>
+
+            <button class="lg:hidden text-gray-600 dark:text-gray-300 hover:text-accent-cyan p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-100 transition-colors" onclick="toggleMobileMenu()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+        </div>
+
+        <div id="mobileMenu" class="hidden lg:hidden pb-4">
+            <div class="flex flex-col gap-2 p-2 bg-gray-50 dark:bg-dark-200 rounded-xl border border-gray-100 dark:border-gray-800 shadow-inner mt-2">
+                <input type="text" th:placeholder="#{nav.search.placeholder}" class="bg-white dark:bg-dark-100 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 mb-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-cyan text-gray-900 dark:text-white transition-all w-full">
+
+                <a th:href="@{/}" class="block px-4 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-dark-300 hover:text-accent-cyan hover:shadow-sm transition-all font-medium" th:text="#{nav.home}">Home</a>
+                <a th:href="@{/departments}" class="block px-4 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-dark-300 hover:text-accent-cyan hover:shadow-sm transition-all font-medium" th:text="#{nav.departments}">Departments</a>
+                <a th:href="@{/doctors}" class="block px-4 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-dark-300 hover:text-accent-cyan hover:shadow-sm transition-all font-medium" th:text="#{nav.doctors}">Doctors</a>
+                <a th:href="@{/contact}" class="block px-4 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-dark-300 hover:text-accent-cyan hover:shadow-sm transition-all font-medium" th:text="#{nav.contact}">Contact</a>
+                <a th:href="@{/about}" class="block px-4 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-dark-300 hover:text-accent-cyan hover:shadow-sm transition-all font-medium" th:text="#{nav.about}">About</a>
+
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-3 mt-2">
+                    <a th:href="@{/services}" class="block px-4 py-2.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-white dark:hover:bg-dark-300 hover:text-accent-cyan transition-all text-sm font-medium" th:text="#{nav.services}">Services</a>
+                    <a th:href="@{/appointments}" class="block px-4 py-2.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-white dark:hover:bg-dark-300 hover:text-accent-cyan transition-all text-sm font-medium" th:text="#{nav.book_appointment}">Book Appointment</a>
+                    <a th:href="@{/gallery}" class="block px-4 py-2.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-white dark:hover:bg-dark-300 hover:text-accent-cyan transition-all text-sm font-medium" th:text="#{nav.gallery}">Gallery</a>
+                </div>
+
+                <div sec:authorize="isAnonymous()" class="flex gap-3 pt-4 px-2">
+                    <a th:href="@{/login}" class="flex-1 text-center font-medium bg-white dark:bg-dark-100 border border-gray-200 dark:border-gray-700 py-2.5 rounded-lg hover:border-accent-cyan text-gray-800 dark:text-gray-200 transition-all shadow-sm" th:text="#{nav.login}">Login</a>
+                    <a th:href="@{/register}" class="flex-1 text-center font-medium bg-gradient-to-r from-accent-cyan to-accent-blue py-2.5 rounded-lg text-white shadow-md hover:shadow-lg transition-all" th:text="#{nav.register}">Register</a>
+                </div>
+
+                <a sec:authorize="isAuthenticated()" th:href="@{/profile}" class="text-center text-accent-cyan font-semibold py-2.5 w-full border-2 border-accent-cyan rounded-lg mt-3 mx-2 block transition-all hover:bg-accent-cyan hover:text-white" th:text="#{nav.profile}">My Profile</a>
+                <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="w-full px-2">
+                    <button type="submit" class="w-full text-center font-bold border-2 border-red-500 text-red-500 py-2.5 rounded-lg hover:bg-red-500 hover:text-white transition-all mt-3 shadow-sm" th:text="#{nav.logout}">Logout</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Page Header -->
+<section class="relative py-12 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-accent-cyan/10 via-white to-accent-blue/10 dark:from-accent-cyan/10 dark:via-dark-200 dark:to-accent-blue/10 transition-colors duration-300"></div>
+
+    <div class="container mx-auto px-4 relative z-10 text-center animate-fade-in">
+        <h1 class="text-4xl font-bold mb-3 text-gray-900 dark:text-white" th:utext="#{booking.hero.title}">Book Your <span class="gradient-text">Appointment</span></h1>
+        <p class="text-gray-600 dark:text-gray-300" th:text="#{booking.hero.subtitle}">Schedule your consultation in just a few simple steps</p>
+    </div>
+</section>
+
+<!-- Main Booking Form Section -->
+<section class="py-8 bg-light-100 dark:bg-dark-300">
+    <div class="container mx-auto px-4">
+
+        <!-- Error Alert from your Backend -->
+        <div th:if="${param.error}" class="mb-8 p-6 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/50 rounded-2xl flex items-start gap-4 shadow-lg animate-pulse max-w-4xl mx-auto">
+            <svg class="w-6 h-6 flex-shrink-0 mt-0.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <div>
+                <h4 class="font-bold text-red-600 dark:text-red-500" th:text="#{booking.alert.failed_title}">Booking Failed</h4>
+                <p th:if="${param.error[0] == 'DailyBookingLimitReached'}" class="text-sm mt-1 text-red-500 dark:text-red-400 translate-me" th:text="#{booking.alert.limit_daily}">You already have an active appointment on this day. You can only book 1 appointment per day.</p>
+                <p th:if="${param.error[0] == 'TimeSlotAlreadyBooked'}" class="text-sm mt-1 text-red-500 dark:text-red-400 translate-me" th:text="#{booking.alert.slot_taken}">This time slot was just booked by someone else. Please select another available time.</p>
+                <p th:if="${param.error[0] == 'PastTimeNotAllowed'}" class="text-sm mt-1 text-red-500 dark:text-red-400 translate-me" th:text="#{booking.alert.past_time}">You cannot book an appointment in the past. Please select a valid future time.</p>
+                <p th:if="${param.error[0] == 'DoctorNotFound'}" class="text-sm mt-1 text-red-500 dark:text-red-400 translate-me" th:text="#{booking.alert.doctor_not_found}">The selected doctor could not be found. Please try again.</p>
+                <p th:if="${param.error[0] == 'GlobalBookingLimitReached'}" class="text-sm mt-1 text-red-500 dark:text-red-400 translate-me" th:text="#{booking.alert.limit_global}">You have reached the maximum limit of active appointments (3). Please attend or cancel your upcoming visits before booking a new one.</p>
+            </div>
+        </div>
+
+        <!-- Start Form -->
+        <form th:action="@{/appointments/save}" method="post" id="appointmentForm" class="grid lg:grid-cols-3 gap-8">
+            <!-- CSRF Token for POST -->
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf != null}"/>
+
+            <!-- Left Side: Stepper Form -->
+            <div class="lg:col-span-2">
+                <div class="bg-white dark:bg-dark-100 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 shadow-sm">
+
+                    <!-- Stepper Header -->
+                    <div class="flex items-center justify-between mb-12">
+                        <div class="flex items-center flex-1">
+                            <div class="step-indicator active w-10 h-10 md:w-12 md:h-12 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-300 flex items-center justify-center font-bold text-xs md:text-sm" id="step1Indicator">1</div>
+                            <div class="flex-1 h-1 bg-gray-200 dark:bg-gray-700 mx-2"></div>
+                        </div>
+                        <div class="flex items-center flex-1">
+                            <div class="step-indicator w-10 h-10 md:w-12 md:h-12 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-300 flex items-center justify-center font-bold text-xs md:text-sm" id="step2Indicator">2</div>
+                            <div class="flex-1 h-1 bg-gray-200 dark:bg-gray-700 mx-2"></div>
+                        </div>
+                        <div class="flex items-center flex-1">
+                            <div class="step-indicator w-10 h-10 md:w-12 md:h-12 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-300 flex items-center justify-center font-bold text-xs md:text-sm" id="step3Indicator">3</div>
+                            <div class="flex-1 h-1 bg-gray-200 dark:bg-gray-700 mx-2"></div>
+                        </div>
+                        <div class="step-indicator w-10 h-10 md:w-12 md:h-12 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-300 flex items-center justify-center font-bold text-xs md:text-sm" id="step4Indicator">4</div>
+                    </div>
+
+                    <!-- Step 1: Patient Info -->
+                    <div class="step active" id="step1">
+                        <h2 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white" th:text="#{booking.step1.title}">Patient Information</h2>
+
+                        <!-- Alert block visible if user is not logged in -->
+                        <div sec:authorize="isAnonymous()" class="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-4 rounded-xl flex gap-3 text-blue-800 dark:text-blue-300">
+                            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <p class="text-sm" th:text="#{booking.step1.guest_alert}">You are currently continuing as a guest. You must log in or register to complete your booking. Click "Continue" to proceed.</p>
+                        </div>
+
+                        <!-- Auto-Filled inputs based on your Backend 'User' and 'UserProfile' Models -->
+                        <div class="space-y-5">
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300" th:text="#{booking.step1.name_label}">Full Name *</label>
+                                <input type="text" id="patientName" oninput="updateSummaryUI()"
+                                       th:value="${(user?.userProfile?.firstName ?: user?.firstName ?: '') + ' ' + (user?.userProfile?.lastName ?: user?.lastName ?: '')}"
+                                       class="w-full bg-gray-50 dark:bg-dark-200/50 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 transition-all" th:placeholder="#{booking.step1.name_placeholder}">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300" th:text="#{booking.step1.phone_label}">Phone Number *</label>
+                                <input type="tel" id="patientPhone"
+                                       th:value="${user?.phone ?: ''}"
+                                       class="w-full bg-gray-50 dark:bg-dark-200/50 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 transition-all" th:placeholder="#{booking.step1.phone_placeholder}">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300" th:text="#{booking.step1.email_label}">Email Address</label>
+                                <input type="email" id="patientEmail"
+                                       th:value="${user?.email ?: ''}"
+                                       class="w-full bg-gray-50 dark:bg-dark-200/50 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 transition-all" th:placeholder="#{booking.step1.email_placeholder}">
+                            </div>
+                        </div>
+                        <button type="button" onclick="validateStep1()" class="mt-8 w-full bg-gradient-to-r from-accent-cyan to-accent-blue text-white py-4 rounded-xl font-bold hover:shadow-lg hover:shadow-cyan-500/25 transition-all" th:text="#{booking.step1.submit_btn}">
+                            Continue to Department
+                        </button>
+                    </div>
+
+                    <!-- Step 2: Department & Service -->
+                    <div class="step" id="step2">
+                        <h2 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white" th:text="#{booking.step2.title}">Select Service</h2>
+
+                        <div class="space-y-8">
+                            <!-- Departments Grid -->
+                            <div>
+                                <label class="block text-sm font-semibold mb-4 text-gray-700 dark:text-gray-300" th:text="#{booking.step2.dept_label}">Medical Department *</label>
+                                <input type="hidden" id="selectedDepartmentId" name="departmentId">
+
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="departmentGrid">
+                                    <div th:each="dept : ${departments}"
+                                         th:if="${dept.isPubliclyBookable}"
+                                         th:data-id="${dept.id}"
+                                         th:data-bookable="true"
+                                         onclick="selectDepartmentCard(this)"
+                                         class="dept-card border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-dark-200/50 rounded-xl p-5 cursor-pointer transition-all duration-300 hover:border-accent-cyan hover:shadow-md flex flex-col justify-center items-center text-center">
+
+                                        <span class="font-bold text-gray-900 dark:text-white translate-me" th:text="${dept.name}"></span>
+                                        <div th:if="${!dept.isPubliclyBookable}" class="text-xs text-red-500 flex items-center gap-1 mt-2 font-medium">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z"/></svg>
+                                            <span th:text="#{booking.step2.referral_alert}">Requires Referral</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Services Grid -->
+                            <div id="serviceContainer" class="hidden transition-all duration-500 opacity-0 transform translate-y-4">
+                                <label class="block text-sm font-semibold mb-4 text-gray-700 dark:text-gray-300" th:text="#{booking.step2.service_label}">Specific Service *</label>
+                                <input type="hidden" id="selectedServiceId" name="serviceId" required>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="serviceGrid">
+                                    <!-- JS Inject -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 mt-8">
+                            <button type="button" onclick="prevStep()" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white py-4 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-all" th:text="#{booking.step.back_btn}">Back</button>
+                            <button type="button" id="btnStep2" disabled onclick="nextStep()" class="flex-1 bg-gradient-to-r from-accent-cyan to-accent-blue text-white py-4 rounded-xl font-bold opacity-50 cursor-not-allowed transition-all" th:text="#{booking.step2.submit_btn}">Continue to Doctor</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Choose Doctor -->
+                    <div class="step" id="step3">
+                        <h2 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white" th:text="#{booking.step3.title}">Choose Your Doctor</h2>
+
+                        <div id="doctorGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                        <input type="hidden" id="selectedDoctorId" name="doctorId" required>
+
+                        <div class="flex gap-4 mt-8">
+                            <button type="button" onclick="prevStep()" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white py-4 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-all" th:text="#{booking.step.back_btn}">Back</button>
+                            <button type="button" id="btnStep3" disabled onclick="nextStep()" class="flex-1 bg-gradient-to-r from-accent-cyan to-accent-blue text-white py-4 rounded-xl font-bold opacity-50 cursor-not-allowed transition-all" th:text="#{booking.step3.submit_btn}">Continue to Time</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Date & Time -->
+                    <div class="step" id="step4">
+                        <h2 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white" th:text="#{booking.step4.title}">Select Date & Time</h2>
+
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300" th:text="#{booking.step4.date_label}">Appointment Date *</label>
+                                <input type="date" id="dateSelect" name="appointmentDate" required onchange="fetchAvailableTimeSlots()" class="w-full bg-gray-50 dark:bg-dark-200/50 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 cursor-pointer font-bold text-gray-900 dark:text-white transition-all shadow-sm">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold mb-3 text-gray-700 dark:text-gray-300" th:text="#{booking.step4.time_label}">Available Times *</label>
+                                <div id="timeSlotsContainer" class="flex flex-wrap gap-3 p-6 bg-gray-50 dark:bg-dark-200/50 border border-gray-200 dark:border-gray-700 rounded-xl min-h-[100px] items-center">
+                                    <p class="text-gray-500 dark:text-gray-400 text-sm italic w-full text-center" th:text="#{booking.step4.time_placeholder}">Select a date above to see available times.</p>
+                                </div>
+                                <input type="hidden" id="selectedTime" name="appointmentTime" required>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 mt-8">
+                            <button type="button" onclick="prevStep()" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white py-4 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-all" th:text="#{booking.step.back_btn}">Back</button>
+                            <button type="submit" id="submitBtn" disabled class="flex-1 bg-gradient-to-r from-accent-cyan to-accent-blue text-white py-4 rounded-xl font-bold hover:shadow-xl hover:shadow-cyan-500/25 opacity-50 cursor-not-allowed transition-all" th:text="#{booking.step4.submit_btn}">Confirm Booking</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Right Side: Booking Summary Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-white dark:bg-dark-100 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 sticky top-28 shadow-sm">
+                    <h3 class="text-xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-2">
+                        <svg class="w-5 h-5 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                        <span th:text="#{booking.summary.title}">Booking Summary</span>
+                    </h3>
+
+                    <div class="space-y-4">
+                        <div class="pb-4 border-b border-gray-100 dark:border-gray-700/50">
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1" th:text="#{booking.summary.name_label}">Patient Name</p>
+                            <p class="font-bold text-gray-900 dark:text-white text-lg" id="summaryName">-</p>
+                        </div>
+                        <div class="pb-4 border-b border-gray-100 dark:border-gray-700/50">
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1" th:text="#{booking.summary.service_label}">Service</p>
+                            <p class="font-bold text-gray-900 dark:text-white" id="summaryService">-</p>
+                        </div>
+                        <div class="pb-4 border-b border-gray-100 dark:border-gray-700/50">
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1" th:text="#{booking.summary.doctor_label}">Doctor</p>
+                            <p class="font-bold text-gray-900 dark:text-white" id="summaryDoctor">-</p>
+                        </div>
+                        <div class="pb-4 border-b border-gray-100 dark:border-gray-700/50">
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1" th:text="#{booking.summary.date_label}">Date</p>
+                            <p class="font-bold text-gray-900 dark:text-white" id="summaryDate">-</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1" th:text="#{booking.summary.time_label}">Time</p>
+                            <p class="font-bold text-accent-cyan text-xl" id="summaryTime">-</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</section>
+
+<footer class="bg-white dark:bg-dark-200 border-t border-gray-200 dark:border-gray-800 pt-16 pb-8 transition-all duration-300">
+    <div class="container mx-auto px-4">
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+            <div>
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-12 h-12 bg-gradient-to-br from-accent-cyan to-accent-blue rounded-xl flex items-center justify-center transform hover:scale-110 transition-transform">
                         <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                         </svg>
                     </div>
-                    <div>
-                        <span class="text-xl font-bold gradient-text block">MediCare Pro</span>
-                        <span class="text-xs text-gray-400">Premium Health Services</span>
-                    </div>
-                </a>
-
-                <!-- Desktop Menu -->
-                <div class="hidden lg:flex items-center gap-8">
-                    <a href="#home" class="nav-link text-gray-300 hover:text-white font-medium">Home</a>
-                    <a href="#services" class="nav-link text-gray-300 hover:text-white font-medium">Departments</a>
-                    <a href="#doctors" class="nav-link text-gray-300 hover:text-white font-medium">Doctors</a>
-                    <a href="#contact" class="nav-link text-gray-300 hover:text-white font-medium">Contact</a>
-                    <a href="#about" class="nav-link text-gray-300 hover:text-white font-medium">About</a>
-                    
-                    <!-- Dropdown More -->
-                    <div class="dropdown relative">
-                        <button class="nav-link text-gray-300 hover:text-white font-medium flex items-center gap-1">
-                            More
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                        </button>
-                        <div class="dropdown-menu hidden absolute top-full left-0 mt-2 w-56 bg-dark-100 rounded-xl shadow-xl border border-gray-700 py-2">
-                            <a href="#departments" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Services</a>
-                            <!-- <a href="#service-details" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Service Details</a> -->
-                            <a href="#appointment" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Book Appointment</a>
-                            <a href="#gallery" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Gallery</a>
-                            <a href="#terms" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Terms & Conditions</a>
-                            <a href="#privacy" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Privacy Policy</a>
-                        </div>
-                    </div>
+                    <span class="text-xl font-bold gradient-text" th:text="#{nav.logo.title}">Avelia</span>
                 </div>
-
-                <!-- Search, Login, Register -->
-                <div class="hidden lg:flex items-center gap-4">
-                    <div class="relative">
-                        <input type="text" placeholder="Search..." class="bg-dark-100 border border-gray-700 rounded-lg px-4 py-2 pl-10 text-sm focus:outline-none focus:border-accent-cyan transition-colors w-48">
-                        <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                <p class="text-gray-600 dark:text-gray-400 mb-6" th:text="#{footer.description}">Premium healthcare services with a commitment to excellence and compassionate care.</p>
+                <div class="flex gap-4">
+                    <a th:href="@{#}" class="w-10 h-10 bg-gray-100 dark:bg-dark-100 rounded-lg flex items-center justify-center hover:bg-accent-cyan dark:hover:bg-accent-cyan transition-all transform hover:-translate-y-1 group">
+                        <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                         </svg>
-                    </div>
-                    <button class="text-gray-300 hover:text-white font-medium transition-colors">Login</button>
-                    <button class="bg-gradient-to-r from-accent-cyan to-accent-blue px-6 py-2 rounded-lg font-medium hover:shadow-lg hover:shadow-accent-cyan/20 transition-all">Register</button>
-                </div>
-
-                <!-- Mobile Menu Button -->
-                <button class="lg:hidden text-gray-300 hover:text-white" onclick="toggleMobileMenu()">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Mobile Menu -->
-            <div id="mobileMenu" class="hidden lg:hidden pb-4">
-                <div class="flex flex-col gap-3">
-                    <input type="text" placeholder="Search..." class="bg-dark-100 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-accent-cyan">
-                    <a href="#home" class="text-gray-300 hover:text-white py-2">Home</a>
-                    <a href="#services" class="text-gray-300 hover:text-white py-2">Departments</a>
-                    <a href="#doctors" class="text-gray-300 hover:text-white py-2">Doctors</a>
-                    <a href="#contact" class="text-gray-300 hover:text-white py-2">Contact</a>
-                    <a href="#about" class="text-gray-300 hover:text-white py-2">About</a>
-                    <div class="border-t border-gray-800 pt-3 mt-2">
-                        <a href="#departments" class="text-gray-400 hover:text-white py-2 block text-sm">Services</a>
-                        <a href="#appointment" class="text-gray-400 hover:text-white py-2 block text-sm">Book Appointment</a>
-                        <a href="#gallery" class="text-gray-400 hover:text-white py-2 block text-sm">Gallery</a>
-                    </div>
-                    <div class="flex gap-3 pt-3">
-                        <button class="flex-1 border border-gray-700 py-2 rounded-lg hover:bg-dark-100">Login</button>
-                        <button class="flex-1 bg-gradient-to-r from-accent-cyan to-accent-blue py-2 rounded-lg">Register</button>
-                    </div>
+                    </a>
+                    <a th:href="@{#}" class="w-10 h-10 bg-gray-100 dark:bg-dark-100 rounded-lg flex items-center justify-center hover:bg-accent-cyan dark:hover:bg-accent-cyan transition-all transform hover:-translate-y-1 group">
+                        <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                        </svg>
+                    </a>
+                    <a th:href="@{#}" class="w-10 h-10 bg-gray-100 dark:bg-dark-100 rounded-lg flex items-center justify-center hover:bg-accent-cyan dark:hover:bg-accent-cyan transition-all transform hover:-translate-y-1 group">
+                        <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                        </svg>
+                    </a>
+                    <a th:href="@{#}" class="w-10 h-10 bg-gray-100 dark:bg-dark-100 rounded-lg flex items-center justify-center hover:bg-accent-cyan dark:hover:bg-accent-cyan transition-all transform hover:-translate-y-1 group">
+                        <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                    </a>
                 </div>
             </div>
-        </div>
-    </nav>
 
-    <!-- Page Header -->
-    <section class="relative py-16 overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-br from-accent-cyan/10 via-dark-200 to-accent-blue/10 dark:bg-gradient-to-br dark:from-accent-cyan/10 dark:via-dark-200 dark:to-accent-blue/10"></div>
-        <div class="absolute inset-0 bg-gradient-to-br from-accent-cyan/5 via-gray-50 to-accent-blue/5 dark:hidden"></div>
-        <div class="absolute inset-0 shimmer"></div>
-        
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="text-center max-w-4xl mx-auto animate-fade-in">
-                <h1 class="text-4xl md:text-5xl font-bold mb-4 leading-tight text-gray-900 dark:text-white">
-                    Book Your <span class="gradient-text">Appointment</span>
-                </h1>
-                <p class="text-lg text-gray-600 dark:text-gray-300">
-                    Schedule your consultation in just a few simple steps
-                </p>
+            <div>
+                <h3 class="text-lg font-bold mb-6 text-gray-900 dark:text-white" th:text="#{footer.quick_links}">Quick Links</h3>
+                <ul class="space-y-3">
+                    <li><a th:href="@{/}" class="text-gray-600 dark:text-gray-400 hover:text-accent-cyan transition-all hover:translate-x-1 inline-block" th:text="#{nav.home}">Home</a></li>
+                    <li><a th:href="@{/departments}" class="text-gray-600 dark:text-gray-400 hover:text-accent-cyan transition-all hover:translate-x-1 inline-block" th:text="#{nav.departments}">Departments</a></li>
+                    <li><a th:href="@{/doctors}" class="text-gray-600 dark:text-gray-400 hover:text-accent-cyan transition-all hover:translate-x-1 inline-block" th:text="#{nav.doctors}">Our Doctors</a></li>
+                    <li><a th:href="@{/about}" class="text-gray-600 dark:text-gray-400 hover:text-accent-cyan transition-all hover:translate-x-1 inline-block" th:text="#{nav.about}">About Us</a></li>
+                    <li><a th:href="@{/contact}" class="text-gray-600 dark:text-gray-400 hover:text-accent-cyan transition-all hover:translate-x-1 inline-block" th:text="#{nav.contact}">Contact</a></li>
+                    <li><a th:href="@{/appointments}" class="text-gray-600 dark:text-gray-400 hover:text-accent-cyan transition-all hover:translate-x-1 inline-block" th:text="#{nav.book_appointment}">Book Appointment</a></li>
+                </ul>
             </div>
-        </div>
-    </section>
 
-    <!-- Booking Section -->
-    <section class="py-12 bg-dark-300 dark:bg-dark-300 bg-light-100">
-        <div class="container mx-auto px-4">
-            <div class="grid lg:grid-cols-3 gap-8">
-                
-                <!-- Main Booking Form -->
-                <div class="lg:col-span-2">
-                    <div class="bg-dark-100 dark:bg-dark-100 bg-white border border-gray-800 dark:border-gray-800 border-gray-200 rounded-2xl p-8">
-                        
-                        <!-- Stepper -->
-                        <div class="flex items-center justify-between mb-12">
-                            <div class="flex items-center flex-1">
-                                <div class="step-indicator active w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center font-bold" id="step1Indicator">1</div>
-                                <div class="flex-1 h-1 bg-gray-700 mx-2"></div>
-                            </div>
-                            <div class="flex items-center flex-1">
-                                <div class="step-indicator w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center font-bold" id="step2Indicator">2</div>
-                                <div class="flex-1 h-1 bg-gray-700 mx-2"></div>
-                            </div>
-                            <div class="flex items-center flex-1">
-                                <div class="step-indicator w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center font-bold" id="step3Indicator">3</div>
-                                <div class="flex-1 h-1 bg-gray-700 mx-2"></div>
-                            </div>
-                            <div class="step-indicator w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center font-bold" id="step4Indicator">4</div>
-                        </div>
+            <div>
+                <h3 class="text-lg font-bold mb-6 text-gray-900 dark:text-white" th:text="#{footer.services}">Services</h3>
+                <ul class="space-y-3">
+                    <li><a th:href="@{/services}" class="text-gray-600 dark:text-gray-400 hover:text-accent-cyan transition-all hover:translate-x-1 inline-block">Cardiology</a></li>
+                    <li><a th:href="@{/services}" class="text-gray-600 dark:text-gray-400 hover:text-accent-cyan transition-all hover:translate-x-1 inline-block">Neurology</a></li>
+                    <li><a th:href="@{/services}" class="text-gray-600 dark:text-gray-400 hover:text-accent-cyan transition-all hover:translate-x-1 inline-block">Orthopedics</a></li>
+                    <li><a th:href="@{/services}" class="text-gray-600 dark:text-gray-400 hover:text-accent-cyan transition-all hover:translate-x-1 inline-block">Pediatrics</a></li>
+                    <li><a th:href="@{/services}" class="text-gray-600 dark:text-gray-400 hover:text-accent-cyan transition-all hover:translate-x-1 inline-block">Emergency Care</a></li>
+                    <li><a th:href="@{/services}" class="text-gray-600 dark:text-gray-400 hover:text-accent-cyan transition-all hover:translate-x-1 inline-block">Laboratory</a></li>
+                </ul>
+            </div>
 
-                        <!-- Step 1: Patient Info -->
-                        <div class="step active" id="step1">
-                            <h2 class="text-2xl font-bold mb-6 text-white dark:text-white text-gray-900">Patient Information</h2>
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-semibold mb-2 text-gray-300 dark:text-gray-300 text-gray-700">Full Name *</label>
-                                    <input type="text" id="patientName" class="w-full bg-dark-200/50 dark:bg-dark-200/50 bg-gray-100 border border-gray-700 dark:border-gray-700 border-gray-300 rounded-xl px-4 py-3 text-white dark:text-white text-gray-900 focus:outline-none focus:border-accent-cyan focus:ring-2 focus:ring-accent-cyan/20 transition-all" placeholder="John Doe">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold mb-2 text-gray-300 dark:text-gray-300 text-gray-700">Phone Number *</label>
-                                    <input type="tel" id="patientPhone" class="w-full bg-dark-200/50 dark:bg-dark-200/50 bg-gray-100 border border-gray-700 dark:border-gray-700 border-gray-300 rounded-xl px-4 py-3 text-white dark:text-white text-gray-900 focus:outline-none focus:border-accent-cyan focus:ring-2 focus:ring-accent-cyan/20 transition-all" placeholder="+1 (234) 567-8900">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold mb-2 text-gray-300 dark:text-gray-300 text-gray-700">Email Address *</label>
-                                    <input type="email" id="patientEmail" class="w-full bg-dark-200/50 dark:bg-dark-200/50 bg-gray-100 border border-gray-700 dark:border-gray-700 border-gray-300 rounded-xl px-4 py-3 text-white dark:text-white text-gray-900 focus:outline-none focus:border-accent-cyan focus:ring-2 focus:ring-accent-cyan/20 transition-all" placeholder="john@example.com">
-                                </div>
-                            </div>
-                            <button onclick="nextStep()" class="mt-8 w-full bg-gradient-to-r from-accent-cyan to-accent-blue text-white py-4 rounded-xl font-bold hover:shadow-xl transition-all">
-                                Continue
-                            </button>
-                        </div>
-
-                        <!-- Step 2: Service Selection -->
-                        <div class="step" id="step2">
-                            <h2 class="text-2xl font-bold mb-6 text-white dark:text-white text-gray-900">Select Service</h2>
-                            <div class="grid md:grid-cols-2 gap-4">
-                                <div class="service-card bg-dark-200 dark:bg-dark-200 bg-gray-50 border-2 border-gray-700 dark:border-gray-700 border-gray-300 rounded-xl p-6" onclick="selectService('Cardiology', this)">
-                                    <div class="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center mb-4">
-                                        <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-                                    </div>
-                                    <h3 class="font-bold text-white dark:text-white text-gray-900 mb-2">Cardiology</h3>
-                                    <p class="text-sm text-gray-400">Heart & cardiovascular care</p>
-                                </div>
-
-                                <div class="service-card bg-dark-200 dark:bg-dark-200 bg-gray-50 border-2 border-gray-700 dark:border-gray-700 border-gray-300 rounded-xl p-6" onclick="selectService('Neurology', this)">
-                                    <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-4">
-                                        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-                                    </div>
-                                    <h3 class="font-bold text-white dark:text-white text-gray-900 mb-2">Neurology</h3>
-                                    <p class="text-sm text-gray-400">Brain & nervous system</p>
-                                </div>
-
-                                <div class="service-card bg-dark-200 dark:bg-dark-200 bg-gray-50 border-2 border-gray-700 dark:border-gray-700 border-gray-300 rounded-xl p-6" onclick="selectService('Orthopedics', this)">
-                                    <div class="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center mb-4">
-                                        <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/></svg>
-                                    </div>
-                                    <h3 class="font-bold text-white dark:text-white text-gray-900 mb-2">Orthopedics</h3>
-                                    <p class="text-sm text-gray-400">Bone & joint care</p>
-                                </div>
-
-                                <div class="service-card bg-dark-200 dark:bg-dark-200 bg-gray-50 border-2 border-gray-700 dark:border-gray-700 border-gray-300 rounded-xl p-6" onclick="selectService('Pediatrics', this)">
-                                    <div class="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center mb-4">
-                                        <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                                    </div>
-                                    <h3 class="font-bold text-white dark:text-white text-gray-900 mb-2">Pediatrics</h3>
-                                    <p class="text-sm text-gray-400">Children's healthcare</p>
-                                </div>
-                            </div>
-                            <div class="flex gap-4 mt-8">
-                                <button onclick="prevStep()" class="flex-1 bg-gray-700 text-white py-4 rounded-xl font-bold hover:bg-gray-600 transition-all">
-                                    Back
-                                </button>
-                                <button onclick="nextStep()" class="flex-1 bg-gradient-to-r from-accent-cyan to-accent-blue text-white py-4 rounded-xl font-bold hover:shadow-xl transition-all">
-                                    Continue
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Step 3: Doctor Selection -->
-                        <div class="step" id="step3">
-                            <h2 class="text-2xl font-bold mb-6 text-white dark:text-white text-gray-900">Choose Your Doctor</h2>
-                            <div class="space-y-4" id="doctorsList">
-                                <!-- Doctors will be populated dynamically -->
-                            </div>
-                            <div class="flex gap-4 mt-8">
-                                <button onclick="prevStep()" class="flex-1 bg-gray-700 text-white py-4 rounded-xl font-bold hover:bg-gray-600 transition-all">
-                                    Back
-                                </button>
-                                <button onclick="nextStep()" class="flex-1 bg-gradient-to-r from-accent-cyan to-accent-blue text-white py-4 rounded-xl font-bold hover:shadow-xl transition-all">
-                                    Continue
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Step 4: Date & Time -->
-                        <div class="step" id="step4">
-                            <h2 class="text-2xl font-bold mb-6 text-white dark:text-white text-gray-900">Select Date & Time</h2>
-                            
-                            <!-- Calendar -->
-                            <div class="bg-dark-200 dark:bg-dark-200 bg-gray-50 rounded-xl p-6 mb-6">
-                                <div class="flex items-center justify-between mb-4">
-                                    <button onclick="prevMonth()" class="p-2 hover:bg-dark-100 dark:hover:bg-dark-100 hover:bg-gray-200 rounded-lg transition-colors">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                                    </button>
-                                    <h3 class="text-lg font-bold text-white dark:text-white text-gray-900" id="currentMonth"></h3>
-                                    <button onclick="nextMonth()" class="p-2 hover:bg-dark-100 dark:hover:bg-dark-100 hover:bg-gray-200 rounded-lg transition-colors">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                                    </button>
-                                </div>
-                                <div class="grid grid-cols-7 gap-2 mb-2">
-                                    <div class="text-center text-sm font-semibold text-gray-400">Sun</div>
-                                    <div class="text-center text-sm font-semibold text-gray-400">Mon</div>
-                                    <div class="text-center text-sm font-semibold text-gray-400">Tue</div>
-                                    <div class="text-center text-sm font-semibold text-gray-400">Wed</div>
-                                    <div class="text-center text-sm font-semibold text-gray-400">Thu</div>
-                                    <div class="text-center text-sm font-semibold text-gray-400">Fri</div>
-                                    <div class="text-center text-sm font-semibold text-gray-400">Sat</div>
-                                </div>
-                                <div class="grid grid-cols-7 gap-2" id="calendarDays"></div>
-                            </div>
-
-                            <!-- Time Slots -->
-                            <div>
-                                <h3 class="text-lg font-bold mb-4 text-white dark:text-white text-gray-900">Available Time Slots</h3>
-                                <div class="grid grid-cols-3 md:grid-cols-4 gap-3" id="timeSlots">
-                                    <!-- Time slots will be populated -->
-                                </div>
-                            </div>
-
-                            <div class="flex gap-4 mt-8">
-                                <button onclick="prevStep()" class="flex-1 bg-gray-700 text-white py-4 rounded-xl font-bold hover:bg-gray-600 transition-all">
-                                    Back
-                                </button>
-                                <button onclick="confirmBooking()" class="flex-1 bg-gradient-to-r from-accent-cyan to-accent-blue text-white py-4 rounded-xl font-bold hover:shadow-xl transition-all">
-                                    Confirm Booking
-                                </button>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- Booking Summary Sidebar -->
-                <div class="lg:col-span-1">
-                    <div class="bg-dark-100 dark:bg-dark-100 bg-white border border-gray-800 dark:border-gray-800 border-gray-200 rounded-2xl p-6 sticky top-24">
-                        <h3 class="text-xl font-bold mb-6 text-white dark:text-white text-gray-900">Booking Summary</h3>
-                        <div class="space-y-4">
-                            <div class="pb-4 border-b border-gray-700 dark:border-gray-700 border-gray-200">
-                                <p class="text-sm text-gray-400 mb-1">Patient Name</p>
-                                <p class="font-semibold text-white dark:text-white text-gray-900" id="summaryName">-</p>
-                            </div>
-                            <div class="pb-4 border-b border-gray-700 dark:border-gray-700 border-gray-200">
-                                <p class="text-sm text-gray-400 mb-1">Service</p>
-                                <p class="font-semibold text-white dark:text-white text-gray-900" id="summaryService">-</p>
-                            </div>
-                            <div class="pb-4 border-b border-gray-700 dark:border-gray-700 border-gray-200">
-                                <p class="text-sm text-gray-400 mb-1">Doctor</p>
-                                <p class="font-semibold text-white dark:text-white text-gray-900" id="summaryDoctor">-</p>
-                            </div>
-                            <div class="pb-4 border-b border-gray-700 dark:border-gray-700 border-gray-200">
-                                <p class="text-sm text-gray-400 mb-1">Date</p>
-                                <p class="font-semibold text-white dark:text-white text-gray-900" id="summaryDate">-</p>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-400 mb-1">Time</p>
-                                <p class="font-semibold text-white dark:text-white text-gray-900" id="summaryTime">-</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+            <div>
+                <h3 class="text-lg font-bold mb-6 text-gray-900 dark:text-white" th:text="#{footer.contact_us}">Contact Us</h3>
+                <ul class="space-y-4">
+                    <li class="flex gap-3 text-gray-600 dark:text-gray-400">
+                        <svg class="w-5 h-5 text-accent-cyan flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span th:text="#{topbar.address}">Baghramyan 1</span>
+                    </li>
+                    <li class="flex gap-3 text-gray-600 dark:text-gray-400">
+                        <svg class="w-5 h-5 text-accent-cyan flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                        </svg>
+                        <span>+374 10 50 10 10</span>
+                    </li>
+                    <li class="flex gap-3 text-gray-600 dark:text-gray-400">
+                        <svg class="w-5 h-5 text-accent-cyan flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        <a href="mailto:aveliaclinic@gmail.com" class="hover:text-accent-cyan transition-colors" th:text="#{footer.email}">aveliaclinic@gmail.com</a>
+                    </li>
+                </ul>
             </div>
         </div>
-    </section>
 
-    <!-- Success Modal -->
-    <div id="successModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-        <div class="bg-dark-100 dark:bg-dark-100 bg-white border border-gray-800 dark:border-gray-800 border-gray-200 rounded-2xl p-8 max-w-md mx-4 animate-scale-in">
-            <div class="text-center">
-                <div class="w-20 h-20 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                    </svg>
+        <div class="border-t border-gray-200 dark:border-gray-800 pt-8 mt-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-gray-500 dark:text-gray-400 text-sm" th:text="#{footer.copyright}">© 2026 Avelia. All rights reserved.</p>
+                <div class="flex gap-6 text-sm">
+                    <a th:href="@{/terms}" class="text-gray-500 dark:text-gray-400 hover:text-accent-cyan transition-colors" th:text="#{nav.terms}">Terms & Conditions</a>
+                    <a th:href="@{/privacy}" class="text-gray-500 dark:text-gray-400 hover:text-accent-cyan transition-colors" th:text="#{nav.privacy}">Privacy Policy</a>
+                    <a th:href="@{/cookie}" class="text-gray-500 dark:text-gray-400 hover:text-accent-cyan transition-colors" th:text="#{footer.cookie}">Cookie Policy</a>
                 </div>
-                <h3 class="text-2xl font-bold mb-3 text-white dark:text-white text-gray-900">Appointment Confirmed!</h3>
-                <p class="text-gray-400 mb-2">Your appointment has been successfully booked.</p>
-                <p class="text-sm text-gray-500 mb-6">A confirmation email has been sent to your email address.</p>
-                <div class="bg-dark-200 dark:bg-dark-200 bg-gray-50 rounded-xl p-4 mb-6 text-left">
-                    <p class="text-sm text-gray-400 mb-2">Appointment Details:</p>
-                    <p class="font-semibold text-white dark:text-white text-gray-900" id="modalSummary"></p>
-                </div>
-                <button onclick="closeSuccessModal()" class="w-full bg-gradient-to-r from-accent-cyan to-accent-blue text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
-                    Done
-                </button>
             </div>
         </div>
     </div>
-  <!-- Footer -->
-    <footer class="bg-dark-200 border-t border-gray-800 pt-16 pb-8">
-        <div class="container mx-auto px-4">
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-                <!-- Company Info -->
-                <div>
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-12 h-12 bg-gradient-to-br from-accent-cyan to-accent-blue rounded-xl flex items-center justify-center">
-                            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                            </svg>
-                        </div>
-                        <span class="text-xl font-bold gradient-text">MediCare Pro</span>
-                    </div>
-                    <p class="text-gray-400 mb-6">Premium healthcare services with a commitment to excellence and compassionate care.</p>
-                    <div class="flex gap-4">
-                        <a href="#" class="w-10 h-10 bg-dark-100 rounded-lg flex items-center justify-center hover:bg-accent-cyan transition-colors group">
-                            <svg class="w-5 h-5 text-gray-400 group-hover:text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                        </a>
-                        <a href="#" class="w-10 h-10 bg-dark-100 rounded-lg flex items-center justify-center hover:bg-accent-cyan transition-colors group">
-                            <svg class="w-5 h-5 text-gray-400 group-hover:text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
-                        </a>
-                        <a href="#" class="w-10 h-10 bg-dark-100 rounded-lg flex items-center justify-center hover:bg-accent-cyan transition-colors group">
-                            <svg class="w-5 h-5 text-gray-400 group-hover:text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                        </a>
-                        <a href="#" class="w-10 h-10 bg-dark-100 rounded-lg flex items-center justify-center hover:bg-accent-cyan transition-colors group">
-                            <svg class="w-5 h-5 text-gray-400 group-hover:text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/></svg>
-                        </a>
-                    </div>
-                </div>
+</footer>
 
-                <!-- Quick Links -->
-                <div>
-                    <h3 class="text-lg font-bold mb-6 text-white">Quick Links</h3>
-                    <ul class="space-y-3">
-                        <li><a href="#home" class="text-gray-400 hover:text-accent-cyan transition-colors">Home</a></li>
-                        <li><a href="#services" class="text-gray-400 hover:text-accent-cyan transition-colors">Services</a></li>
-                        <li><a href="#doctors" class="text-gray-400 hover:text-accent-cyan transition-colors">Our Doctors</a></li>
-                        <li><a href="#about" class="text-gray-400 hover:text-accent-cyan transition-colors">About Us</a></li>
-                        <li><a href="#contact" class="text-gray-400 hover:text-accent-cyan transition-colors">Contact</a></li>
-                        <li><a href="#appointment" class="text-gray-400 hover:text-accent-cyan transition-colors">Book Appointment</a></li>
-                    </ul>
-                </div>
+<script ></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // Importing your Backend Data directly into JS
+    const allDoctors = /*[[${doctors}]]*/ [];
+    const allServices = /*[[${services}]]*/ [];
+    const isAuthenticated = /*[[${#authorization.expression('isAuthenticated()')}]]*/ false;
+    /*]]>*/
 
-                <!-- Services -->
-                <div>
-                    <h3 class="text-lg font-bold mb-6 text-white">Services</h3>
-                    <ul class="space-y-3">
-                        <li><a href="#" class="text-gray-400 hover:text-accent-cyan transition-colors">Cardiology</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-accent-cyan transition-colors">Neurology</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-accent-cyan transition-colors">Orthopedics</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-accent-cyan transition-colors">Pediatrics</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-accent-cyan transition-colors">Emergency Care</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-accent-cyan transition-colors">Laboratory</a></li>
-                    </ul>
-                </div>
+    // TASK 4: Language Switcher Function
+    function changeLanguage(lang) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('lang', lang);
+        window.location.href = url.toString();
+    }
 
-                <!-- Contact Info -->
-                <div>
-                    <h3 class="text-lg font-bold mb-6 text-white">Contact Us</h3>
-                    <ul class="space-y-4">
-                        <li class="flex gap-3 text-gray-400">
-                            <svg class="w-5 h-5 text-accent-cyan flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            </svg>
-                            <span>123 Medical Center Drive<br>New York, NY 10001</span>
-                        </li>
-                        <li class="flex gap-3 text-gray-400">
-                            <svg class="w-5 h-5 text-accent-cyan flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                            </svg>
-                            <span>+1 (234) 567-8900</span>
-                        </li>
-                        <li class="flex gap-3 text-gray-400">
-                            <svg class="w-5 h-5 text-accent-cyan flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                            </svg>
-                            <span>info@medicarepro.com</span>
-                        </li>
-                    </ul>
-                    
-                    <!-- Map Placeholder -->
-                    <!-- <div class="mt-6 h-32 bg-dark-100 rounded-xl overflow-hidden border border-gray-800">
-                        <div class="w-full h-full flex items-center justify-center text-gray-600">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
-                            </svg>
-                        </div>
-                    </div> -->
-                </div>
-            </div>
-
-            <!-- Bottom Footer -->
-            <div class="border-t border-gray-800 pt-8 mt-8">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p class="text-gray-400 text-sm">© 2025 MediCare Pro. All rights reserved.</p>
-                    <div class="flex gap-6 text-sm">
-                        <a href="#terms" class="text-gray-400 hover:text-accent-cyan transition-colors">Terms & Conditions</a>
-                        <a href="#privacy" class="text-gray-400 hover:text-accent-cyan transition-colors">Privacy Policy</a>
-                        <a href="#cookie" class="text-gray-400 hover:text-accent-cyan transition-colors">Cookie Policy</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Floating AI Assistant Icon -->
-    <div class="fixed bottom-8 right-8 z-50">
-        <button class="w-16 h-16 bg-gradient-to-br from-accent-cyan to-accent-blue rounded-full shadow-2xl flex items-center justify-center animate-pulse-slow hover:scale-110 transition-transform group">
-            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-            </svg>
-            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-ping"></span>
-            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full"></span>
-        </button>
-        <div class="absolute bottom-20 right-0 bg-dark-100 border border-gray-700 rounded-xl p-4 w-64 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            <p class="text-sm text-gray-300">👋 Hi! I'm your AI assistant. How can I help you today?</p>
-        </div>
-    </div>
-
-    <script>
-        // Theme Switcher
-        (function() {
-            const themeToggle = document.getElementById('themeToggle');
-            const sunIcon = document.getElementById('sunIcon');
-            const moonIcon = document.getElementById('moonIcon');
-            const html = document.documentElement;
-            const body = document.body;
-
-            const currentTheme = localStorage.getItem('theme') || 'dark';
-
-            function applyTheme(theme) {
-                if (theme === 'dark') {
-                    body.classList.add('dark');
-                    html.classList.add('dark');
-                    sunIcon.classList.remove('hidden');
-                    moonIcon.classList.add('hidden');
-                } else {
-                    body.classList.remove('dark');
-                    html.classList.remove('dark');
-                    sunIcon.classList.add('hidden');
-                    moonIcon.classList.remove('hidden');
-                }
+    // Set active language switcher button state based on URL parameters
+    document.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentLang = urlParams.get('lang') || 'en';
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-lang') === currentLang) {
+                btn.classList.add('active');
             }
+        });
+    });
 
-            applyTheme(currentTheme);
+    // --- 1. Theme Switcher Logic ---
+    (function() {
+        const themeToggle = document.getElementById('themeToggle');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+        const html = document.documentElement;
+        const body = document.body;
 
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                body.classList.add('dark');
+                html.classList.add('dark');
+                if(sunIcon) sunIcon.classList.remove('hidden');
+                if(moonIcon) moonIcon.classList.add('hidden');
+            } else {
+                body.classList.remove('dark');
+                html.classList.remove('dark');
+                if(sunIcon) sunIcon.classList.add('hidden');
+                if(moonIcon) moonIcon.classList.remove('hidden');
+            }
+        }
+        applyTheme(currentTheme);
+
+        if (themeToggle) {
             themeToggle.addEventListener('click', function() {
-                const isDark = body.classList.contains('dark');
+                const isDark = html.classList.contains('dark');
                 const newTheme = isDark ? 'light' : 'dark';
                 applyTheme(newTheme);
                 localStorage.setItem('theme', newTheme);
             });
-        })();
+        }
+    })();
 
-        function switchLanguage(lang) {
-            console.log('Language switched to:', lang);
+    // --- 3. Mobile Menu & Scroll ---
+    function toggleMobileMenu() {
+        const menu = document.getElementById('mobileMenu');
+        if(menu) menu.classList.toggle('hidden');
+    }
+
+    // --- 4. Stepper & Booking Logic ---
+    let currentStep = 1;
+
+    function validateStep1() {
+        const name = document.getElementById('patientName').value.trim();
+        const phone = document.getElementById('patientPhone').value.trim();
+
+        if(!name || !phone) {
+            alert('Please fill in your Full Name and Phone Number.');
+            return;
         }
 
-        // Booking State
-        let currentStep = 1;
-        const bookingData = {
-            name: '',
-            phone: '',
-            email: '',
-            service: '',
-            doctor: '',
-            date: '',
-            time: ''
-        };
-
-        // Doctors by service
-        const doctorsByService = {
-            'Cardiology': [
-                { name: 'Dr. Emily Chen', specialty: 'Chief Cardiologist', experience: '15+ years', img: 'EC' },
-                { name: 'Dr. Robert Martinez', specialty: 'Interventional Cardiologist', experience: '12+ years', img: 'RM' }
-            ],
-            'Neurology': [
-                { name: 'Dr. Michael Roberts', specialty: 'Senior Neurologist', experience: '12+ years', img: 'MR' },
-                { name: 'Dr. Jennifer Lee', specialty: 'Neuromuscular Specialist', experience: '10+ years', img: 'JL' }
-            ],
-            'Orthopedics': [
-                { name: 'Dr. David Thompson', specialty: 'Orthopedic Surgeon', experience: '18+ years', img: 'DT' },
-                { name: 'Dr. Lisa Anderson', specialty: 'Sports Medicine', experience: '14+ years', img: 'LA' }
-            ],
-            'Pediatrics': [
-                { name: 'Dr. Sarah Williams', specialty: 'Pediatric Specialist', experience: '10+ years', img: 'SW' },
-                { name: 'Dr. James Taylor', specialty: 'Child Development', experience: '13+ years', img: 'JT' }
-            ]
-        };
-
-        // Calendar variables
-        let currentDate = new Date();
-        let selectedDate = null;
-
-        // Step Navigation
-        function nextStep() {
-            if (currentStep === 1) {
-                const name = document.getElementById('patientName').value;
-                const phone = document.getElementById('patientPhone').value;
-                const email = document.getElementById('patientEmail').value;
-
-                if (!name || !phone || !email) {
-                    alert('Please fill in all fields');
-                    return;
-                }
-
-                bookingData.name = name;
-                bookingData.phone = phone;
-                bookingData.email = email;
-                updateSummary();
-            } else if (currentStep === 2) {
-                if (!bookingData.service) {
-                    alert('Please select a service');
-                    return;
-                }
-                loadDoctors();
-            } else if (currentStep === 3) {
-                if (!bookingData.doctor) {
-                    alert('Please select a doctor');
-                    return;
-                }
-                initializeCalendar();
-                loadTimeSlots();
-            }
-
-            if (currentStep < 4) {
-                document.getElementById(`step${currentStep}`).classList.remove('active');
-                document.getElementById(`step${currentStep}Indicator`).classList.remove('active');
-                document.getElementById(`step${currentStep}Indicator`).classList.add('completed');
-                
-                currentStep++;
-                
-                document.getElementById(`step${currentStep}`).classList.add('active');
-                document.getElementById(`step${currentStep}Indicator`).classList.add('active');
-            }
+        if (!isAuthenticated) {
+            window.location.href = '/login?redirect=/appointment/book';
+            return;
         }
+        nextStep();
+    }
 
-        function prevStep() {
-            if (currentStep > 1) {
-                document.getElementById(`step${currentStep}`).classList.remove('active');
-                document.getElementById(`step${currentStep}Indicator`).classList.remove('active');
-                
-                currentStep--;
-                
-                document.getElementById(`step${currentStep}`).classList.add('active');
-                document.getElementById(`step${currentStep}Indicator`).classList.add('active');
-                document.getElementById(`step${currentStep}Indicator`).classList.remove('completed');
-            }
-        }
+    function nextStep() {
+        if(currentStep === 4) return;
+        document.getElementById(`step${currentStep}`).classList.remove('active');
+        document.getElementById(`step${currentStep}Indicator`).classList.remove('active');
+        document.getElementById(`step${currentStep}Indicator`).classList.add('completed');
 
-        // Service Selection
-        function selectService(service, element) {
-            document.querySelectorAll('.service-card').forEach(card => card.classList.remove('selected'));
-            element.classList.add('selected');
-            bookingData.service = service;
-            updateSummary();
-        }
+        currentStep++;
 
-        // Load Doctors
-        function loadDoctors() {
-            const doctorsList = document.getElementById('doctorsList');
-            const doctors = doctorsByService[bookingData.service] || [];
-            
-            doctorsList.innerHTML = doctors.map(doctor => `
-                <div class="doctor-card bg-dark-200 dark:bg-dark-200 bg-gray-50 border-2 border-gray-700 dark:border-gray-700 border-gray-300 rounded-xl p-4 flex items-center gap-4" onclick="selectDoctor('${doctor.name}', this)">
-                    <img src="https://ui-avatars.com/api/?name=${doctor.img}&background=06B6D4&color=fff" class="w-16 h-16 rounded-full" alt="${doctor.name}">
-                    <div class="flex-1">
-                        <h4 class="font-bold text-white dark:text-white text-gray-900">${doctor.name}</h4>
-                        <p class="text-sm text-accent-cyan">${doctor.specialty}</p>
-                        <p class="text-xs text-gray-400">${doctor.experience}</p>
+        document.getElementById(`step${currentStep}`).classList.add('active');
+        document.getElementById(`step${currentStep}Indicator`).classList.add('active');
+        updateSummaryUI();
+    }
+
+    function prevStep() {
+        if(currentStep === 1) return;
+        document.getElementById(`step${currentStep}`).classList.remove('active');
+        document.getElementById(`step${currentStep}Indicator`).classList.remove('active');
+
+        currentStep--;
+
+        document.getElementById(`step${currentStep}`).classList.add('active');
+        document.getElementById(`step${currentStep}Indicator`).classList.add('active');
+        document.getElementById(`step${currentStep}Indicator`).classList.remove('completed');
+    }
+
+    // --- 5. Dynamic Cards Logic ---
+    function selectDepartmentCard(cardElement) {
+        const deptId = cardElement.getAttribute('data-id');
+
+        document.querySelectorAll('.dept-card').forEach(c => {
+            c.classList.remove('border-accent-cyan', 'bg-accent-cyan/5', 'shadow-md');
+        });
+        cardElement.classList.add('border-accent-cyan', 'bg-accent-cyan/5', 'shadow-md');
+
+        document.getElementById('selectedDepartmentId').value = deptId;
+        document.getElementById('selectedServiceId').value = '';
+        document.getElementById('selectedDoctorId').value = '';
+        document.getElementById('btnStep2').disabled = true;
+        document.getElementById('btnStep2').classList.add('opacity-50', 'cursor-not-allowed');
+        window.selectedServiceName = '';
+
+        const filteredServices = allServices.filter(srv => srv.departmentId === deptId);
+        const serviceGrid = document.getElementById('serviceGrid');
+        serviceGrid.innerHTML = '';
+
+        if (filteredServices.length === 0) {
+            serviceGrid.innerHTML = '<div class="col-span-full p-4 bg-gray-50 dark:bg-dark-300 border border-gray-200 dark:border-gray-700 rounded-xl text-center text-gray-500 text-sm">Այս բաժանմունքում դեռ ծառայություններ չկան:</div>';
+        } else {
+            filteredServices.forEach(srv => {
+                const srvCard = document.createElement('div');
+                srvCard.className = 'service-card border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-dark-200/50 rounded-xl p-4 cursor-pointer transition-all hover:border-accent-cyan flex flex-col justify-between h-full';
+                srvCard.innerHTML = `
+                    <h4 class="font-bold text-gray-900 dark:text-white text-sm mb-3 translate-me">${srv.name}</h4>
+                    <div class="flex justify-between items-center mt-auto border-t border-gray-100 dark:border-gray-800 pt-2">
+                        <span class="text-accent-cyan font-bold text-sm">${srv.price ? srv.price + ' AMD' : 'Free'}</span>
+                        <span class="text-gray-500 text-xs flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            ${srv.durationMinutes} րոպե
+                        </span>
                     </div>
-                    <svg class="w-6 h-6 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                    </svg>
-                </div>
-            `).join('');
+                `;
+                srvCard.onclick = () => selectServiceCard(srvCard, srv.id, srv.name);
+                serviceGrid.appendChild(srvCard);
+            });
         }
 
-        function selectDoctor(doctor, element) {
-            document.querySelectorAll('.doctor-card').forEach(card => card.classList.remove('selected'));
-            element.classList.add('selected');
-            bookingData.doctor = doctor;
-            updateSummary();
+        const container = document.getElementById('serviceContainer');
+        container.classList.remove('hidden');
+        setTimeout(() => {
+            container.classList.remove('opacity-0', 'translate-y-4');
+            container.classList.add('opacity-100', 'translate-y-0');
+        }, 50);
+
+        updateSummaryUI();
+    }
+
+    function selectServiceCard(cardElement, serviceId, serviceName) {
+        document.querySelectorAll('#serviceGrid .service-card').forEach(c => {
+            c.classList.remove('border-accent-cyan', 'bg-accent-cyan/5', 'shadow-md');
+        });
+        cardElement.classList.add('border-accent-cyan', 'bg-accent-cyan/5', 'shadow-md');
+
+        document.getElementById('selectedServiceId').value = serviceId;
+        window.selectedServiceName = serviceName;
+
+        const btnStep2 = document.getElementById('btnStep2');
+        btnStep2.disabled = false;
+        btnStep2.classList.remove('opacity-50', 'cursor-not-allowed');
+
+        filterDoctorsByService();
+        updateSummaryUI();
+    }
+
+    function filterDoctorsByService() {
+        const deptId = document.getElementById('selectedDepartmentId').value;
+        const serviceId = document.getElementById('selectedServiceId').value;
+        const docGrid = document.getElementById('doctorGrid');
+
+        docGrid.innerHTML = '';
+        document.getElementById('selectedDoctorId').value = '';
+        document.getElementById('btnStep3').disabled = true;
+        document.getElementById('btnStep3').classList.add('opacity-50', 'cursor-not-allowed');
+
+        const filteredDocs = allDoctors.filter(doc =>
+            doc.departmentId === deptId &&
+            doc.active &&
+            doc.serviceIds &&
+            doc.serviceIds.includes(serviceId)
+        );
+
+        if(filteredDocs.length === 0) {
+            docGrid.innerHTML = '<div class="col-span-1 sm:col-span-2 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-xl font-medium text-center">Այս ծառայության համար հասանելի բժիշկներ չկան:</div>';
+        } else {
+            filteredDocs.forEach(doc => {
+                const card = document.createElement('div');
+                card.className = 'doctor-card bg-white dark:bg-dark-200 border border-gray-200 dark:border-gray-700 p-5 rounded-xl flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left transition-all hover:border-accent-cyan cursor-pointer';
+                card.innerHTML = `
+                    <div class="w-14 h-14 bg-gradient-to-br from-accent-cyan to-blue-500 rounded-full flex items-center justify-center text-lg font-bold text-white shadow-md flex-shrink-0">
+                        Dr.
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg text-gray-900 dark:text-white translate-me">${doc.firstName} ${doc.lastName}</h4>
+                        <p class="text-sm font-medium text-accent-cyan translate-me">${doc.specialization}</p>
+                        <p class="text-xs text-gray-500 mt-1"><span class="translate-me">${doc.experienceYears}</span> Years Experience</p>
+                    </div>
+                `;
+                card.onclick = () => selectDoctor(card, doc);
+                docGrid.appendChild(card);
+            });
+        }
+    }
+
+    function selectDoctor(cardElement, doc) {
+        document.querySelectorAll('.doctor-card').forEach(c => c.classList.remove('selected'));
+        cardElement.classList.add('selected');
+        document.getElementById('selectedDoctorId').value = doc.id;
+
+        document.getElementById('btnStep3').disabled = false;
+        document.getElementById('btnStep3').classList.remove('opacity-50', 'cursor-not-allowed');
+
+        window.selectedDocName = `Dr. ${doc.firstName} ${doc.lastName}`;
+        updateSummaryUI();
+
+        if(document.getElementById('dateSelect').value) {
+            fetchAvailableTimeSlots();
+        }
+    }
+
+    // --- 6. Date & Time Logic ---
+    document.addEventListener("DOMContentLoaded", function() {
+        let today = new Date().toISOString().split('T')[0];
+        const dateInput = document.getElementById("dateSelect");
+        if(dateInput) dateInput.min = today;
+        updateSummaryUI();
+    });
+
+    function fetchAvailableTimeSlots() {
+        const doctorId = document.getElementById("selectedDoctorId").value;
+        const date = document.getElementById("dateSelect").value;
+        const container = document.getElementById("timeSlotsContainer");
+        const hiddenTimeInput = document.getElementById("selectedTime");
+        const submitBtn = document.getElementById("submitBtn");
+
+        if (!doctorId || !date) return;
+
+        hiddenTimeInput.value = "";
+        if(submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add("opacity-50", "cursor-not-allowed");
         }
 
-        // Calendar Functions
-        function initializeCalendar() {
-            renderCalendar();
-        }
+        container.innerHTML = `
+            <div class="flex flex-col items-center w-full gap-2 py-4">
+                <div class="w-6 h-6 border-2 border-accent-cyan border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-accent-cyan text-xs font-bold uppercase tracking-widest">Checking Availability...</p>
+            </div>`;
 
-        function renderCalendar() {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            
-            document.getElementById('currentMonth').textContent = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-            
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const today = new Date();
-            
-            const calendarDays = document.getElementById('calendarDays');
-            calendarDays.innerHTML = '';
-            
-            // Previous month days
-            for (let i = 0; i < firstDay; i++) {
-                const day = document.createElement('div');
-                day.className = 'calendar-day other-month text-center py-2 rounded-lg text-gray-500';
-                day.textContent = '';
-                calendarDays.appendChild(day);
-            }
-            
-            // Current month days
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dayElement = document.createElement('div');
-                const date = new Date(year, month, day);
-                const isPast = date < today && date.toDateString() !== today.toDateString();
-                
-                dayElement.className = `calendar-day text-center py-2 rounded-lg ${isPast ? 'disabled' : ''}`;
-                dayElement.textContent = day;
-                
-                if (!isPast) {
-                    dayElement.onclick = function() {
-                        selectDate(date, this);
-                    };
+        updateSummaryUI();
+
+        fetch(`/appointments/api/available-slots?doctorId=${doctorId}&date=${date}`)
+            .then(res => {
+                if (!res.ok) throw new Error('API_FAIL');
+                return res.json();
+            })
+            .then(slots => {
+                container.innerHTML = "";
+                if (!slots || slots.length === 0) {
+                    container.innerHTML = `
+                        <div class="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl w-full text-center animate-fade-in">
+                            <p class="text-rose-500 text-sm font-bold">No available slots for this date.</p>
+                            <p class="text-gray-400 text-xs mt-1">Please try another day.</p>
+                        </div>`;
+                    return;
                 }
-                
-                calendarDays.appendChild(dayElement);
-            }
+
+                slots.forEach(time => {
+                    const btn = document.createElement("button");
+                    btn.type = "button";
+                    btn.innerText = time;
+                    btn.className = "time-btn px-5 py-2.5 bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-200 hover:shadow-md transition-all";
+
+                    btn.onclick = function() {
+                        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+                        this.classList.add('selected');
+                        hiddenTimeInput.value = time;
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+                        updateSummaryUI();
+                    };
+                    container.appendChild(btn);
+                });
+            })
+            .catch(err => {
+                console.error("Fetch Error:", err);
+                container.innerHTML = `
+                    <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-xl w-full text-center">
+                        <p class="text-red-500 text-sm font-bold">Server Connection Error</p>
+                        <button type="button" onclick="fetchAvailableTimeSlots()" class="mt-2 text-xs underline text-gray-400 hover:text-white">Click to Retry</button>
+                    </div>`;
+            });
+    }
+
+    document.getElementById('appointmentForm').addEventListener('submit', function(e) {
+        const btn = document.getElementById('submitBtn');
+        if (btn.disabled) return;
+        btn.disabled = true;
+        btn.innerHTML = `<span class="flex items-center gap-2">⏳ Processing Booking...</span>`;
+    });
+
+
+    // --- 7. Summary UI ---
+    function updateSummaryUI() {
+        const nameInput = document.getElementById('patientName');
+        if(nameInput) document.getElementById('summaryName').innerText = nameInput.value || '-';
+
+        const summaryService = document.getElementById('summaryService');
+        if(summaryService) summaryService.innerText = window.selectedServiceName || '-';
+
+        const summaryDoctor = document.getElementById('summaryDoctor');
+        if(summaryDoctor) summaryDoctor.innerText = window.selectedDocName || '-';
+
+        const dateSelect = document.getElementById('dateSelect');
+        if(dateSelect && document.getElementById('summaryDate')) {
+            document.getElementById('summaryDate').innerText = dateSelect.value || '-';
         }
 
-        function selectDate(date, element) {
-            document.querySelectorAll('.calendar-day').forEach(day => day.classList.remove('selected'));
-            element.classList.add('selected');
-            selectedDate = date;
-            bookingData.date = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            updateSummary();
+        const timeSelect = document.getElementById('selectedTime');
+        if(timeSelect && document.getElementById('summaryTime')) {
+            document.getElementById('summaryTime').innerText = timeSelect.value || '-';
         }
+    }
 
-        function prevMonth() {
-            currentDate.setMonth(currentDate.getMonth() - 1);
-            renderCalendar();
-        }
+    // --- 8. Slider Logic ---
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.hero-slide');
+    const dots = document.querySelectorAll('.carousel-dot');
+    const totalSlides = slides.length;
 
-        function nextMonth() {
-            currentDate.setMonth(currentDate.getMonth() + 1);
-            renderCalendar();
-        }
-
-        // Time Slots
-        function loadTimeSlots() {
-            const times = ['09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'];
-            const unavailable = ['12:00 PM', '03:00 PM']; // Example unavailable slots
-            
-            const timeSlotsContainer = document.getElementById('timeSlots');
-            timeSlotsContainer.innerHTML = times.map(time => `
-                <button class="time-slot ${unavailable.includes(time) ? 'disabled' : ''} bg-dark-200 dark:bg-dark-200 bg-gray-100 border-2 border-gray-700 dark:border-gray-700 border-gray-300 rounded-xl py-3 text-sm font-semibold" 
-                    ${unavailable.includes(time) ? 'disabled' : `onclick="selectTime('${time}', this)"`}>
-                    ${time}
-                </button>
-            `).join('');
-        }
-
-        function selectTime(time, element) {
-            document.querySelectorAll('.time-slot').forEach(slot => slot.classList.remove('selected'));
-            element.classList.add('selected');
-            bookingData.time = time;
-            updateSummary();
-        }
-
-        // Update Summary
-        function updateSummary() {
-            document.getElementById('summaryName').textContent = bookingData.name || '-';
-            document.getElementById('summaryService').textContent = bookingData.service || '-';
-            document.getElementById('summaryDoctor').textContent = bookingData.doctor || '-';
-            document.getElementById('summaryDate').textContent = bookingData.date || '-';
-            document.getElementById('summaryTime').textContent = bookingData.time || '-';
-        }
-
-        // Confirm Booking
-        function confirmBooking() {
-            if (!bookingData.date || !bookingData.time) {
-                alert('Please select both date and time');
-                return;
-            }
-
-            const summary = `${bookingData.service} with ${bookingData.doctor} on ${bookingData.date} at ${bookingData.time}`;
-            document.getElementById('modalSummary').textContent = summary;
-            document.getElementById('successModal').classList.remove('hidden');
-        }
-
-        function closeSuccessModal() {
-            document.getElementById('successModal').classList.add('hidden');
-            // Reset form or redirect
-            window.location.href = 'index.html';
-        }
-
-        // Close modal on outside click
-        document.getElementById('successModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeSuccessModal();
+    function showSlide(index) {
+        slides.forEach((slide, i) => {
+            slide.style.opacity = i === index ? '1' : '0';
+            slide.style.zIndex = i === index ? '15' : '10';
+        });
+        dots.forEach((dot, i) => {
+            if (i === index) {
+                dot.classList.remove('bg-gray-400/50');
+                dot.classList.add('bg-accent-cyan');
+            } else {
+                dot.classList.remove('bg-accent-cyan');
+                dot.classList.add('bg-gray-400/50');
             }
         });
-    </script>
+    }
+
+    function changeSlide(index) {
+        currentSlide = index;
+        showSlide(currentSlide);
+    }
+
+    function nextSlide() {
+        if (totalSlides > 0) {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            showSlide(currentSlide);
+        }
+    }
+
+    function prevSlide() {
+        if (totalSlides > 0) {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            showSlide(currentSlide);
+        }
+    }
+
+    if (totalSlides > 0) {
+        setInterval(nextSlide, 5000);
+    }
+
+    // --- 9. Smooth Scroll & Animations ---
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const href = this.getAttribute('href');
+            if (href !== '#') {
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        });
+    });
+
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -100px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-fade-in');
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.card-hover').forEach(card => {
+        observer.observe(card);
+    });
+</script>
+
 </body>
 </html>

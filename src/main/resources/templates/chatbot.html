@@ -1,894 +1,839 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth dark" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Medical Assistant - MediCare Pro</title>
+    <title>AI Medical Assistant - Avelia Clinic</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
+    <!-- Backend Կապեր -->
+    <meta name="_csrf" th:content="${_csrf?.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
+    <meta name="patient-id" th:content="${user != null ? user.id : ''}"/>
+
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        dark: {
-                            100: '#1E293B',
-                            200: '#0F172A',
-                            300: '#020617',
-                        },
-                        accent: {
-                            cyan: '#06B6D4',
-                            blue: '#3B82F6',
-                            purple: '#8B5CF6',
-                        },
-                        light: {
-                            100: '#F9FAFB',
-                            200: '#F3F4F6',
-                            300: '#E5E7EB',
-                        }
+                        dark: { 100: '#1E293B', 200: '#0F172A', 300: '#020617' },
+                        accent: { cyan: '#06B6D4', blue: '#3B82F6', purple: '#8B5CF6' },
+                        light: { 100: '#F9FAFB', 200: '#F3F4F6', 300: '#E5E7EB' }
                     },
-                    fontFamily: {
-                        'sans': ['Inter', 'system-ui', 'sans-serif'],
-                    },
+                    fontFamily: { 'sans': ['Inter', 'system-ui', 'sans-serif'] },
                     animation: {
                         'fade-in': 'fadeIn 0.6s ease-in',
                         'slide-up': 'slideUp 0.5s ease-out',
                         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' },
-                        },
-                        slideUp: {
-                            '0%': { transform: 'translateY(20px)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' },
-                        }
                     }
                 }
             }
         }
     </script>
     <style>
-        /* Light Mode Variables and Overrides */
-        :root {
-            --transition-theme: all 0.3s ease;
-        }
+        .gradient-text { background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .nav-link { position: relative; transition: color 0.3s ease; }
+        .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%); transition: width 0.3s ease; }
+        .nav-link:hover::after { width: 100%; }
+        .dropdown:hover .dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
 
-        /* Smooth transitions for theme changes */
-        body, nav, .bg-dark-100, .bg-dark-200, .bg-dark-300 {
-            transition: var(--transition-theme);
-        }
+        body { top: 0px !important; height: 100dvh; }
+        .weglot-container, .wg-default { display: none !important; }
 
-        /* Light Mode Specific Styles */
-        body:not(.dark) {
-            background-color: #F9FAFB !important;
-            color: #1E293B !important;
-        }
+        .messages-area::-webkit-scrollbar, .history-area::-webkit-scrollbar { width: 6px; }
+        .messages-area::-webkit-scrollbar-track, .history-area::-webkit-scrollbar-track { background: transparent; }
+        .messages-area::-webkit-scrollbar-thumb, .history-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; transition: background 0.3s; }
+        .dark .messages-area::-webkit-scrollbar-thumb, .dark .history-area::-webkit-scrollbar-thumb { background: #334155; }
+        .messages-area::-webkit-scrollbar-thumb:hover, .history-area::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark .messages-area::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        body:not(.dark) .bg-dark-300 {
-            background-color: #F9FAFB !important;
-        }
+        @keyframes messageSlideInLeft { from { opacity: 0; transform: translateX(-20px) translateY(10px) scale(0.95); } to { opacity: 1; transform: translateX(0) translateY(0) scale(1); } }
+        @keyframes messageSlideInRight { from { opacity: 0; transform: translateX(20px) translateY(10px) scale(0.95); } to { opacity: 1; transform: translateX(0) translateY(0) scale(1); } }
+        .message-ai { animation: messageSlideInLeft 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); transform-origin: left bottom; }
+        .message-user { animation: messageSlideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); transform-origin: right bottom; }
 
-        body:not(.dark) .bg-dark-200 {
-            background-color: #FFFFFF !important;
-            border-color: #E5E7EB !important;
-        }
-
-        body:not(.dark) .bg-dark-100 {
-            background-color: #FFFFFF !important;
-            border-color: #E5E7EB !important;
-            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-        }
-
-        body:not(.dark) .text-gray-100 {
-            color: #1E293B !important;
-        }
-
-        body:not(.dark) .text-gray-300 {
-            color: #4B5563 !important;
-        }
-
-        body:not(.dark) .text-gray-400 {
-            color: #6B7280 !important;
-        }
-
-        body:not(.dark) .text-white {
-            color: #1E293B !important;
-        }
-
-        body:not(.dark) .border-gray-800 {
-            border-color: #E5E7EB !important;
-        }
-
-        body:not(.dark) .border-gray-700 {
-            border-color: #D1D5DB !important;
-        }
-
-        body:not(.dark) nav {
-            background-color: rgba(255, 255, 255, 0.95) !important;
-            backdrop-filter: blur(12px);
-        }
-
-        body:not(.dark) .nav-link {
-            color: #4B5563 !important;
-        }
-
-        body:not(.dark) .nav-link:hover {
-            color: #1E293B !important;
-        }
-
-        body:not(.dark) input[type="text"],
-        body:not(.dark) textarea {
-            background-color: #F3F4F6 !important;
-            border-color: #D1D5DB !important;
-            color: #1E293B !important;
-        }
-
-        body:not(.dark) input[type="text"]:focus,
-        body:not(.dark) textarea:focus {
-            border-color: #06B6D4 !important;
-        }
-
-        body:not(.dark) .dropdown-menu {
-            background-color: #FFFFFF !important;
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-        }
-
-        body:not(.dark) .message-bubble-ai {
-            background-color: #F3F4F6 !important;
-            color: #1E293B !important;
-        }
-
-        .gradient-text {
-            background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .nav-link {
-            position: relative;
-            transition: color 0.3s ease;
-        }
-
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);
-            transition: width 0.3s ease;
-        }
-
-        .nav-link:hover::after {
-            width: 100%;
-        }
-
-        .dropdown:hover .dropdown-menu {
-            display: block;
-        }
-
-        /* Chat Specific Styles */
-        .chat-container {
-            height: calc(100vh - 73px);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .messages-area {
-            flex: 1;
-            overflow-y: auto;
-            scroll-behavior: smooth;
-            padding: 2rem 1rem;
-        }
-
-        /* Custom Scrollbar */
-        .messages-area::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .messages-area::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .messages-area::-webkit-scrollbar-thumb {
-            background: var(--scrollbar-color, #334155);
-            border-radius: 10px;
-            transition: background 0.3s;
-        }
-
-        body:not(.dark) .messages-area::-webkit-scrollbar-thumb {
-            background: #D1D5DB;
-        }
-
-        .messages-area::-webkit-scrollbar-thumb:hover {
-            background: var(--scrollbar-hover, #475569);
-        }
-
-        body:not(.dark) .messages-area::-webkit-scrollbar-thumb:hover {
-            background: #9CA3AF;
-        }
-
-        /* Message Animations */
-        @keyframes messageSlideInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-30px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0) scale(1);
-            }
-        }
-
-        @keyframes messageSlideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(30px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0) scale(1);
-            }
-        }
-
-        .message-ai {
-            animation: messageSlideInLeft 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
-        .message-user {
-            animation: messageSlideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
-        /* Message Bubbles */
-        .message-bubble-user {
-            background: linear-gradient(135deg, #06B6D4 0%, #0284C7 100%);
-            color: white;
-            border-radius: 20px 20px 4px 20px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-        }
-
-        .message-bubble-ai {
-            background: #1E293B;
-            color: #E2E8F0;
-            border-radius: 20px 20px 20px 4px;
-            border: 1px solid #334155;
-        }
-
-        /* Typing Indicator */
-        .typing-indicator {
-            display: inline-flex;
-            gap: 4px;
-            padding: 14px 18px;
-            background: #1E293B;
-            border-radius: 18px;
-            border: 1px solid #334155;
-        }
-
-        body:not(.dark) .typing-indicator {
-            background: #F3F4F6;
-            border-color: #D1D5DB;
-        }
-
-        .typing-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #64748B;
-            animation: typing 1.4s infinite ease-in-out;
-        }
-
+        .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: #06B6D4; animation: typing 1.4s infinite ease-in-out; }
         .typing-dot:nth-child(2) { animation-delay: 0.2s; }
         .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-6px); opacity: 1; } }
 
-        @keyframes typing {
-            0%, 60%, 100% {
-                transform: translateY(0);
-                opacity: 0.5;
-            }
-            30% {
-                transform: translateY(-12px);
-                opacity: 1;
-            }
-        }
-
-        /* Input Area */
-        .input-container {
-            border-top: 1px solid #334155;
-            padding: 1.5rem;
-            box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.1);
-        }
-
-        body:not(.dark) .input-container {
-            border-color: #E5E7EB;
-            box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.05);
-        }
-
-        .chat-input {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .chat-input:focus {
-            outline: none;
-            border-color: #06B6D4;
-            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
-        }
-
-        .send-btn {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .send-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 16px rgba(6, 182, 212, 0.3);
-        }
-
-        .send-btn:active {
-            transform: scale(0.95);
-        }
-
-        .send-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: scale(1);
-        }
-
-        /* Quick Action Chips */
-        .quick-chip {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .quick-chip:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-        }
-
-        body:not(.dark) .quick-chip {
-            background-color: #FFFFFF;
-            border-color: #E5E7EB;
-        }
-
-        body:not(.dark) .quick-chip:hover {
-            border-color: #06B6D4;
-            background-color: #F0FDFF;
-        }
-
-        /* Avatar Styles */
-        .avatar-user {
-            background: linear-gradient(135deg, #06B6D4 0%, #0284C7 100%);
-        }
-
-        .avatar-ai {
-            background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
-        }
-
-        /* Welcome Card */
-        .welcome-card {
-            background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
-            border: 1px solid #334155;
-            border-radius: 24px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        body:not(.dark) .welcome-card {
-            border-color: #E5E7EB;
-            background: linear-gradient(135deg, rgba(6, 182, 212, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%);
-        }
+        /* AI Markdown Styles */
+        .prose h1, .prose h2, .prose h3 { color: #06B6D4; font-weight: 800; margin-top: 1.2em; margin-bottom: 0.5em; letter-spacing: -0.025em; }
+        .prose h2 { font-size: 1.15rem; }
+        .prose p { margin-bottom: 0.8em; line-height: 1.6; }
+        .prose ul { list-style-type: none; padding-left: 0.5em; margin-bottom: 1em; }
+        .prose ul li { position: relative; padding-left: 1.5em; margin-bottom: 0.4em; }
+        .prose ul li::before { content: '•'; color: #06B6D4; font-weight: bold; position: absolute; left: 0; }
+        .dark .prose strong { color: #f8fafc; font-weight: 700; }
+        .prose strong { color: #0f172a; font-weight: 700; }
+        .dark .prose code { background-color: #1e293b; padding: 0.2em 0.4em; border-radius: 0.375rem; color: #38bdf8; font-size: 0.875em; border: 1px solid #334155; }
+        .prose code { background-color: #f1f5f9; padding: 0.2em 0.4em; border-radius: 0.375rem; color: #0284c7; font-size: 0.875em; border: 1px solid #e2e8f0; }
     </style>
+    <script type="text/javascript" src="https://cdn.weglot.com/weglot.min.js"></script>
+    <script>
+        Weglot.initialize({ api_key: 'wg_b1baffa7e7edd217571a0973f1b5b3fa0' });
+    </script>
 </head>
-<body class="bg-dark-300 text-gray-100 font-sans">
 
-    <!-- Top Bar -->
-    <div class="bg-dark-200 border-b border-gray-800">
-        <div class="container mx-auto px-4 py-3">
-            <div class="flex flex-wrap justify-between items-center text-sm">
-                <div class="flex flex-wrap gap-6 text-gray-400">
-                    <a href="tel:+1234567890" class="flex items-center gap-2 hover:text-accent-cyan transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                        </svg>
-                        +1 (234) 567-8900
-                    </a>
-                    <a href="#" class="flex items-center gap-2 hover:text-accent-cyan transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        123 Medical Center, New York, NY 10001
-                    </a>
-                </div>
-                
-                <div class="flex gap-3 mt-2 md:mt-0">
-                    <button class="px-3 py-1 rounded hover:bg-dark-100 transition-colors text-gray-300 hover:text-white" onclick="switchLanguage('en')">EN</button>
-                    <button class="px-3 py-1 rounded hover:bg-dark-100 transition-colors text-gray-300 hover:text-white" onclick="switchLanguage('am')">AM</button>
-                    <button class="px-3 py-1 rounded hover:bg-dark-100 transition-colors text-gray-300 hover:text-white" onclick="switchLanguage('ru')">RU</button>
-                
-                <div class="flex items-center gap-3 border-l border-gray-700 pl-6 ml-3">
-                    <span class="text-xs text-gray-400">Theme:</span>
-                    <button id="themeToggle" class="w-8 h-8 rounded-lg bg-dark-100 hover:bg-dark-300 transition-colors flex items-center justify-center group">
-                        <svg id="sunIcon" class="w-5 h-5 text-yellow-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-                        </svg>
-                        <svg id="moonIcon" class="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-                        </svg>
+<body class="bg-gray-50 dark:bg-dark-300 text-gray-800 dark:text-gray-100 font-sans transition-colors duration-300 h-screen flex flex-col overflow-hidden h-[100dvh]">
+
+<!-- TOPBAR -->
+<div class="bg-white dark:bg-dark-200 border-b border-gray-200 dark:border-gray-800 transition-all duration-300 shrink-0">
+    <div class="container mx-auto px-4 py-2">
+        <div class="flex flex-wrap justify-between items-center text-sm">
+            <div class="flex flex-wrap gap-4 md:gap-6 text-gray-500 dark:text-gray-400 font-medium">
+                <a href="tel:+37410501010" class="flex items-center gap-2 hover:text-accent-cyan transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                    +374 10 50 10 10
+                </a>
+                <a href="#" class="flex items-center gap-2 hover:text-accent-cyan transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    Baghramyan 1
+                </a>
+            </div>
+
+            <div class="flex gap-2 mt-2 md:mt-0 items-center">
+                <button class="px-2 py-1 text-xs font-bold rounded-md hover:bg-gray-100 dark:hover:bg-dark-100 transition-colors text-gray-600 dark:text-gray-300 hover:text-accent-cyan" onclick="switchLanguage('en')">EN</button>
+                <button class="px-2 py-1 text-xs font-bold rounded-md hover:bg-gray-100 dark:hover:bg-dark-100 transition-colors text-gray-600 dark:text-gray-300 hover:text-accent-cyan" onclick="switchLanguage('hy')">HY</button>
+
+                <div class="flex items-center gap-3 border-l border-gray-300 dark:border-gray-700 pl-4 ml-2 transition-all duration-300">
+                    <button id="themeToggle" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-dark-100 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors flex items-center justify-center group focus:outline-none focus:ring-2 focus:ring-accent-cyan">
+                        <svg id="sunIcon" class="w-4 h-4 text-amber-500 group-hover:rotate-45 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        <svg id="moonIcon" class="w-4 h-4 text-indigo-400 group-hover:-rotate-12 transition-transform duration-300 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- NAVBAR -->
+<nav class="bg-white/95 dark:bg-dark-200/95 backdrop-blur-md sticky top-0 z-40 border-b border-gray-200 dark:border-gray-800 transition-all duration-300 shadow-sm shrink-0">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between py-4">
+            <a th:href="@{/}" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-accent-cyan to-accent-blue rounded-xl flex items-center justify-center transform group-hover:scale-105 transition-all shadow-md shadow-accent-cyan/20">
+                    <svg class="w-6 h-6 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                </div>
+                <div>
+                    <span class="text-lg md:text-xl font-extrabold gradient-text block tracking-tight">Avelia</span>
+                    <span class="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-medium tracking-wide">Premium Health Services</span>
+                </div>
+            </a>
+
+            <div class="hidden lg:flex items-center gap-8">
+                <a th:href="@{/}" class="nav-link text-gray-600 dark:text-gray-300 hover:text-accent-cyan dark:hover:text-accent-cyan font-semibold text-sm transition-colors">Home</a>
+                <a th:href="@{/departments}" class="nav-link text-gray-600 dark:text-gray-300 hover:text-accent-cyan dark:hover:text-accent-cyan font-semibold text-sm transition-colors">Departments</a>
+                <a th:href="@{/doctors}" class="nav-link text-gray-600 dark:text-gray-300 hover:text-accent-cyan dark:hover:text-accent-cyan font-semibold text-sm transition-colors">Doctors</a>
+                <a th:href="@{/contact}" class="nav-link text-gray-600 dark:text-gray-300 hover:text-accent-cyan dark:hover:text-accent-cyan font-semibold text-sm transition-colors">Contact</a>
+                <a th:href="@{/about}" class="nav-link text-gray-600 dark:text-gray-300 hover:text-accent-cyan dark:hover:text-accent-cyan font-semibold text-sm transition-colors">About</a>
+
+                <div class="dropdown relative group pb-4 -mb-4 pt-4 -mt-4 flex items-center">
+                    <button class="nav-link text-gray-600 dark:text-gray-300 group-hover:text-accent-cyan font-semibold text-sm flex items-center gap-1 transition-colors">
+                        More
+                        <svg class="w-4 h-4 transform group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div class="dropdown-menu absolute top-full left-1/2 -translate-x-1/2 mt-2 w-56 bg-white dark:bg-dark-100 rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 py-2 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-50">
+                        <a th:href="@{/service}" class="block px-5 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-200 hover:text-accent-cyan transition-colors">Services</a>
+                        <a th:href="@{/appointments}" class="block px-5 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-200 hover:text-accent-cyan transition-colors">Book Appointment</a>
+                        <a th:href="@{/gallery}" class="block px-5 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-200 hover:text-accent-cyan transition-colors">Gallery</a>
+                        <a th:href="@{/terms}" class="block px-5 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-200 hover:text-accent-cyan transition-colors">Terms & Conditions</a>
+                        <a th:href="@{/privacy}" class="block px-5 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-200 hover:text-accent-cyan transition-colors">Privacy Policy</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hidden lg:flex items-center gap-4">
+                <div class="relative group">
+                    <input type="text" placeholder="Search..." class="bg-gray-50 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 rounded-full px-4 py-2 pl-10 text-sm focus:outline-none focus:border-accent-cyan focus:ring-2 focus:ring-accent-cyan/20 transition-all w-48 group-hover:w-56 text-gray-900 dark:text-white">
+                    <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+
+                <a sec:authorize="isAnonymous()" th:href="@{/login}" class="text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-accent-cyan dark:hover:text-accent-cyan transition-colors">Login</a>
+                <a sec:authorize="isAnonymous()" th:href="@{/register}" class="bg-gradient-to-r from-accent-cyan to-accent-blue px-5 py-2 rounded-lg text-sm font-semibold text-white hover:shadow-lg hover:shadow-accent-cyan/30 transform hover:-translate-y-0.5 transition-all">Register</a>
+
+                <a sec:authorize="isAuthenticated()" th:href="@{/profile}" class="text-sm font-bold text-accent-cyan hover:text-accent-blue transition-colors">My Profile</a>
+                <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="m-0 p-0 flex items-center">
+                    <button type="submit" class="border border-red-500/30 text-red-500 bg-red-500/5 px-4 py-1.5 rounded-lg text-sm font-bold hover:bg-red-500 hover:text-white hover:shadow-lg hover:shadow-red-500/20 transition-all transform hover:-translate-y-0.5">Logout</button>
+                </form>
+            </div>
+
+            <button class="lg:hidden p-2 text-gray-600 dark:text-gray-300 hover:text-accent-cyan transition-colors rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-cyan/50" onclick="toggleMobileMenu()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden lg:hidden pb-4 border-t border-gray-100 dark:border-gray-800 mt-2 pt-4">
+            <div class="flex flex-col gap-1.5">
+                <div class="relative px-2 mb-2">
+                    <input type="text" placeholder="Search..." class="w-full bg-gray-50 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 pl-10 text-sm focus:outline-none focus:border-accent-cyan text-gray-900 dark:text-white transition-all">
+                    <svg class="w-4 h-4 text-gray-400 absolute left-5 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+
+                <a th:href="@{/}" class="block px-4 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-100 hover:text-accent-cyan transition-all font-semibold">Home</a>
+                <a th:href="@{/departments}" class="block px-4 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-100 hover:text-accent-cyan transition-all font-semibold">Departments</a>
+                <a th:href="@{/doctors}" class="block px-4 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-100 hover:text-accent-cyan transition-all font-semibold">Doctors</a>
+                <a th:href="@{/contact}" class="block px-4 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-100 hover:text-accent-cyan transition-all font-semibold">Contact</a>
+                <a th:href="@{/about}" class="block px-4 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-100 hover:text-accent-cyan transition-all font-semibold">About</a>
+
+                <div sec:authorize="isAnonymous()" class="flex gap-3 pt-4 px-2 mt-2 border-t border-gray-100 dark:border-gray-800">
+                    <a th:href="@{/login}" class="flex-1 text-center font-bold border border-gray-200 dark:border-gray-700 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-100 text-gray-800 dark:text-gray-200 transition-colors">Login</a>
+                    <a th:href="@{/register}" class="flex-1 text-center font-bold bg-gradient-to-r from-accent-cyan to-accent-blue py-2.5 rounded-lg text-white shadow-md shadow-accent-cyan/20">Register</a>
+                </div>
+
+                <div sec:authorize="isAuthenticated()" class="px-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                    <a th:href="@{/profile}" class="block text-center text-accent-cyan font-bold py-2.5 w-full bg-accent-cyan/10 border border-accent-cyan/20 rounded-lg transition-all hover:bg-accent-cyan hover:text-white">My Profile</a>
+                    <form th:action="@{/logout}" method="post" class="w-full mt-2">
+                        <button type="submit" class="w-full text-center font-bold bg-red-500/10 border border-red-500/20 text-red-500 py-2.5 rounded-lg hover:bg-red-500 hover:text-white transition-all">Logout</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
+</nav>
 
-     <!-- Main Navigation (Sticky) -->
-    <nav class="bg-dark-200/95 backdrop-blur-md sticky top-0 z-50 border-b border-gray-800">
-        <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between py-4">
-                <!-- Logo -->
-                <a href="#" class="flex items-center gap-3 group">
-                    <div class="w-12 h-12 bg-gradient-to-br from-accent-cyan to-accent-blue rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <span class="text-xl font-bold gradient-text block">MediCare Pro</span>
-                        <span class="text-xs text-gray-400">Premium Health Services</span>
-                    </div>
-                </a>
+<!-- ԲՈՒՆ ՉԱՏԻ ՏԱՐԱԾՔԸ -->
+<div class="flex-1 flex overflow-hidden w-full relative">
 
-                <!-- Desktop Menu -->
-                <div class="hidden lg:flex items-center gap-8">
-                    <a href="#home" class="nav-link text-gray-300 hover:text-white font-medium">Home</a>
-                    <a href="#services" class="nav-link text-gray-300 hover:text-white font-medium">Departments</a>
-                    <a href="#doctors" class="nav-link text-gray-300 hover:text-white font-medium">Doctors</a>
-                    <a href="#contact" class="nav-link text-gray-300 hover:text-white font-medium">Contact</a>
-                    <a href="#about" class="nav-link text-gray-300 hover:text-white font-medium">About</a>
-                    
-                    <!-- Dropdown More -->
-                    <div class="dropdown relative">
-                        <button class="nav-link text-gray-300 hover:text-white font-medium flex items-center gap-1">
-                            More
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                        </button>
-                        <div class="dropdown-menu hidden absolute top-full left-0 mt-2 w-56 bg-dark-100 rounded-xl shadow-xl border border-gray-700 py-2">
-                            <a href="#departments" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Services</a>
-                            <!-- <a href="#service-details" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Service Details</a> -->
-                            <a href="#appointment" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Book Appointment</a>
-                            <a href="#gallery" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Gallery</a>
-                            <a href="#terms" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Terms & Conditions</a>
-                            <a href="#privacy" class="block px-4 py-2 text-gray-300 hover:bg-dark-200 hover:text-white transition-colors">Privacy Policy</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Search, Login, Register -->
-                <div class="hidden lg:flex items-center gap-4">
-                    <div class="relative">
-                        <input type="text" placeholder="Search..." class="bg-dark-100 border border-gray-700 rounded-lg px-4 py-2 pl-10 text-sm focus:outline-none focus:border-accent-cyan transition-colors w-48">
-                        <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                    </div>
-                    <button class="text-gray-300 hover:text-white font-medium transition-colors">Login</button>
-                    <button class="bg-gradient-to-r from-accent-cyan to-accent-blue px-6 py-2 rounded-lg font-medium hover:shadow-lg hover:shadow-accent-cyan/20 transition-all">Register</button>
-                </div>
-
-                <!-- Mobile Menu Button -->
-                <button class="lg:hidden text-gray-300 hover:text-white" onclick="toggleMobileMenu()">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Mobile Menu -->
-            <div id="mobileMenu" class="hidden lg:hidden pb-4">
-                <div class="flex flex-col gap-3">
-                    <input type="text" placeholder="Search..." class="bg-dark-100 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-accent-cyan">
-                    <a href="#home" class="text-gray-300 hover:text-white py-2">Home</a>
-                    <a href="#services" class="text-gray-300 hover:text-white py-2">Departments</a>
-                    <a href="#doctors" class="text-gray-300 hover:text-white py-2">Doctors</a>
-                    <a href="#contact" class="text-gray-300 hover:text-white py-2">Contact</a>
-                    <a href="#about" class="text-gray-300 hover:text-white py-2">About</a>
-                    <div class="border-t border-gray-800 pt-3 mt-2">
-                        <a href="#departments" class="text-gray-400 hover:text-white py-2 block text-sm">Services</a>
-                        <a href="#appointment" class="text-gray-400 hover:text-white py-2 block text-sm">Book Appointment</a>
-                        <a href="#gallery" class="text-gray-400 hover:text-white py-2 block text-sm">Gallery</a>
-                    </div>
-                    <div class="flex gap-3 pt-3">
-                        <button class="flex-1 border border-gray-700 py-2 rounded-lg hover:bg-dark-100">Login</button>
-                        <button class="flex-1 bg-gradient-to-r from-accent-cyan to-accent-blue py-2 rounded-lg">Register</button>
-                    </div>
-                </div>
-            </div>
+    <!-- Sidebar Պատմություն -->
+    <div class="hidden md:flex w-72 bg-white dark:bg-dark-200 border-r border-gray-200 dark:border-gray-800 flex-col h-full shrink-0 transition-colors duration-300">
+        <div class="p-5 border-b border-gray-100 dark:border-gray-800">
+            <button onclick="startNewChat()" class="w-full py-3 px-4 bg-gradient-to-r from-accent-cyan to-accent-blue text-white rounded-xl shadow-md hover:shadow-lg hover:shadow-accent-cyan/20 transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 font-bold focus:outline-none focus:ring-2 focus:ring-accent-cyan focus:ring-offset-2 dark:focus:ring-offset-dark-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                New Conversation
+            </button>
         </div>
-    </nav>
+        <div class="p-4 pb-2">
+            <h3 class="text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-1">Chat History</h3>
+        </div>
+        <div id="historyContainer" class="flex-1 overflow-y-auto px-3 pb-4 space-y-1.5 history-area">
+            <!-- Պատմությունը բեռնվում է JS-ով -->
+        </div>
+    </div>
 
-    <!-- Main Chat Container (Full Height, No Footer) -->
-    <div class="chat-container bg-dark-300">
-        
-        <!-- Messages Area -->
-        <div id="messagesArea" class="messages-area">
+    <!-- Չատի հիմնական դաշտ -->
+    <div class="flex-1 flex flex-col bg-gray-50/50 dark:bg-dark-300 relative transition-colors duration-300">
+
+        <div id="messagesArea" class="messages-area flex-1 p-4 md:p-8 overflow-y-auto">
             <div class="max-w-4xl mx-auto">
-                
-                <!-- Welcome Card -->
-                <div class="welcome-card">
-                    <div class="flex items-start gap-4 flex-col md:flex-row">
-                        <div class="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+
+                <div id="welcomeCard" class="bg-white dark:bg-dark-200 border border-gray-100 dark:border-gray-800 rounded-3xl p-6 md:p-10 mb-8 shadow-sm dark:shadow-[0_0_30px_rgba(0,0,0,0.2)] relative overflow-hidden group">
+                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-gradient-to-bl from-accent-cyan/20 to-transparent rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform duration-700"></div>
+
+                    <div class="flex items-start gap-6 flex-col md:flex-row relative z-10">
+                        <div class="flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-cyan to-accent-blue flex items-center justify-center shadow-lg shadow-accent-cyan/20">
                             <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                             </svg>
                         </div>
                         <div class="flex-1">
-                            <h2 class="text-2xl md:text-3xl font-bold mb-2">
-                                Welcome to <span class="gradient-text">AI Medical Assistant</span>
+                            <h2 class="text-2xl md:text-3xl font-extrabold mb-3 text-gray-900 dark:text-white tracking-tight">
+                                Բարև, <span class="gradient-text translate-me" th:text="${user != null && user.userProfile != null && user.userProfile.firstName != null ? user.userProfile.firstName : 'Հարգելի պացիենտ'}">Patient</span> 👋
                             </h2>
-                            <p class="text-gray-400 mb-4">
-                                I'm here 24/7 to help with appointments, medical inquiries, finding specialists, and more. How can I assist you today?
+                            <p class="text-gray-600 dark:text-gray-300 mb-6 text-sm md:text-base leading-relaxed">
+                                Ես MediCare-ի արհեստական բանականությունն եմ: Ինչպե՞ս կարող եմ օգնել ձեզ այսօր: Նկարագրեք ձեր գանգատները կամ տվեք բժշկական հարցեր:
                             </p>
-                            
-                            <!-- Quick Action Chips -->
-                            <div class="flex flex-wrap gap-2">
-                                <button class="quick-chip bg-dark-100 border border-gray-700 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 hover:border-accent-cyan" onclick="selectQuickAction('Check my appointment status')">
-                                    <svg class="w-4 h-4 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                    </svg>
-                                    <span>Check Appointment</span>
+
+                            <div class="flex flex-wrap gap-3">
+                                <button class="bg-gray-50 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:border-accent-cyan hover:bg-white dark:hover:bg-dark-200 dark:hover:border-accent-cyan transition-all shadow-sm text-gray-700 dark:text-gray-200 group/btn" onclick="selectQuickAction('Գլուխս ցավում է')">
+                                    <div class="w-6 h-6 rounded-md bg-accent-cyan/10 flex items-center justify-center group-hover/btn:scale-110 transition-transform">
+                                        <svg class="w-3.5 h-3.5 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    </div>
+                                    <span>Գլխացավ</span>
                                 </button>
-                                <button class="quick-chip bg-dark-100 border border-gray-700 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 hover:border-accent-cyan" onclick="selectQuickAction('Show available doctors')">
-                                    <svg class="w-4 h-4 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                                    </svg>
-                                    <span>Available Doctors</span>
-                                </button>
-                                <button class="quick-chip bg-dark-100 border border-gray-700 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 hover:border-accent-cyan" onclick="selectQuickAction('What are your services?')">
-                                    <svg class="w-4 h-4 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                    </svg>
-                                    <span>Our Services</span>
-                                </button>
-                                <button class="quick-chip bg-dark-100 border border-gray-700 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 hover:border-accent-cyan" onclick="selectQuickAction('Emergency contact information')">
-                                    <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                                    </svg>
-                                    <span>Emergency</span>
+                                <button class="bg-gray-50 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:border-accent-cyan hover:bg-white dark:hover:bg-dark-200 dark:hover:border-accent-cyan transition-all shadow-sm text-gray-700 dark:text-gray-200 group/btn" onclick="selectQuickAction('Ունեմ բարձր ջերմություն')">
+                                    <div class="w-6 h-6 rounded-md bg-red-500/10 flex items-center justify-center group-hover/btn:scale-110 transition-transform">
+                                        <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                    </div>
+                                    <span>Ջերմություն</span>
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Messages will be inserted here -->
                 <div id="messagesContainer"></div>
 
             </div>
         </div>
 
-        <!-- Input Area (Fixed at Bottom) -->
-        <div class="input-container bg-dark-200">
-            <div class="max-w-4xl mx-auto">
-                <form id="chatForm" class="flex items-end gap-3">
-                    
-                    <!-- Text Input -->
-                    <div class="flex-1 relative">
-                        <textarea 
-                            id="chatInput"
-                            rows="1"
-                            class="chat-input w-full px-5 py-3.5 pr-12 rounded-2xl bg-dark-100 border border-gray-700 text-gray-100 resize-none text-base focus:border-accent-cyan"
-                            placeholder="Type your medical question..."
-                            maxlength="1000"
-                            autocomplete="off"
+        <!-- Չատի Մուտքագրման Վահանակ -->
+        <div class="bg-white/80 dark:bg-dark-200/80 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 p-4 shrink-0 transition-colors duration-300">
+            <div class="max-w-4xl mx-auto relative">
+
+                <form id="chatForm" class="flex items-end gap-3 relative z-10">
+
+                    <!-- Պատմության կոճակ (Միայն հեռախոսների համար) -->
+                    <button type="button" id="mobileHistoryBtn" class="md:hidden h-12 w-12 rounded-2xl flex items-center justify-center bg-gray-100 dark:bg-dark-100 text-gray-500 dark:text-gray-400 hover:text-accent-cyan hover:bg-accent-cyan/10 transition-colors shrink-0" title="Բացել պատմությունը">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
+                        </svg>
+                    </button>
+
+                    <div class="flex-1 relative bg-white dark:bg-dark-100 border border-gray-200 dark:border-gray-700 rounded-3xl shadow-sm focus-within:ring-2 focus-within:ring-accent-cyan/50 focus-within:border-accent-cyan transition-all flex items-center pl-3">
+
+                        <!-- Image Preview Overlay -->
+                        <div id="imagePreviewContainer" class="hidden absolute bottom-full left-0 mb-3 bg-white dark:bg-dark-200 p-2 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl z-20">
+                            <div class="relative group/img">
+                                <img id="imagePreview" src="" class="h-20 w-20 object-cover rounded-xl border border-gray-200 dark:border-gray-600">
+                                <button type="button" id="removeImageBtn" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold hover:bg-red-600 transition-transform hover:scale-110 shadow-md opacity-0 group-hover/img:opacity-100">&times;</button>
+                            </div>
+                        </div>
+
+                        <input type="file" id="fileInput" accept="image/png, image/jpeg, image/webp" class="hidden">
+
+                        <!-- Tools Container inside input wrapper -->
+                        <div class="flex items-center gap-1 pr-2 shrink-0">
+                            <!-- Կցելու կոճակ -->
+                            <button type="button" id="attachBtn" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-accent-cyan hover:bg-accent-cyan/10 transition-colors">
+                                <svg class="w-5 h-5 transform -rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                                </svg>
+                            </button>
+
+                            <!-- Միկրոֆոնի կոճակ (Voice) -->
+                            <button type="button" id="voiceBtn" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all relative">
+                                <svg id="micIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                                </svg>
+                                <span id="recordingStatus" class="hidden absolute top-2 right-2 flex h-2.5 w-2.5">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                                </span>
+                            </button>
+                        </div>
+
+                        <!-- Textarea -->
+                        <textarea
+                                id="chatInput"
+                                class="flex-1 bg-transparent py-3.5 pr-4 text-gray-900 dark:text-gray-100 resize-none text-sm md:text-base focus:outline-none placeholder-gray-400 dark:placeholder-gray-500"
+                                placeholder="Type your symptoms or question here..."
+                                rows="1"
                         ></textarea>
-                        <span class="absolute bottom-3 right-4 text-xs font-medium text-gray-500" id="charCount">0/1000</span>
                     </div>
 
-                    <!-- Send Button -->
-                    <button 
-                        type="submit"
-                        id="sendBtn"
-                        class="send-btn w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-r from-accent-cyan to-accent-blue text-white flex items-center justify-center shadow-lg disabled:opacity-50"
-                    >
-                        <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                    <!-- Ուղարկելու կոճակ -->
+                    <button type="submit" id="sendBtn" class="w-12 h-12 md:w-14 md:h-14 rounded-full md:rounded-2xl bg-gradient-to-r from-accent-cyan to-accent-blue text-white flex items-center justify-center shadow-lg shadow-accent-cyan/30 hover:shadow-xl hover:shadow-accent-cyan/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:-translate-y-1 shrink-0">
+                        <svg class="w-5 h-5 md:w-6 md:h-6 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                         </svg>
                     </button>
                 </form>
 
-                <!-- Footer Info -->
-                <div class="flex items-center justify-center mt-3 gap-4 text-xs text-gray-500">
-                    <div class="flex items-center gap-1">
-                        <svg class="w-4 h-4 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                        </svg>
-                        <span>HIPAA Compliant</span>
+                <div class="flex items-center justify-between mt-2.5 px-2">
+                    <div class="flex items-center gap-1.5 text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                        <svg class="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        <span>HIPAA Compliant & Secure</span>
                     </div>
-                    <div class="flex items-center gap-1">
-                        <svg class="w-4 h-4 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                        </svg>
-                        <span>End-to-End Encrypted</span>
-                    </div>
+                    <span class="text-[10px] font-medium text-gray-400 dark:text-gray-500 hidden md:block" id="charCount">0/1000</span>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        // Theme Switcher Logic
-        (function() {
-            const themeToggle = document.getElementById('themeToggle');
-            const sunIcon = document.getElementById('sunIcon');
-            const moonIcon = document.getElementById('moonIcon');
-            const html = document.documentElement;
-            const body = document.body;
+<script>
+    // Theme Switcher Logic
+    (function() {
+        const themeToggle = document.getElementById('themeToggle');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+        const html = document.documentElement;
 
-            const currentTheme = localStorage.getItem('theme') || 'dark';
+        const currentTheme = localStorage.getItem('theme') || 'dark';
 
-            function applyTheme(theme) {
-                if (theme === 'dark') {
-                    body.classList.add('dark');
-                    html.classList.add('dark');
-                    sunIcon.classList.remove('hidden');
-                    moonIcon.classList.add('hidden');
-                } else {
-                    body.classList.remove('dark');
-                    html.classList.remove('dark');
-                    sunIcon.classList.add('hidden');
-                    moonIcon.classList.remove('hidden');
-                }
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                html.classList.add('dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                html.classList.remove('dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
             }
+        }
 
-            applyTheme(currentTheme);
+        applyTheme(currentTheme);
 
+        if(themeToggle) {
             themeToggle.addEventListener('click', function() {
-                const isDark = body.classList.contains('dark');
+                const isDark = html.classList.contains('dark');
                 const newTheme = isDark ? 'light' : 'dark';
                 applyTheme(newTheme);
                 localStorage.setItem('theme', newTheme);
             });
-        })();
-
-        // Mobile Menu Toggle
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobileMenu');
-            menu.classList.toggle('hidden');
         }
+    })();
 
-        // Language Switcher
-        function switchLanguage(lang) {
-            console.log('Language switched to:', lang);
+    function toggleMobileMenu() {
+        document.getElementById('mobileMenu').classList.toggle('hidden');
+    }
+
+    // Weglot լեզվի փոփոխում
+    function switchLanguage(lang) {
+        if (typeof Weglot !== 'undefined') {
+            Weglot.switchTo(lang);
         }
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(() => {
+            const container = document.querySelector('.weglot-container');
+            if (container) container.style.display = 'none';
+        }, 100);
+    });
 
-        // Chat Functionality
-        const chatForm = document.getElementById('chatForm');
-        const chatInput = document.getElementById('chatInput');
-        const sendBtn = document.getElementById('sendBtn');
-        const messagesContainer = document.getElementById('messagesContainer');
-        const messagesArea = document.getElementById('messagesArea');
-        const charCount = document.getElementById('charCount');
+    // --- Backend Chat Logic ---
+    const currentPatientId = document.querySelector('meta[name="patient-id"]')?.content || '';
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || '';
+    let currentConversationId = null;
 
-        // Auto-resize textarea
-        chatInput.addEventListener('input', () => {
-            charCount.textContent = `${chatInput.value.length}/1000`;
-            chatInput.style.height = 'auto';
-            chatInput.style.height = Math.min(chatInput.scrollHeight, 150) + 'px';
-        });
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    const attachBtn = document.getElementById('attachBtn');
+    const fileInput = document.getElementById('fileInput');
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+    const imagePreview = document.getElementById('imagePreview');
+    const removeImageBtn = document.getElementById('removeImageBtn');
 
-        // Handle Enter key
-        chatInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                chatForm.dispatchEvent(new Event('submit'));
-            }
-        });
+    let currentImageBase64 = null;
+    const sendBtn = document.getElementById('sendBtn');
+    const messagesContainer = document.getElementById('messagesContainer');
+    const messagesArea = document.getElementById('messagesArea');
+    const charCount = document.getElementById('charCount');
+    const welcomeCard = document.getElementById('welcomeCard');
+    const historyContainer = document.getElementById('historyContainer');
 
-        // Handle form submission
-        chatForm.addEventListener('submit', (e) => {
+    chatInput.addEventListener('input', () => {
+        charCount.textContent = `${chatInput.value.length}/1000`;
+        chatInput.style.height = 'auto';
+        chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+    });
+
+    chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            const message = chatInput.value.trim();
-            if (message) {
-                sendMessage(message);
-                chatInput.value = '';
-                chatInput.style.height = 'auto';
-                charCount.textContent = '0/1000';
-                chatInput.focus();
-            }
-        });
-
-        // Quick action handler
-        function selectQuickAction(question) {
-            chatInput.value = question;
-            chatInput.focus();
-            setTimeout(() => {
-                chatForm.dispatchEvent(new Event('submit'));
-            }, 200);
+            chatForm.dispatchEvent(new Event('submit'));
         }
+    });
 
-        // Send message function
-        function sendMessage(message) {
-            addMessage(message, 'user');
-            chatInput.disabled = true;
-            sendBtn.disabled = true;
-            showTypingIndicator();
+    function selectQuickAction(question) {
+        chatInput.value = question;
+        chatForm.dispatchEvent(new Event('submit'));
+    }
 
-            const responseDelay = 1200 + Math.random() * 800;
-            setTimeout(() => {
-                hideTypingIndicator();
-                const response = generateAIResponse(message);
-                addMessage(response, 'ai');
-                chatInput.disabled = false;
-                sendBtn.disabled = false;
-                chatInput.focus();
-            }, responseDelay);
+    window.sendOption = function(text) {
+        if (chatInput.value.trim() !== '') {
+            chatInput.value += ', ' + text;
+        } else {
+            chatInput.value = text;
         }
+        chatInput.focus();
+        charCount.textContent = `${chatInput.value.length}/1000`;
+        chatInput.style.height = 'auto';
+        chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+    };
 
-        // Add message to chat
-        function addMessage(text, sender) {
-            const messageDiv = document.createElement('div');
-            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-            if (sender === 'user') {
-                messageDiv.className = 'message-user flex items-end justify-end mb-6';
-                messageDiv.innerHTML = `
-                    <div class="flex items-end gap-3 max-w-[85%] md:max-w-[70%]">
-                        <div class="text-right flex-1">
-                            <div class="message-bubble-user px-5 py-3">
-                                <p class="text-base leading-relaxed">${escapeHtml(text)}</p>
-                            </div>
-                            <p class="text-xs mt-1.5 px-2 text-gray-500">${timestamp}</p>
-                        </div>
-                        <div class="avatar-user flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center shadow-md">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                            </svg>
-                        </div>
-                    </div>
-                `;
-            } else {
-                messageDiv.className = 'message-ai flex items-start mb-6';
-                messageDiv.innerHTML = `
-                    <div class="flex items-start gap-3 max-w-[85%] md:max-w-[75%]">
-                        <div class="avatar-ai flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center shadow-md">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                            </svg>
-                        </div>
-                        <div class="flex-1">
-                            <div class="message-bubble-ai px-5 py-3">
-                                <p class="text-base leading-relaxed">${text}</p>
-                            </div>
-                            <p class="text-xs mt-1.5 px-2 text-gray-500">AI Assistant • ${timestamp}</p>
-                        </div>
-                    </div>
-                `;
-            }
-
-            messagesContainer.appendChild(messageDiv);
-            scrollToBottom();
+    async function loadChatHistory() {
+        if (!currentPatientId) return;
+        try {
+            const response = await fetch(`/api/chat/history/${currentPatientId}`);
+            if (!response.ok) throw new Error("History fetch failed");
+            const history = await response.json();
+            historyContainer.innerHTML = '';
+            history.forEach(conv => {
+                const div = document.createElement('div');
+                div.className = "p-3.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-100 hover:text-accent-cyan cursor-pointer transition-all truncate border border-transparent";
+                div.innerHTML = `<span class="mr-2 opacity-50">💬</span> ${conv.title || "New Consultation"}`;
+                div.onclick = () => {
+                    loadConversation(conv.id);
+                    // Close sidebar on mobile after selection
+                    if(window.innerWidth < 768 && sidebar.classList.contains('fixed')) {
+                        closeSidebarMobile();
+                    }
+                };
+                historyContainer.appendChild(div);
+            });
+        } catch (error) {
+            console.error("Error loading history:", error);
         }
+    }
 
-        // Typing indicator
-        let typingIndicatorElement = null;
+    async function loadConversation(conversationId) {
+        try {
+            const response = await fetch(`/api/chat/conversation/${conversationId}/${currentPatientId}`);
+            if (!response.ok) throw new Error("Conversation fetch failed");
+            const conversation = await response.json();
+            currentConversationId = conversation.id;
+            messagesContainer.innerHTML = '';
+            if(welcomeCard) welcomeCard.style.display = 'none';
+            conversation.messages.forEach(msg => {
+                const sender = msg.role === 'user' ? 'user' : 'ai';
+                addMessage(msg.content, sender);
+            });
+        } catch (error) {
+            console.error("Error loading conversation:", error);
+        }
+    }
 
-        function showTypingIndicator() {
-            typingIndicatorElement = document.createElement('div');
-            typingIndicatorElement.className = 'flex items-start mb-6';
-            typingIndicatorElement.id = 'typingIndicator';
-            typingIndicatorElement.innerHTML = `
-                <div class="flex items-start gap-3">
-                    <div class="avatar-ai flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center shadow-md">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                        </svg>
-                    </div>
-                    <div class="typing-indicator">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                    </div>
+    window.startNewChat = function() {
+        currentConversationId = null;
+        messagesContainer.innerHTML = '';
+        if(welcomeCard) welcomeCard.style.display = 'block';
+        chatInput.focus();
+        if(window.innerWidth < 768 && sidebar.classList.contains('fixed')) {
+            closeSidebarMobile();
+        }
+    }
+
+    function addMessage(text, sender, imgBase64 = null) {
+        const messageDiv = document.createElement('div');
+        const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        if (sender === 'user') {
+            messageDiv.className = 'message-user flex items-end justify-end mb-6';
+            messageDiv.innerHTML = `
+            <div class="flex items-end gap-3 max-w-[90%] md:max-w-[75%]">
+                <div class="text-right flex-1">
+                    <div class="px-5 py-3.5 bg-gradient-to-r from-accent-cyan to-accent-blue text-white rounded-3xl rounded-br-md shadow-md text-left inline-block">
+                    ${imgBase64 ? `<img src="${imgBase64}" class="w-full max-w-xs rounded-xl mb-3 border-2 border-white/20 shadow-sm">` : ''}
+                    <p class="text-[15px] leading-relaxed whitespace-pre-wrap">${escapeHtml(text)}</p>
                 </div>
-            `;
-            messagesContainer.appendChild(typingIndicatorElement);
-            scrollToBottom();
-        }
+                    <p class="text-[10px] mt-1.5 px-2 text-gray-500 dark:text-gray-400 font-medium">${timestamp}</p>
+                </div>
+            </div>`;
+        } else {
+            let cleanText = text;
+            const summaryRegex = /\[SUMMARY:\s*([\s\S]+?)\]/g;
+            cleanText = cleanText.replace(summaryRegex, (match, summaryText) => {
+                window.currentMedicalSummary = summaryText.trim();
+                sessionStorage.setItem('ai_triage_summary', window.currentMedicalSummary);
+                return "";
+            });
 
-        function hideTypingIndicator() {
-            if (typingIndicatorElement) {
-                typingIndicatorElement.remove();
-                typingIndicatorElement = null;
+            const btnRegex = /\[BTN:\s*([^\]]+)\]/g;
+            let buttons =[];
+            cleanText = cleanText.replace(btnRegex, (match, btnText) => {
+                buttons.push(btnText.trim());
+                return "";
+            });
+
+            const formattedText = marked.parse(cleanText, { breaks: true, gfm: true });
+            const sanitizedHtml = DOMPurify.sanitize(formattedText);
+
+            let buttonsHtml = '';
+            if (buttons.length > 0) {
+                buttonsHtml = '<div class="flex flex-wrap gap-2 mt-5 pt-3 border-t border-gray-100 dark:border-gray-700/50">';
+                buttons.forEach(btn => {
+                    buttonsHtml += `
+                    <button onclick="sendOption('${btn}')"
+                            class="px-4 py-2 bg-gray-50 dark:bg-dark-200 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-bold hover:border-accent-cyan dark:hover:border-accent-cyan hover:text-accent-cyan dark:hover:text-accent-cyan transition-all shadow-sm">
+                        ${btn}
+                    </button>`;
+                });
+                buttonsHtml += '</div>';
             }
+
+            messageDiv.className = 'message-ai flex items-start mb-6';
+            messageDiv.innerHTML = `
+            <div class="flex items-start gap-3 max-w-[95%] md:max-w-[85%]">
+                <div class="flex-shrink-0 w-10 h-10 rounded-2xl bg-gradient-to-br from-accent-cyan to-accent-blue flex items-center justify-center shadow-md">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                </div>
+                <div class="flex-1">
+                    <div class="px-5 py-4 bg-white dark:bg-dark-100 border border-gray-100 dark:border-gray-800 text-gray-800 dark:text-gray-200 rounded-3xl rounded-tl-md shadow-sm prose prose-sm md:prose-base dark:prose-invert prose-cyan max-w-none">
+                        ${sanitizedHtml}
+                        ${buttonsHtml}
+                    </div>
+                    <p class="text-[10px] mt-1.5 px-2 text-gray-400 dark:text-gray-500 font-medium">Avelia Clinic AI • ${timestamp}</p>
+                </div>
+            </div>`;
         }
 
-        function scrollToBottom() {
+        messagesContainer.appendChild(messageDiv);
+        scrollToBottom();
+    }
+
+    let typingIndicatorElement = null;
+
+    function showTypingIndicator() {
+        typingIndicatorElement = document.createElement('div');
+        typingIndicatorElement.className = 'flex items-start mb-6';
+        typingIndicatorElement.id = 'typingIndicator';
+        typingIndicatorElement.innerHTML = `
+        <div class="flex items-start gap-3">
+            <div class="flex-shrink-0 w-10 h-10 rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center shadow-sm">
+                 <svg class="w-5 h-5 text-gray-500 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+            <div class="bg-white dark:bg-dark-100 border border-gray-100 dark:border-gray-800 px-5 py-4 rounded-3xl rounded-tl-md flex gap-2 items-center shadow-sm h-[56px]">
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+            </div>
+        </div>
+        `;
+        messagesContainer.appendChild(typingIndicatorElement);
+        scrollToBottom();
+    }
+
+    function hideTypingIndicator() {
+        if (typingIndicatorElement) {
+            typingIndicatorElement.remove();
+            typingIndicatorElement = null;
+        }
+    }
+
+    function scrollToBottom() {
+        requestAnimationFrame(() => {
             messagesArea.scrollTo({
                 top: messagesArea.scrollHeight,
                 behavior: 'smooth'
             });
-        }
-
-        // AI Response Generator
-        function generateAIResponse(userMessage) {
-            const lowerMessage = userMessage.toLowerCase();
-
-            const responses = {
-                appointment: `I'd be happy to help you with appointments! 📅<br><br>
-                    <strong>Quick Actions:</strong><br>
-                    • View upcoming appointments<br>
-                    • Schedule a new appointment<br>
-                    • Reschedule or cancel<br><br>
-                    Please call us at <strong class="text-accent-cyan">(234) 567-8900</strong> or visit our booking portal.`,
-
-                doctors: `We have expert specialists available:<br><br>
-                    🩺 <strong>Cardiology</strong> - Dr. Emily Chen<br>
-                    🧠 <strong>Neurology</strong> - Dr. Michael Roberts<br>
-                    🦴 <strong>Orthopedics</strong> - Dr. James Williams<br>
-                    👶 <strong>Pediatrics</strong> - Dr. Sarah Anderson<br><br>
-                    Which specialist would you like to consult?`,
-
-                services: `MediCare Pro offers comprehensive services:<br><br>
-                    <strong>🏥 Core Services:</strong><br>
-                    • 24/7 Emergency Care<br>
-                    • Advanced Diagnostics<br>
-                    • Surgical Procedures<br>
-                    • Preventive Health Programs<br>
-                    • Rehabilitation Services<br><br>
-                    Which service interests you?`,
-
-                emergency: `🚨 <strong>EMERGENCY - CALL 911 IMMEDIATELY!</strong><br><br>
-                    <strong>Our Emergency Department:</strong><br>
-                    📞 Direct: <strong class="text-accent-cyan">(234) 567-8900</strong><br>
-                    📍 123 Medical Center, NY 10001<br>
-                    ⏰ Open 24/7<br><br>
-                    For life-threatening conditions, please call 911 now!`,
-
-                default: `Thank you for reaching out! I can help with:<br><br>
-                    <strong>💡 Available Assistance:</strong><br>
-                    • 📅 Appointment scheduling<br>
-                    • 👨‍⚕️ Finding specialists<br>
-                    • 🏥 Service information<br>
-                    • 🚨 Emergency services<br><br>
-                    What would you like to know?`
-            };
-
-            if (lowerMessage.includes('appointment') || lowerMessage.includes('book') || lowerMessage.includes('schedule')) {
-                return responses.appointment;
-            } else if (lowerMessage.includes('doctor') || lowerMessage.includes('specialist')) {
-                return responses.doctors;
-            } else if (lowerMessage.includes('service') || lowerMessage.includes('treatment')) {
-                return responses.services;
-            } else if (lowerMessage.includes('emergency') || lowerMessage.includes('urgent')) {
-                return responses.emergency;
-            } else {
-                return responses.default;
-            }
-        }
-
-        function escapeHtml(text) {
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return text.replace(/[&<>"']/g, m => map[m]);
-        }
-
-        // Auto-focus input on page load
-        window.addEventListener('load', () => {
-            chatInput.focus();
         });
-    </script>
+    }
 
+    function escapeHtml(text) {
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    window.addEventListener('load', () => {
+        chatInput.focus();
+        loadChatHistory();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const convIdFromUrl = urlParams.get('convId');
+
+        if (convIdFromUrl) {
+            loadConversation(convIdFromUrl);
+        } else {
+            setTimeout(scrollToBottom, 500);
+        }
+    });
+
+    attachBtn.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const validImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!validImageTypes.includes(file.type)) {
+            addMessage("⚠️ **Սխալ ֆորմատ:** Խնդրում ենք կցել միայն նկար (JPG, PNG կամ WEBP):", 'ai');
+            fileInput.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            currentImageBase64 = event.target.result;
+            imagePreview.src = currentImageBase64;
+            imagePreviewContainer.classList.remove('hidden');
+            chatInput.focus();
+        };
+        reader.readAsDataURL(file);
+    });
+
+    removeImageBtn.addEventListener('click', () => {
+        currentImageBase64 = null;
+        fileInput.value = '';
+        imagePreviewContainer.classList.add('hidden');
+    });
+
+    let mediaRecorder;
+    let audioChunks = [];
+    const voiceBtn = document.getElementById('voiceBtn');
+    const recordingStatus = document.getElementById('recordingStatus');
+    const micIcon = document.getElementById('micIcon');
+
+    voiceBtn.addEventListener('click', async () => {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+            mediaRecorder.stop();
+            recordingStatus.classList.add('hidden');
+            micIcon.classList.remove('text-red-500');
+            voiceBtn.classList.remove('bg-red-50', 'dark:bg-red-500/10');
+            return;
+        }
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const formData = new FormData();
+                formData.append('file', audioBlob, 'patient_voice.webm');
+
+                const originalPlaceholder = chatInput.placeholder;
+                chatInput.placeholder = "Processing voice...";
+                chatInput.disabled = true;
+
+                const headers = {};
+                if (typeof csrfHeader !== 'undefined' && csrfHeader && csrfHeader.trim() !== '') {
+                    headers[csrfHeader] = csrfToken;
+                }
+
+                try {
+                    const response = await fetch('/api/voice/patient-transcribe', {
+                        method: 'POST',
+                        headers: headers,
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const cleanText = await response.text();
+                        chatInput.value = cleanText;
+                        charCount.textContent = `${chatInput.value.length}/1000`;
+                        chatInput.style.height = 'auto';
+                        chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+                    } else {
+                        console.error("Սերվերի սխալ:", response.status);
+                    }
+                } catch (err) {
+                    console.error("Transcription fetch error:", err);
+                } finally {
+                    chatInput.placeholder = originalPlaceholder;
+                    chatInput.disabled = false;
+                    chatInput.focus();
+                }
+            };
+
+            mediaRecorder.start();
+            recordingStatus.classList.remove('hidden');
+            micIcon.classList.add('text-red-500');
+            voiceBtn.classList.add('bg-red-50', 'dark:bg-red-500/10');
+
+        } catch (err) {
+            console.error("Microphone access error:", err);
+            alert("Խնդրում ենք թույլատրել միկրոֆոնը:");
+        }
+    });
+
+    const mobileHistoryBtn = document.getElementById('mobileHistoryBtn');
+    const sidebar = document.querySelector('.w-72');
+
+    function closeSidebarMobile() {
+        sidebar.classList.add('hidden');
+        sidebar.classList.remove('fixed', 'inset-0', 'z-[60]', 'w-80', 'shadow-2xl', 'bg-white/95', 'dark:bg-dark-300/95', 'backdrop-blur-xl');
+        const overlay = document.getElementById('sidebarOverlay');
+        if(overlay) overlay.remove();
+        const closeBtn = document.getElementById('mobileSidebarClose');
+        if(closeBtn) closeBtn.remove();
+    }
+
+    if (mobileHistoryBtn) {
+        mobileHistoryBtn.addEventListener('click', () => {
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                sidebar.classList.add('fixed', 'inset-y-0', 'left-0', 'z-[70]', 'w-80', 'shadow-2xl', 'bg-white/95', 'dark:bg-dark-300/95', 'backdrop-blur-xl');
+
+                const overlay = document.createElement('div');
+                overlay.id = 'sidebarOverlay';
+                overlay.className = 'fixed inset-0 bg-black/40 z-[65] backdrop-blur-sm md:hidden';
+                overlay.onclick = closeSidebarMobile;
+                document.body.appendChild(overlay);
+
+                const closeBtn = document.createElement('button');
+                closeBtn.id = 'mobileSidebarClose';
+                closeBtn.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+                closeBtn.className = 'absolute top-4 right-4 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white p-2 md:hidden';
+                closeBtn.onclick = closeSidebarMobile;
+                sidebar.appendChild(closeBtn);
+            }
+        });
+    }
+
+    let isProcessing = false;
+
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (isProcessing) return;
+
+        const message = chatInput.value.trim();
+        const imageToSend = currentImageBase64;
+
+        if (!message && !imageToSend) return;
+
+        isProcessing = true;
+        if(welcomeCard) welcomeCard.style.display = 'none';
+
+        chatInput.value = '';
+        chatInput.style.height = 'auto';
+        currentImageBase64 = null;
+        imagePreviewContainer.classList.add('hidden');
+        charCount.textContent = '0/1000';
+
+        chatInput.disabled = true;
+        sendBtn.disabled = true;
+
+        const originalBtnHtml = sendBtn.innerHTML;
+        sendBtn.innerHTML = `
+            <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>`;
+
+        addMessage(message, 'user', imageToSend);
+        showTypingIndicator();
+        scrollToBottom();
+
+        try {
+            const requestHeaders = { 'Content-Type': 'application/json' };
+            if (typeof csrfHeader !== 'undefined' && csrfHeader && csrfHeader.trim() !== '') {
+                requestHeaders[csrfHeader] = csrfToken;
+            }
+
+            const response = await fetch('/api/chat/send', {
+                method: 'POST',
+                headers: requestHeaders,
+                body: JSON.stringify({
+                    patientId: currentPatientId,
+                    conversationId: currentConversationId,
+                    message: message,
+                    imageBase64: imageToSend
+                })
+            });
+
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+            const data = await response.json();
+
+            if (!currentConversationId && data.conversationId) {
+                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?convId=' + data.conversationId;
+                window.history.pushState({ path: newUrl }, '', newUrl);
+            }
+
+            currentConversationId = data.conversationId;
+
+            hideTypingIndicator();
+            addMessage(data.reply, 'ai');
+            loadChatHistory();
+            scrollToBottom();
+
+        } catch (error) {
+            hideTypingIndicator();
+            console.error("Chat Error:", error);
+            addMessage("⚠️ **Connection Error:** Failed to communicate with the server. Please try again.", 'ai');
+            scrollToBottom();
+        } finally {
+            isProcessing = false;
+            sendBtn.innerHTML = originalBtnHtml;
+            chatInput.disabled = false;
+            sendBtn.disabled = false;
+            chatInput.focus();
+        }
+    });
+</script>
 </body>
 </html>

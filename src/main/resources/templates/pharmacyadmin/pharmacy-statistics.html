@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="hy" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Դեղատուն - Ֆինանսական Անալիտիկա</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+  </style>
+</head>
+<body class="p-4 md:p-8">
+
+<div class="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+  <div>
+    <a th:href="@{/pharmacy-admin/dashboard}" class="text-blue-500 hover:text-blue-700 flex items-center gap-2 mb-2 font-semibold transition">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i> Վերադառնալ Գլխավոր էջ
+    </a>
+    <h1 class="text-3xl font-bold text-slate-800">📈 Ֆինանսական Անալիտիկա</h1>
+  </div>
+
+  <!-- ԱՐՏԱՀԱՆՄԱՆ ԿՈՃԱԿՆԵՐԸ (Excel-ը միացված է բեքենդին) -->
+  <div class="flex gap-3 items-center">
+    <button onclick="exportToPDF()" class="bg-white border border-slate-200 text-rose-600 hover:bg-rose-50 px-4 py-2.5 rounded-lg shadow-sm font-bold flex items-center gap-2 transition">
+      <i data-lucide="file-text" class="w-4 h-4"></i> Ներբեռնել PDF
+    </button>
+    <!-- Excel-ը կանչում է Controller-ի մեթոդը՝ փոխանցելով ակտիվ ֆիլտրերը -->
+    <a th:href="@{/pharmacy-admin/statistics/export/excel(search=${searchQuery}, doctor=${selectedDoctor}, department=${selectedDept}, startDate=${startDate}, endDate=${endDate})}"
+       class="bg-emerald-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-emerald-700 shadow-md flex items-center gap-2 transition">
+      <i data-lucide="sheet" class="w-5 h-5"></i> Ներբեռնել Excel
+    </a>
+  </div>
+</div>
+
+<div class="max-w-7xl mx-auto">
+
+  <!-- ԳԼԽԱՎՈՐ ՑՈՒՑԱՆԻՇՆԵՐ -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-emerald-500 flex items-center justify-between">
+      <div>
+        <p class="text-slate-500 text-sm font-semibold uppercase tracking-wide">Ընդհանուր Եկամուտ (Ֆիլտրված)</p>
+        <h3 class="text-4xl font-bold text-emerald-600 mt-2" th:text="${totalRevenue != null ? totalRevenue + ' ֏' : '0 ֏'}">0 ֏</h3>
+      </div>
+      <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500">
+        <i data-lucide="banknote" class="w-8 h-8"></i>
+      </div>
+    </div>
+    <div class="bg-white p-6 rounded-2xl shadow-sm border-b-4 border-blue-500 flex items-center justify-between">
+      <div>
+        <p class="text-slate-500 text-sm font-semibold uppercase tracking-wide">Հաջողված Վաճառքներ (Քանակ)</p>
+        <h3 class="text-4xl font-bold text-blue-600 mt-2" th:text="${totalSalesCount != null ? totalSalesCount : 0}">0</h3>
+      </div>
+      <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-blue-500">
+        <i data-lucide="shopping-bag" class="w-8 h-8"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- ԳՐԱՖԻԿՆԵՐ (CHART.JS) -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+      <h4 class="text-center font-bold text-slate-600 mb-4 uppercase text-sm tracking-wider">Եկամուտ ըստ Բաժանմունքի</h4>
+      <div class="relative h-64 w-full">
+        <canvas id="deptChart"></canvas>
+      </div>
+    </div>
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+      <h4 class="text-center font-bold text-slate-600 mb-4 uppercase text-sm tracking-wider">Եկամուտ ըստ Բժշկի</h4>
+      <div class="relative h-64 w-full">
+        <canvas id="docChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ՖԻԼՏՐԱՑԻԱՅԻ ՖՈՐՄԱ -->
+  <form th:action="@{/pharmacy-admin/statistics}" method="get" class="bg-white p-6 rounded-2xl shadow-sm mb-8 grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-4 items-end border border-slate-100">
+    <div>
+      <label class="block text-xs font-bold text-slate-400 mb-1 uppercase">Որոնում</label>
+      <input type="text" name="search" th:value="${searchQuery}" placeholder="ID կամ Հեռախոս..." class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-400 transition text-sm">
+    </div>
+    <div>
+      <label class="block text-xs font-bold text-slate-400 mb-1 uppercase">Բժիշկ</label>
+      <select name="doctor" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-400 transition text-sm text-slate-700">
+        <option value="">Բոլորը</option>
+        <option th:each="doc : ${allDoctors}" th:value="${doc}" th:text="${doc}" th:selected="${doc == selectedDoctor}"></option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-xs font-bold text-slate-400 mb-1 uppercase">Բաժանմունք</label>
+      <select name="department" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-400 transition text-sm text-slate-700">
+        <option value="">Բոլորը</option>
+        <option th:each="dept : ${allDepts}" th:value="${dept}" th:text="${dept}" th:selected="${dept == selectedDept}"></option>
+      </select>
+    </div>
+    <div class="lg:col-span-2 flex gap-2">
+      <div class="w-1/2">
+        <label class="block text-xs font-bold text-slate-400 mb-1 uppercase">Սկիզբ</label>
+        <input type="date" name="startDate" th:value="${startDate}" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-400 transition text-slate-700">
+      </div>
+      <div class="w-1/2">
+        <label class="block text-xs font-bold text-slate-400 mb-1 uppercase">Ավարտ</label>
+        <input type="date" name="endDate" th:value="${endDate}" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-400 transition text-slate-700">
+      </div>
+    </div>
+    <div class="md:col-span-4 lg:col-span-5 flex justify-end gap-3 mt-2 border-t pt-4">
+      <a th:href="@{/pharmacy-admin/statistics}" class="bg-slate-100 text-slate-600 px-6 py-2.5 rounded-lg font-semibold hover:bg-slate-200 transition text-sm">Մաքրել Ֆիլտրերը</a>
+      <button type="submit" class="bg-slate-800 text-white px-8 py-2.5 rounded-lg font-bold hover:bg-slate-900 transition shadow-md text-sm">Կիրառել</button>
+    </div>
+  </form>
+
+  <!-- ԱՂՅՈՒՍԱԿԸ (PDF արտահանման համար) -->
+  <div id="printableArea" class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-slate-50 border-b">
+        <tr>
+          <th class="p-4 font-semibold text-slate-600 text-sm">Ամսաթիվ</th>
+          <th class="p-4 font-semibold text-slate-600 text-sm">Պացիենտ</th>
+          <th class="p-4 font-semibold text-slate-600 text-sm">Բժիշկ / Բաժանմունք</th>
+          <th class="p-4 font-semibold text-slate-600 text-sm">Գնված Դեղեր</th>
+          <th class="p-4 font-semibold text-slate-600 text-sm text-right">Ընդհանուր (֏)</th>
+          <th class="p-4 font-semibold text-slate-600 text-sm text-center">Կարգավիճակ</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="order : ${orders}" class="border-b hover:bg-slate-50 transition">
+          <td class="p-4 text-sm font-semibold text-slate-700" th:text="${order.orderDate != null ? #temporals.format(order.orderDate, 'dd.MM.yyyy HH:mm') : '-'}"></td>
+          <td class="p-4 text-sm font-bold text-slate-800" th:text="${order.patientId}"></td>
+          <td class="p-4">
+            <div class="font-bold text-slate-700 text-sm" th:text="${order.prescribingDoctor}"></div>
+            <div class="text-xs text-slate-500" th:text="${order.doctorSpecialization}"></div>
+          </td>
+          <td class="p-4">
+            <div class="text-xs text-slate-600 max-w-xs break-words leading-relaxed">
+              <span th:each="item, stat : ${order.purchasedDrugs}" th:text="${item + (!stat.last ? ', ' : '')}"></span>
+            </div>
+          </td>
+          <td class="p-4 text-right font-bold text-slate-800" th:text="${order.totalAmount != null ? order.totalAmount + ' ֏' : '-'}"></td>
+          <td class="p-4 text-center">
+            <span th:if="${order.status == 'PAID'}" class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-md text-xs font-bold border border-emerald-200">ՎՃԱՐՎԱԾ</span>
+            <span th:if="${order.status != 'PAID'}" class="bg-amber-100 text-amber-700 px-3 py-1 rounded-md text-xs font-bold border border-amber-200" th:text="${order.status}"></span>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(orders)}">
+          <td colspan="6" class="p-10 text-center text-slate-400 italic font-medium">Այս ֆիլտրերով վաճառքներ չեն գտնվել:</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  lucide.createIcons();
+
+  /*<![CDATA[*/
+  document.addEventListener('DOMContentLoaded', function() {
+    const deptLabels = [[${deptLabels}]] || [];
+    const deptData = [[${deptData}]] || [];
+    const docLabels = [[${docLabels}]] || [];
+    const docData = [[${docData}]] || [];
+
+    // Գրաֆիկների գույներ (Avelia Clinic style)
+    const aveliaColors = ['#06B6D4', '#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444'];
+
+    if(document.getElementById('deptChart') && deptLabels.length > 0) {
+      new Chart(document.getElementById('deptChart'), {
+        type: 'doughnut',
+        data: {
+          labels: deptLabels,
+          datasets: [{
+            data: deptData,
+            backgroundColor: aveliaColors,
+            borderWidth: 0
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } }
+      });
+    }
+
+    if(document.getElementById('docChart') && docLabels.length > 0) {
+      new Chart(document.getElementById('docChart'), {
+        type: 'bar',
+        data: {
+          labels: docLabels,
+          datasets: [{
+            label: 'Եկամուտ (֏)',
+            data: docData,
+            backgroundColor: '#3B82F6',
+            borderRadius: 6
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } }
+      });
+    }
+  });
+  /*]]>*/
+
+  function exportToPDF() {
+    const element = document.getElementById('printableArea');
+    const opt = {
+      margin: 10,
+      filename: 'Avelia_Pharmacy_Report.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    };
+    html2pdf().set(opt).from(element).save();
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Լաբորատոր Արդյունք</title>
+  <style>
+    body { font-family: 'DejaVu Sans', Arial, sans-serif; color: #333; margin: 40px; }    .header { text-align: center; border-bottom: 3px solid #1e3a8a; padding-bottom: 15px; margin-bottom: 30px; }
+    .clinic-name { font-size: 28px; font-weight: bold; color: #1e3a8a; letter-spacing: 1px; }
+    .clinic-sub { font-size: 14px; color: #666; margin-top: 5px; }
+    .title { font-size: 18px; font-weight: bold; margin-top: 15px; text-transform: uppercase; }
+
+    .info-table { width: 100%; margin-bottom: 30px; border-collapse: collapse; }
+    .info-table td { padding: 8px; border-bottom: 1px dashed #ccc; }
+    .info-label { font-weight: bold; color: #555; width: 150px; }
+
+    .results-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    .results-table th, .results-table td { border: 1px solid #ddd; padding: 12px 8px; text-align: center; }
+    .results-table th { background-color: #f8fafc; color: #333; font-weight: bold; }
+    .results-table td:first-child { text-align: left; font-weight: bold; }
+
+    .notes-box { background-color: #f9f9f9; border-left: 4px solid #1e3a8a; padding: 15px; margin-top: 20px; }
+    .footer { margin-top: 50px; text-align: right; font-size: 12px; color: #888; border-top: 1px solid #eee; padding-top: 10px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="clinic-name">AVELIA CLINIC</div>
+  <div class="clinic-sub">Ժամանակակից Բժշկության և Ախտորոշման Կենտրոն</div>
+  <div class="title">Լաբորատոր Հետազոտության Արդյունք</div>
+</div>
+
+<table class="info-table">
+  <tr>
+    <td class="info-label">Պացիենտ՝</td>
+    <td th:text="${test.patientFullName}"></td>
+    <td class="info-label">Հետազոտություն՝</td>
+    <td th:text="${test.testName}" style="font-weight: bold; color: #1e3a8a;"></td>
+  </tr>
+  <tr>
+    <td class="info-label">Ուղեգրող Բժիշկ՝</td>
+    <td th:text="${test.doctorFullName} + ' (' + ${test.doctorSpecialization} + ')'"></td>
+    <td class="info-label">Ավարտի Ամսաթիվ՝</td>
+    <td th:text="${#temporals.format(test.completionDate, 'dd.MM.yyyy HH:mm')}"></td>
+  </tr>
+</table>
+
+<table class="results-table">
+  <thead>
+  <tr>
+    <th>Ցուցանիշ</th>
+    <th>Արդյունք</th>
+    <th>Միավոր</th>
+    <th>Նորմա</th>
+    <th>Շեղում</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="res : ${test.detailedResults}">
+    <td th:text="${res.name}"></td>
+    <td th:text="${res.value}" style="font-size: 16px;"></td>
+    <td th:text="${res.unit}"></td>
+    <td th:text="${res.norms}"></td>
+    <td th:text="${res.status}"></td>
+  </tr>
+  </tbody>
+</table>
+
+<div class="notes-box" th:if="${test.resultNotes != null and !test.resultNotes.trim().isEmpty()}">
+  <strong style="color: #1e3a8a;">Լաբորանտի Մեկնաբանություն:</strong>
+  <p style="margin-top: 5px;" th:text="${test.resultNotes}"></p>
+</div>
+
+<div class="footer">
+  Տպագրված է էլեկտրոնային համակարգից | Փաստաթղթի ID: <span th:text="${test.id}"></span>
+</div>
+
+</body>
+</html>

@@ -1,4 +1,4 @@
-package com.example.diplomathesisfinalcollection.medicalrecorder; // Համոզվիր, որ փաթեթի անունը ճիշտ է
+package com.example.diplomathesisfinalcollection.medicine;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Document(collection = "pharmacy_orders")
 @Data
@@ -15,20 +16,20 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PharmacyOrder {
-
     @Id
     private String id;
 
-    // Ո՞վ է պատվիրել և որ դեղատոմսի (քարտի) հիման վրա
     private String patientId;
     private String medicalRecordId;
 
-    // Վճարման մանրամասներ
-    private Double totalAmount; // Ընդհանուր գումարը
-    private String paymentMethod; // "CARD_ONLINE" կամ "CASH"
+    // 🔴 ՆՈՐ ԴԱՇՏԵՐ. Առաքման և Բժշկի տվյալների պատմություն
+    private String deliveryAddress;      // Պացիենտի հասցեն գնման պահին
+    private String deliveryPhone;        // Պացիենտի հեռախոսը գնման պահին
+    private String prescribingDoctor;    // Բժշկի Անուն Ազգանուն
+    private String doctorSpecialization; // Բժշկի մասնագիտացումը
 
-    // Պատվերի վիճակը: PENDING (Սպասվում է վճարման), PAID (Վճարված է), DELIVERED (Առաքված է)
+    private List<String> purchasedDrugs;
+    private Double totalAmount;
     private String status;
-
     private LocalDateTime orderDate;
 }

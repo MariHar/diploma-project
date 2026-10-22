@@ -1,10 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Prescription Verification</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-$END$
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+<div class="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden">
+
+  <div th:if="${record == null}" class="p-8 text-center">
+    <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <span class="text-4xl">❌</span>
+    </div>
+    <h2 class="text-2xl font-bold text-gray-800 mb-2">Կեղծված կամ Անվավեր</h2>
+    <p class="text-gray-500">Այս QR կոդին համապատասխանող դեղատոմս համակարգում չի գտնվել:</p>
+  </div>
+
+  <div th:if="${record != null}">
+    <div class="bg-green-500 p-6 text-center text-white">
+      <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+      </div>
+      <h1 class="text-2xl font-bold">ՎԱՎԵՐ ԴԵՂԱՏՈՄՍ</h1>
+      <p class="text-green-100 text-sm mt-1">Հաստատված է avelia clinic համակարգով</p>
+    </div>
+
+    <div class="p-6 space-y-6">
+      <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 space-y-3 text-sm">
+        <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+          <span class="text-gray-500">Ամսաթիվ:</span>
+          <span class="font-bold text-gray-800" th:text="${#temporals.format(record.recordDate, 'dd.MM.yyyy HH:mm')}"></span>
+        </div>
+        <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+          <span class="text-gray-500">Բժիշկ:</span>
+          <span class="font-bold text-blue-600" th:text="${'Dr. ' + doctor.firstName + ' ' + doctor.lastName}"></span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-500">Պացիենտ:</span>
+          <span class="font-bold text-gray-800" th:text="${#strings.substring(patient.firstName,0,1) + '. ' + patient.lastName}"></span>        </div>
+      </div>
+
+      <div>
+        <h3 class="text-gray-800 font-bold mb-3 flex items-center gap-2">
+          <span class="text-xl">💊</span> Նշանակված Դեղորայք
+        </h3>
+
+        <div th:if="${record.prescriptions == null or record.prescriptions.isEmpty()}" class="text-gray-500 italic text-sm text-center py-4">
+          Այս փաստաթղթում դեղորայք նշանակված չէ:
+        </div>
+
+        <div class="space-y-3" th:if="${record.prescriptions != null}">
+          <div th:each="drug : ${record.prescriptions}" class="border border-gray-200 rounded-lg p-3 flex justify-between items-center">
+            <div>
+              <p class="font-bold text-gray-800" th:text="${drug.name}">Անուն</p>
+              <p class="text-xs text-blue-500 font-semibold" th:text="${drug.dosage}">Չափաբաժին</p>
+            </div>
+            <div class="text-right">
+              <p class="text-xs text-gray-400 uppercase">Կիրառում</p>
+              <p class="text-sm font-medium text-gray-700" th:text="${drug.frequency}">Հաճախականություն</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div th:if="${record.contraindications != null and !record.contraindications.isEmpty()}" class="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-100">
+        <strong>⚠ Հակացուցումներ:</strong> <span th:text="${record.contraindications}"></span>
+      </div>
+
+    </div>
+
+    <div class="bg-gray-50 p-4 text-center text-xs text-gray-400 border-t border-gray-100">
+      Այս փաստաթուղթը վավեր է և գտնվում է avelia clinic-ի անվտանգ տվյալների բազայում:<br>
+      ID: <span th:text="${record.id}"></span>
+    </div>
+  </div>
+
+</div>
+
 </body>
 </html>

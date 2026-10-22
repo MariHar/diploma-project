@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="hy" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Պացիենտների Կառավարում - Ադմին</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            accent: { cyan: '#06B6D4', blue: '#3B82F6', purple: '#8B5CF6' }
+          },
+          fontFamily: { 'sans': ['Inter', 'system-ui', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    body, input, textarea, button { transition: all 0.3s ease; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen">
+
+<header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 md:px-8 h-20 flex items-center justify-between">
+
+    <div class="flex items-center gap-6">
+      <a th:href="@{/admin/dashboard}" class="flex items-center gap-2 text-gray-500 hover:text-accent-blue transition-colors font-semibold">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Վերադառնալ Գլխավոր Վահանակ
+      </a>
+      <div class="h-6 w-px bg-gray-200 hidden md:block"></div>
+      <h1 class="text-xl font-bold text-gray-800 hidden md:block">Պացիենտների Կառավարում</h1>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="m-0">
+        <button type="submit" class="flex items-center gap-2 border border-red-200 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white px-5 py-2 rounded-xl font-semibold transition-all shadow-sm hover:shadow-md">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          Ելք
+        </button>
+      </form>
+    </div>
+  </div>
+</header>
+
+<div class="max-w-7xl mx-auto p-4 md:p-8">
+
+  <div class="mb-6 md:hidden">
+    <h2 class="text-3xl font-bold text-gray-900">Պացիենտներ</h2>
+  </div>
+
+  <div th:if="${successMsg}" class="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-xl flex items-center gap-3 shadow-sm animate-fade-in">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+    <span class="font-medium" th:text="${successMsg}"></span>
+  </div>
+
+  <div th:if="${errorMsg}" class="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-center gap-3 shadow-sm animate-fade-in">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <span class="font-medium" th:text="${errorMsg}"></span>
+  </div>
+
+  <div class="bg-white p-6 rounded-2xl border border-gray-200 mb-8 shadow-sm relative overflow-hidden">
+    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-blue to-accent-cyan"></div>
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-accent-blue shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold text-gray-800">Հաճախորդների Բազա</h2>
+          <p class="text-sm text-gray-500">Վերահսկեք պացիենտների կարգավիճակը և չեղարկումների վիճակագրությունը:</p>
+        </div>
+      </div>
+
+      <div class="relative w-full lg:w-72">
+        <input type="text" placeholder="Որոնել պացիենտին..."
+               class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-accent-blue transition-all">
+        <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+    <h2 class="text-xl font-bold mb-6 text-gray-800">Առկա Պացիենտներ</h2>
+
+    <div class="overflow-x-auto rounded-xl border border-gray-200">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-gray-50 border-b border-gray-200">
+        <tr>
+          <th class="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Պացիենտ</th>
+          <th class="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Էլ. Հասցե</th>
+          <th class="py-4 px-6 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Չեղարկումներ</th>
+          <th class="py-4 px-6 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Կարգավիճակ</th>
+          <th class="py-4 px-6 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Գործողություն</th>
+        </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+
+        <tr th:each="patient : ${patients}" class="hover:bg-gray-50 transition-colors">
+
+          <td class="py-4 px-6 whitespace-nowrap">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 h-10 w-10">
+                <div class="h-10 w-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-accent-blue font-bold shadow-sm"
+                     th:text="${#strings.substring(patient.firstName,0,1) + #strings.substring(patient.lastName,0,1)}">ԱԱ</div>
+              </div>
+              <div class="ml-4">
+                <div class="text-sm font-bold text-gray-900" th:text="${patient.firstName + ' ' + patient.lastName}">Անուն Ազգանուն</div>
+                <div class="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                  <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                  <span th:text="${patient.phone ?: 'Հեռախոսը նշված չէ'}"></span>
+                </div>
+              </div>
+            </div>
+          </td>
+
+          <td class="py-4 px-6 whitespace-nowrap">
+            <div class="text-sm text-gray-600 font-medium" th:text="${patient.email}">patient@example.com</div>
+          </td>
+
+          <td class="py-4 px-6 whitespace-nowrap text-center">
+              <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-md text-xs font-bold shadow-sm"
+                    th:classappend="${patient.cancellationCount >= 3 ? 'bg-red-100 text-red-700 border border-red-200' : (patient.cancellationCount == 2 ? 'bg-orange-100 text-orange-700 border border-orange-200' : 'bg-gray-100 text-gray-600 border border-gray-200')}"
+                    th:text="${patient.cancellationCount} + '/3'">0/3</span>
+          </td>
+
+          <td class="py-4 px-6 whitespace-nowrap text-center">
+            <span th:if="${patient.enabled}" class="px-2.5 py-1 bg-green-100 text-green-700 border border-green-200 rounded-md text-[11px] font-bold">ԱԿՏԻՎ</span>
+            <span th:if="${!patient.enabled}" class="px-2.5 py-1 bg-red-100 text-red-700 border border-red-200 rounded-md text-[11px] font-bold">ԱՐԳԵԼԱՓԱԿՎԱԾ</span>
+          </td>
+
+          <td class="py-4 px-6 whitespace-nowrap text-right text-sm font-medium">
+            <form th:action="@{/admin/patients/toggle-status/{id}(id=${patient.id})}" method="post" class="inline-block">
+              <button type="submit"
+                      th:class="${patient.enabled ? 'text-red-600 bg-red-50 hover:bg-red-100 border border-red-200' : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200'} + ' px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm active:scale-95'"
+                      th:text="${patient.enabled ? 'Բլոկավորել' : 'Ապաբլոկավորել'}">
+              </button>
+            </form>
+          </td>
+        </tr>
+
+        <tr th:if="${#lists.isEmpty(patients)}">
+          <td colspan="5" class="py-16 text-center text-gray-500">
+            <svg class="mx-auto h-12 w-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            Համակարգում դեռ գրանցված պացիենտներ չկան:
+          </td>
+        </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

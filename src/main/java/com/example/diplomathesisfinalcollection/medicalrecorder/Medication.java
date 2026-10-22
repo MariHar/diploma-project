@@ -1,4 +1,4 @@
-package com.example.diplomathesisfinalcollection;
+package com.example.diplomathesisfinalcollection.medicalrecorder;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,4 +12,5 @@ public class Medication {
     private String dosage;     // Չափաբաժինը (օր.՝ 500մգ)
     private String frequency;  // Քանի անգամ (օր.՝ 2 անգամ օրը)
     private String duration;   // Տևողությունը (օր.՝ 7 օր)
+    private Integer quantity; // Տուփերի քանակը (օր.՝ 2) - Սա կօգտագործենք գումարի հաշվարկի համար
 }

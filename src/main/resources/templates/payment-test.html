@@ -1,10 +1,94 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+<!--<!DOCTYPE html>-->
+<!--<html lang="hy">-->
+<!--<head>-->
+<!--  <meta charset="UTF-8">-->
+<!--  <title>Secure Payment Gateway</title>-->
+<!--  <script src="https://cdn.tailwindcss.com"></script>-->
+<!--  <style>-->
+<!--    .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }-->
+<!--    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }-->
+<!--  </style>-->
+<!--</head>-->
+<!--<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">-->
+
+<!--<div id="paymentForm" class="bg-white max-w-md w-full rounded-2xl shadow-2xl overflow-hidden border border-gray-200">-->
+<!--  <div class="bg-blue-900 p-6 text-center text-white relative">-->
+<!--    <svg class="w-8 h-8 mx-auto mb-2 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z"></path></svg>-->
+<!--    <h2 class="text-xl font-bold tracking-wide">ԱՆՎՏԱՆԳ ՎՃԱՐՈՒՄ</h2>-->
+<!--    <p class="text-blue-200 text-sm mt-1">100% Ապահով և Գաղտնագրված</p>-->
+<!--  </div>-->
+
+<!--  <div class="p-6 bg-gray-50 border-b border-gray-100 flex justify-between items-center">-->
+<!--    <span class="text-gray-500 font-medium">Վճարման ենթակա.</span>-->
+<!--    <span class="text-2xl font-bold text-gray-800">8,500 <span class="text-lg">֏</span></span>-->
+<!--  </div>-->
+
+<!--  <div class="p-6 space-y-4">-->
+<!--    <div>-->
+<!--      <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Քարտի Համար</label>-->
+<!--      <input type="text" placeholder="0000 0000 0000 0000" maxlength="19" class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-lg tracking-widest transition-all">-->
+<!--    </div>-->
+
+<!--    <div class="grid grid-cols-2 gap-4">-->
+<!--      <div>-->
+<!--        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Վավեր է մինչև</label>-->
+<!--        <input type="text" placeholder="MM/YY" maxlength="5" class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-center tracking-widest">-->
+<!--      </div>-->
+<!--      <div>-->
+<!--        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">CVV / CVC</label>-->
+<!--        <input type="password" placeholder="•••" maxlength="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-center tracking-widest">-->
+<!--      </div>-->
+<!--    </div>-->
+<!--    <div>-->
+<!--      <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Քարտապանի Անունը</label>-->
+<!--      <input type="text" placeholder="Անուն Ազգանուն" class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase transition-all">-->
+<!--    </div>-->
+<!--  </div>-->
+
+<!--  <div class="p-6 pt-0">-->
+<!--    <button onclick="processPayment()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all transform active:scale-95 flex justify-center items-center gap-2">-->
+<!--      Վճարել 8,500 ֏-->
+<!--    </button>-->
+<!--  </div>-->
+<!--</div>-->
+
+<!--<div id="processingScreen" class="hidden bg-white max-w-sm w-full p-8 rounded-2xl shadow-2xl text-center">-->
+<!--  <div class="loader mb-6"></div>-->
+<!--  <h3 class="text-lg font-bold text-gray-800 mb-2">Մշակվում է...</h3>-->
+<!--  <p id="processText" class="text-gray-500 text-sm">Կապ է հաստատվում բանկի հետ</p>-->
+<!--</div>-->
+
+<!--<div id="successScreen" class="hidden bg-white max-w-sm w-full p-8 rounded-2xl shadow-2xl text-center transform scale-110 transition-transform duration-500">-->
+<!--  <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">-->
+<!--    <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>-->
+<!--  </div>-->
+<!--  <h3 class="text-2xl font-bold text-gray-800 mb-2">Վճարումը Հաստատված է</h3>-->
+<!--  <p class="text-gray-500 text-sm">Վերադարձ կլինիկայի էջ...</p>-->
+<!--</div>-->
+
+<!--<script>-->
+<!--  function processPayment() {-->
+<!--    // Թաքցնում ենք ֆորմը, բացում ենք պտտվող անիմացիան-->
+<!--    document.getElementById('paymentForm').classList.add('hidden');-->
+<!--    document.getElementById('processingScreen').classList.remove('hidden');-->
+
+<!--    const statusText = document.getElementById('processText');-->
+
+<!--    // 1 վայրկյան հետո փոխում ենք տեքստը-->
+<!--    setTimeout(() => { statusText.innerText = "Ստուգվում են քարտի տվյալները..."; }, 1000);-->
+
+<!--    // 2 վայրկյան հետո՝ մեկ այլ տեքստ-->
+<!--    setTimeout(() => { statusText.innerText = "Հաստատվում է անվտանգությունը..."; }, 2000);-->
+
+<!--    // 3.5 վայրկյան հետո բացում ենք Success էկրանը-->
+<!--    setTimeout(() => {-->
+<!--      document.getElementById('processingScreen').classList.add('hidden');-->
+<!--      document.getElementById('successScreen').classList.remove('hidden');-->
+
+<!--      // Այստեղ կլինի ռեալ կոդը, որը պացիենտին կտանի հետ՝ քո Avelia Clinic կայք-->
+<!--      // setTimeout(() => { window.location.href = '/patient/profile'; }, 2000);-->
+<!--    }, 3500);-->
+<!--  }-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="hy" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Տպել Պահեստը</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: white; color: black; }
+
+        /* Թաքցնում ենք կոճակները բուն տպելու ժամանակ */
+        @media print {
+            .no-print { display: none !important; }
+            @page { margin: 1cm; }
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; font-size: 12px; }
+        th { background-color: #f3f4f6; font-weight: bold; }
+    </style>
+</head>
+<body class="p-8 max-w-5xl mx-auto">
+
+<div class="no-print flex justify-between items-center mb-8 bg-slate-50 p-4 rounded-lg border">
+    <p class="text-slate-600 font-semibold">Սա տպելու նախնական տեսքն է: PDF պահպանելու համար սեղմեք Տպել, ապա ընտրեք "Save as PDF":</p>
+    <div class="flex gap-3">
+        <button onclick="window.close()" class="px-4 py-2 border rounded-lg hover:bg-slate-100 font-semibold">Փակել</button>
+        <button onclick="window.print()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 shadow-md">🖨️ Տպել կամ Պահպանել PDF</button>
+    </div>
+</div>
+
+<div class="text-center mb-6">
+    <h1 class="text-2xl font-bold uppercase tracking-wider">Դեղերի Պահեստի Հաշվետվություն</h1>
+    <p class="text-gray-500 mt-1">Գեներացված է՝ <span th:text="${#temporals.format(printDate, 'dd.MM.yyyy')}"></span></p>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th>Հ/Հ</th>
+        <th>Անվանում / Նկարագրություն</th>
+        <th>Կատեգորիա</th>
+        <th>Քանակ</th>
+        <th>Մուտքի Օր</th>
+        <th>Ժամկետ</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="med, iterStat : ${medicines}" th:style="${!med.active ? 'color: gray;' : ''}">
+        <td th:text="${iterStat.count}">1</td>
+        <td>
+            <strong th:text="${med.name}"></strong>
+            <div style="font-size: 10px; color: gray;" th:text="${med.description}"></div>
+        </td>
+        <td th:text="${med.category}"></td>
+        <td><strong th:text="${med.stock}"></strong></td>
+        <td th:text="${med.addedDate != null ? #temporals.format(med.addedDate, 'dd.MM.yyyy') : '-'}"></td>
+        <td th:text="${med.expirationDate != null ? #temporals.format(med.expirationDate, 'dd.MM.yyyy') : '-'}"></td>
+    </tr>
+    <tr th:if="${medicines.empty}">
+        <td colspan="6" class="text-center italic py-4">Դեղեր չեն գտնվել</td>
+    </tr>
+    </tbody>
+</table>
+
+<script>
+    window.onload = function() {
+        setTimeout(function() {
+            window.print();
+        }, 500);
+    }
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-package com.example.diplomathesisfinalcollection.newaiclaude;
+package com.example.diplomathesisfinalcollection.aichatbot;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ChatMessage {
 
-    private String role;       // "user" or "assistant"
+    private String role;
     private String content;
     private LocalDateTime timestamp;
 }

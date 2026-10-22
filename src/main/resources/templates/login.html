@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - MediCare Pro</title>
+    <title th:text="#{head.title.login}">Login - Avelia Clinic</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -119,6 +119,7 @@
         body:not(.dark) .lang-btn.active {
             color: white;
         }
+
         /* Dark Mode Glassmorphism */
         .auth-card {
             background: rgba(30, 41, 59, 0.7);
@@ -153,14 +154,8 @@
 
         /* Animations */
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes shake {
@@ -170,7 +165,7 @@
         }
 
         .fade-in {
-            animation: fadeInUp 0.8s ease-out;
+            animation: fadeInUp 0.8s ease-out forwards;
         }
 
         .shake {
@@ -179,17 +174,17 @@
 
         /* Background Pattern */
         body.dark {
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(6, 182, 212, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
-                #020617;
+            background:
+                    radial-gradient(circle at 20% 50%, rgba(6, 182, 212, 0.03) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
+                    #020617;
         }
 
         body:not(.dark) {
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(6, 182, 212, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
-                #F9FAFB;
+            background:
+                    radial-gradient(circle at 20% 50%, rgba(6, 182, 212, 0.05) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+                    #F9FAFB;
         }
 
         /* Theme Toggle Button */
@@ -219,151 +214,179 @@
         .password-toggle:hover {
             color: #06B6D4;
         }
+        body { top: 0px !important; }
     </style>
 </head>
-<body class="dark min-h-screen flex items-center justify-center px-4 py-8">
+<body class="dark min-h-screen flex items-center justify-center px-4 py-8 relative">
+
+<!-- Ethereal Ambient Background Orbs -->
+<div class="fixed top-0 left-0 w-96 h-96 bg-accent-cyan/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[-1]"></div>
+<div class="fixed bottom-0 right-0 w-96 h-96 bg-accent-blue/10 rounded-full blur-[120px] translate-x-1/3 translate-y-1/3 pointer-events-none z-[-1]"></div>
 
 <!-- Floating Language Switcher -->
-<div class="language-switcher fixed top-2 left-2 md:top-6 md:left-6 z-50 flex items-center gap-2 bg-dark-100 border border-gray-700 rounded-xl p-1.5 shadow-lg">
-    <button 
-        onclick="changeLanguage('en')" 
-        class="lang-btn active px-3 py-2 rounded-lg text-sm font-semibold transition-all hover:bg-dark-200"
-        data-lang="en"
+<div class="language-switcher fixed top-4 left-4 md:top-6 md:left-6 z-50 flex items-center gap-2 border rounded-xl p-1.5 shadow-lg">
+    <button
+            type="button"
+            onclick="changeLanguage('en')"
+            class="lang-btn px-3 py-1.5 rounded-lg text-sm font-semibold transition-all"
     >
         EN
     </button>
-    <button 
-        onclick="changeLanguage('am')" 
-        class="lang-btn px-3 py-2 rounded-lg text-sm font-semibold transition-all hover:bg-dark-200"
-        data-lang="am"
+    <button
+            type="button"
+            onclick="changeLanguage('hy')"
+            class="lang-btn px-3 py-1.5 rounded-lg text-sm font-semibold transition-all"
     >
-        AM
+        HY
     </button>
-    <button 
-        onclick="changeLanguage('ru')" 
-        class="lang-btn px-3 py-2 rounded-lg text-sm font-semibold transition-all hover:bg-dark-200"
-        data-lang="ru"
+    <button
+            type="button"
+            onclick="changeLanguage('ru')"
+            class="lang-btn px-3 py-1.5 rounded-lg text-sm font-semibold transition-all"
     >
         RU
     </button>
 </div>
-    <!-- Floating Theme Toggle -->
-    <button id="themeToggle" class="theme-toggle w-12 h-12 rounded-xl bg-dark-100 border border-gray-700 flex items-center justify-center hover:bg-dark-200 transition-all hover:scale-110 group">
-        <svg id="sunIcon" class="w-6 h-6 text-yellow-400 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-        </svg>
-        <svg id="moonIcon" class="w-6 h-6 text-indigo-400 hidden group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-        </svg>
-    </button>
 
-    <!-- Main Login Container -->
-    <div class="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center fade-in">
-        
-        <!-- Left Side - Branding -->
-        <div class="hidden lg:flex flex-col justify-center p-12">
-            <div class="mb-8">
-                <div class="flex items-center gap-4 mb-6">
-                    <div class="w-16 h-16 bg-gradient-to-br from-accent-cyan to-accent-blue rounded-2xl flex items-center justify-center shadow-2xl">
-                        <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h1 class="text-3xl font-bold gradient-text">MediCare Pro</h1>
-                        <p class="text-gray-400 text-sm">Premium Health Services</p>
-                    </div>
-                </div>
-            </div>
+<!-- Floating Theme Toggle -->
+<button type="button" id="themeToggle" class="theme-toggle w-12 h-12 rounded-xl bg-white/80 dark:bg-dark-100/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-dark-200 transition-all hover:scale-110 group shadow-sm">
+    <svg id="sunIcon" class="w-6 h-6 text-yellow-500 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+    </svg>
+    <svg id="moonIcon" class="w-6 h-6 text-indigo-400 hidden group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+    </svg>
+</button>
 
-            <h2 class="text-4xl font-bold text-gray-100 mb-4">Your Health, Our Priority</h2>
-            <p class="text-lg text-gray-400 mb-8">
-                Access world-class medical care, book appointments with expert specialists, and manage your health journey all in one place.
-            </p>
+<!-- Main Login Container -->
+<div class="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center fade-in relative z-10">
 
-            <div class="space-y-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-cyan/20 to-accent-blue/20 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                    </div>
-                    <span class="text-gray-300">24/7 Medical Support</span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-cyan/20 to-accent-blue/20 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                    </div>
-                    <span class="text-gray-300">150+ Expert Doctors</span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-cyan/20 to-accent-blue/20 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                    </div>
-                    <span class="text-gray-300">Secure & Private</span>
+    <!-- Left Side - Branding -->
+    <div class="hidden lg:flex flex-col justify-center p-12">
+        <div class="mb-8">
+            <div class="flex items-center gap-4 mb-6">
+                <a th:href="@{/}" class="w-16 h-16 bg-gradient-to-br from-accent-cyan to-accent-blue rounded-2xl flex items-center justify-center shadow-2xl hover:scale-105 transition-transform">
+                    <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="text-3xl font-extrabold gradient-text tracking-tight" th:text="#{login.brand.title}">Avelia Clinic</h1>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm font-medium" th:text="#{login.brand.subtitle}">Premium Health Services</p>
                 </div>
             </div>
         </div>
 
-        <!-- Right Side - Login Form -->
-        <div class="auth-card rounded-3xl p-8 md:p-12">
-            <!-- Mobile Logo -->
-            <div class="lg:hidden flex items-center justify-center gap-3 mb-8">
-                <div class="w-12 h-12 bg-gradient-to-br from-accent-cyan to-accent-blue rounded-xl flex items-center justify-center">
-                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+        <h2 class="text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-4 tracking-tight" th:text="#{login.hero.title}">Your Health, Our Priority</h2>
+        <p class="text-lg text-gray-600 dark:text-gray-400 mb-10 leading-relaxed font-light" th:text="#{login.hero.subtitle}">
+            Access world-class medical care, book appointments with expert specialists, and manage your health journey all in one place.
+        </p>
+
+        <div class="space-y-5">
+            <div class="flex items-center gap-4 group">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-cyan/10 to-accent-blue/10 border border-accent-cyan/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <svg class="w-6 h-6 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
                 </div>
-                <span class="text-2xl font-bold gradient-text">MediCare Pro</span>
+                <span class="text-gray-700 dark:text-gray-300 font-medium" th:text="#{login.feature.support}">24/7 Medical Support</span>
+            </div>
+            <div class="flex items-center gap-4 group">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-cyan/10 to-accent-blue/10 border border-accent-cyan/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <svg class="w-6 h-6 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <span class="text-gray-700 dark:text-gray-300 font-medium" th:text="#{login.feature.doctors}">150+ Expert Doctors</span>
+            </div>
+            <div class="flex items-center gap-4 group">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-cyan/10 to-accent-blue/10 border border-accent-cyan/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <svg class="w-6 h-6 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <span class="text-gray-700 dark:text-gray-300 font-medium" th:text="#{login.feature.secure}">Secure & Private</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side - Login Form -->
+    <div class="relative">
+        <!-- Glow behind card -->
+        <div class="absolute inset-0 bg-gradient-to-tr from-accent-cyan/20 to-accent-blue/20 blur-[80px] rounded-full z-[-1] pointer-events-none"></div>
+
+        <div class="auth-card rounded-[2.5rem] p-8 md:p-12">
+            <!-- Mobile Logo -->
+            <div class="lg:hidden flex items-center justify-center gap-3 mb-10">
+                <a th:href="@{/}" class="w-14 h-14 bg-gradient-to-br from-accent-cyan to-accent-blue rounded-2xl flex items-center justify-center shadow-lg">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                </a>
+                <span class="text-3xl font-extrabold gradient-text tracking-tight" th:text="#{login.brand.title}">Avelia Clinic</span>
             </div>
 
-            <div class="text-center mb-8">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-100 mb-2">Welcome Back</h2>
-                <p class="text-gray-400">Sign in to access your medical dashboard</p>
+            <div class="text-center mb-10">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-3 tracking-tight" th:text="#{login.form.title}">Welcome Back</h2>
+                <p class="text-gray-500 dark:text-gray-400 font-medium" th:text="#{login.form.subtitle}">Sign in to access your medical dashboard</p>
             </div>
 
-            <form id="loginForm" class="space-y-6">
+            <!-- BACKEND FORM - Thymeleaf Spring Security -->
+            <form id="loginForm" th:action="@{/perform_login}" method="post" class="space-y-6">
+
+                <!-- SUCCESS Message (Shows after registration) -->
+                <div th:if="${param.registered}" class="bg-green-500/10 border border-green-500 text-green-600 dark:text-green-400 p-4 rounded-xl mb-6 text-center text-sm font-bold flex items-center justify-center gap-2 shadow-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span th:text="#{login.msg.success}">Registration successful! Please log in below.</span>
+                </div>
+
+                <!-- ERROR Message (Shows if password is wrong) -->
+                <div th:if="${param.error}" class="bg-red-500/10 border border-red-500 text-red-600 dark:text-red-400 p-4 rounded-xl mb-6 text-center text-sm font-bold flex items-center justify-center gap-2 shadow-sm shake">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span th:text="#{login.msg.error}">Invalid email or password. Please try again.</span>
+                </div>
+
                 <!-- Email Field -->
                 <div>
-                    <label for="email" class="block text-sm font-semibold text-gray-300 mb-2">Email Address</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <label for="email" class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2" th:text="#{login.label.email}">Email Address</label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-accent-cyan">
+                            <svg class="w-5 h-5 text-gray-400 dark:text-gray-500 group-focus-within:text-accent-cyan transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
                             </svg>
                         </div>
-                        <input 
-                            type="email" 
-                            id="email" 
-                            class="input-field w-full pl-12 pr-4 py-3.5 rounded-xl text-gray-100" 
-                            placeholder="your.email@example.com"
-                            required
+                        <input
+                                type="email"
+                                id="email"
+                                name="username"
+                                autocomplete="username"
+                                class="input-field w-full pl-12 pr-4 py-4 rounded-xl text-gray-900 dark:text-gray-100 font-medium"
+                                th:placeholder="#{login.placeholder.email}"
+                                required
                         >
                     </div>
                 </div>
 
                 <!-- Password Field -->
                 <div>
-                    <label for="password" class="block text-sm font-semibold text-gray-300 mb-2">Password</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <label for="password" class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2" th:text="#{login.label.password}">Password</label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-accent-cyan">
+                            <svg class="w-5 h-5 text-gray-400 dark:text-gray-500 group-focus-within:text-accent-cyan transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                             </svg>
                         </div>
-                        <input 
-                            type="password" 
-                            id="password" 
-                            class="input-field w-full pl-12 pr-12 py-3.5 rounded-xl text-gray-100" 
-                            placeholder="••••••••"
-                            required
+                        <input
+                                type="password"
+                                id="password"
+                                autocomplete="current-password"
+                                name="password"
+                                class="input-field w-full pl-12 pr-12 py-4 rounded-xl text-gray-900 dark:text-gray-100 font-medium"
+                                th:placeholder="#{login.placeholder.password}"
+                                required
                         >
                         <div class="absolute inset-y-0 right-0 pr-4 flex items-center">
-                            <svg id="togglePassword" class="w-5 h-5 text-gray-500 password-toggle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg id="togglePassword" class="w-5 h-5 text-gray-400 dark:text-gray-500 password-toggle cursor-pointer hover:text-accent-cyan transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                             </svg>
@@ -372,104 +395,101 @@
                 </div>
 
                 <!-- Remember Me & Forgot Password -->
-                <div class="flex items-center justify-between">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" class="w-4 h-4 rounded border-gray-600 text-accent-cyan focus:ring-accent-cyan focus:ring-offset-0">
-                        <span class="text-sm text-gray-400">Remember me</span>
+                <div class="flex items-center justify-between pt-2">
+                    <label class="flex items-center gap-2 cursor-pointer group">
+                        <div class="relative flex items-center">
+                            <input type="checkbox" id="remember-me" name="remember-me" class="peer w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-accent-cyan focus:ring-accent-cyan focus:ring-offset-0 bg-white dark:bg-dark-200 transition-all cursor-pointer">
+                        </div>
+                        <span class="text-sm font-semibold text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-300 transition-colors" th:text="#{login.label.remember}">Remember me</span>
                     </label>
-                    <a href="#" class="text-sm text-accent-cyan hover:text-accent-blue transition-colors font-semibold">
+                    <a th:href="@{/forgot-password}" class="text-sm text-accent-cyan hover:text-accent-blue transition-colors font-bold" th:text="#{login.link.forgot}">
                         Forgot Password?
                     </a>
                 </div>
 
                 <!-- Login Button -->
-                <button type="submit" class="w-full bg-gradient-to-r from-accent-cyan to-accent-blue text-white py-4 rounded-xl font-bold text-lg hover:shadow-2xl hover:shadow-accent-cyan/30 transition-all hover:scale-[1.02] active:scale-[0.98]">
-                    Sign In
+                <button type="submit" class="w-full bg-gradient-to-r from-accent-cyan to-accent-blue text-white py-4 mt-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-cyan-500/40 transition-all hover:-translate-y-1 active:scale-[0.98]">
+                    <span th:text="#{login.button.submit}">Sign In</span>
                 </button>
 
-                <!-- Divider -->
-                <div class="relative my-8">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-gray-700"></div>
-                    </div>
-                    <div class="relative flex justify-center text-sm">
-                        <span class="px-4 bg-dark-100 text-gray-400">Or continue with</span>
-                    </div>
-                </div>
-
-                <!-- Social Login -->
-                <div class="grid grid-cols-2 gap-4">
-                    <button type="button" class="social-btn flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-gray-700 bg-dark-200 text-gray-300 font-semibold">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                        </svg>
-                        Google
-                    </button>
-                    <button type="button" class="social-btn flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-gray-700 bg-dark-200 text-gray-300 font-semibold">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-                        </svg>
-                        Apple
-                    </button>
-                </div>
-
                 <!-- Register Link -->
-                <p class="text-center text-gray-400 mt-8">
-                    Don't have an account? 
-                    <a href="register.html" class="text-accent-cyan hover:text-accent-blue font-semibold transition-colors">
+                <p class="text-center text-gray-600 dark:text-gray-400 mt-8 font-medium">
+                    <span th:text="#{login.text.no_account}">Don't have an account?</span>
+                    <a th:href="@{/register}" class="text-accent-cyan hover:text-accent-blue font-bold transition-colors ml-1" th:text="#{login.link.register}">
                         Register here
                     </a>
                 </p>
             </form>
         </div>
     </div>
+</div>
 
-    <script>
-        // Theme Toggle
-        (function() {
-            const themeToggle = document.getElementById('themeToggle');
-            const sunIcon = document.getElementById('sunIcon');
-            const moonIcon = document.getElementById('moonIcon');
-            const html = document.documentElement;
-            const body = document.body;
+<script>
+    // --- LANGUAGE SWITCHER ---
+    function changeLanguage(lang) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('lang', lang);
+        window.location.href = url.toString();
+    }
 
-            const currentTheme = localStorage.getItem('theme') || 'dark';
-
-            function applyTheme(theme) {
-                if (theme === 'dark') {
-                    body.classList.add('dark');
-                    html.classList.add('dark');
-                    sunIcon.classList.remove('hidden');
-                    moonIcon.classList.add('hidden');
-                } else {
-                    body.classList.remove('dark');
-                    html.classList.remove('dark');
-                    sunIcon.classList.add('hidden');
-                    moonIcon.classList.remove('hidden');
-                }
+    // Function to highlight active language button based on URL
+    document.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentLang = urlParams.get('lang') || 'en';
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            if(btn.innerText.toLowerCase() === currentLang.toLowerCase() || (currentLang === 'hy' && btn.innerText === 'HY')) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
             }
+        });
+    });
 
-            applyTheme(currentTheme);
+    // Theme Toggle
+    (function() {
+        const themeToggle = document.getElementById('themeToggle');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+        const html = document.documentElement;
+        const body = document.body;
 
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                body.classList.add('dark');
+                html.classList.add('dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                body.classList.remove('dark');
+                html.classList.remove('dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            }
+        }
+
+        applyTheme(currentTheme);
+
+        if(themeToggle) {
             themeToggle.addEventListener('click', function() {
                 const isDark = body.classList.contains('dark');
                 const newTheme = isDark ? 'light' : 'dark';
                 applyTheme(newTheme);
                 localStorage.setItem('theme', newTheme);
             });
-        })();
+        }
+    })();
 
-        // Password Toggle
-        const togglePassword = document.getElementById('togglePassword');
-        const passwordInput = document.getElementById('password');
+    // Password Toggle
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
 
+    if(togglePassword && passwordInput) {
         togglePassword.addEventListener('click', function() {
             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordInput.setAttribute('type', type);
-            
+
             if (type === 'text') {
                 this.innerHTML = `
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
@@ -481,38 +501,8 @@
                 `;
             }
         });
+    }
+</script>
 
-        // Form Validation
-        const loginForm = document.getElementById('loginForm');
-
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const email = document.getElementById('email');
-            const password = document.getElementById('password');
-
-            // Basic validation
-            let isValid = true;
-
-            if (!email.value || !email.value.includes('@')) {
-                email.parentElement.classList.add('shake');
-                setTimeout(() => email.parentElement.classList.remove('shake'), 500);
-                isValid = false;
-            }
-
-            if (!password.value || password.value.length < 6) {
-                password.parentElement.classList.add('shake');
-                setTimeout(() => password.parentElement.classList.remove('shake'), 500);
-                isValid = false;
-            }
-
-            if (isValid) {
-                // Simulate login
-                console.log('Login successful!');
-                // Redirect or process login
-                window.location.href = 'index.html';
-            }
-        });
-    </script>
 </body>
 </html>

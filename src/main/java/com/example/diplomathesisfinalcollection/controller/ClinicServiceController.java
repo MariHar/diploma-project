@@ -1,6 +1,7 @@
-package com.example.diplomathesisfinalcollection.service;
+package com.example.diplomathesisfinalcollection.controller;
 
 
+import com.example.diplomathesisfinalcollection.clinicservice.ClinicServiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,7 +17,7 @@ public class ClinicServiceController {
 
     @GetMapping
     public String listAllServices(Model model) {
-        model.addAttribute("services", clinicServiceRepository.findByActiveTrueOrderByNameAsc());
-        return "services"; // We will create services.html later
+        model.addAttribute("services", clinicServiceRepository.findAll());
+        return "service"; // We will create services.html later
     }
 }

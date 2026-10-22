@@ -1,10 +1,218 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hy" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Աշխատանքային Գրաֆիկ - Ադմին</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            accent: { cyan: '#06B6D4', blue: '#3B82F6', purple: '#8B5CF6' }
+          },
+          fontFamily: { 'sans': ['Inter', 'system-ui', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    body, input, select, button { transition: all 0.3s ease; }
+  </style>
 </head>
-<body>
-$END$
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
+
+<!-- ՀԵԴԵՐ / ՆԱՎԻԳԱՑԻԱ -->
+<header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm shrink-0">
+  <div class="max-w-7xl mx-auto px-4 md:px-8 h-20 flex items-center justify-between">
+
+    <div class="flex items-center gap-6">
+      <!-- Վերադառնալ Գլխավոր Վահանակ -->
+      <a th:href="@{/admin/dashboard}" class="flex items-center gap-2 text-gray-500 hover:text-accent-cyan transition-colors font-semibold text-sm md:text-base">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Գլխավոր Վահանակ
+      </a>
+      <div class="h-6 w-px bg-gray-200 hidden md:block"></div>
+      <!-- Վերադառնալ Բժիշկների Ցանկ -->
+      <a th:href="@{/admin/doctors}" class="flex items-center gap-2 text-gray-500 hover:text-accent-cyan transition-colors font-semibold hidden md:flex">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Բոլոր Բժիշկները
+      </a>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="m-0">
+        <button type="submit" class="flex items-center gap-2 border border-red-200 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white px-5 py-2 rounded-xl font-semibold transition-all shadow-sm hover:shadow-md">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          Ելք
+        </button>
+      </form>
+    </div>
+  </div>
+</header>
+
+<!-- ԳԼԽԱՎՈՐ ԲՈՎԱՆԴԱԿՈՒԹՅՈՒՆ -->
+<div class="flex-1 flex items-start justify-center p-4 md:p-8 mt-4">
+  <div class="max-w-3xl w-full bg-white p-8 md:p-10 rounded-3xl border border-gray-200 shadow-xl relative overflow-hidden transition-all">
+
+    <!-- Դեկորատիվ գրադիենտ գիծ վերևում -->
+    <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-accent-cyan to-accent-blue"></div>
+
+    <div class="flex justify-between items-center mb-8 border-b border-gray-100 pb-5">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900">Աշխատանքային Գրաֆիկ</h2>
+        <p class="text-accent-cyan font-semibold mt-1" th:text="'Բժ. ' + ${doctor.firstName} + ' ' + ${doctor.lastName}"></p>
+      </div>
+      <a th:href="@{/admin/doctors}" class="bg-gray-50 hover:bg-gray-100 text-gray-600 px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2 border border-gray-200 shadow-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Հետ
+      </a>
+    </div>
+
+    <form th:action="@{/admin/doctors/schedule/{id}(id=${doctor.id})}" method="post" class="space-y-4">
+
+      <!-- Օրերի ցիկլ -->
+      <div th:each="sch : ${schedules}" class="schedule-row flex flex-col md:flex-row items-center justify-between bg-gray-50 p-5 rounded-2xl border border-gray-200 transition-all hover:border-accent-cyan/30 hover:bg-white hover:shadow-md gap-4">
+
+        <!-- Օրվա անուն և Checkbox -->
+        <div class="flex items-center w-full md:w-1/4">
+          <input type="checkbox" th:name="'isWorking_' + ${sch.dayOfWeek}" th:checked="${sch.workingDay}"
+                 onchange="toggleTimeInputs(this)"
+                 class="day-checkbox w-6 h-6 text-accent-cyan bg-white border-gray-300 rounded-lg focus:ring-accent-cyan mr-3 cursor-pointer transition-all">
+          <span class="font-bold text-gray-700"
+                th:text="${sch.dayOfWeek == 'MONDAY' ? 'Երկուշաբթի' :
+                                    sch.dayOfWeek == 'TUESDAY' ? 'Երեքշաբթի' :
+                                    sch.dayOfWeek == 'WEDNESDAY' ? 'Չորեքշաբթի' :
+                                    sch.dayOfWeek == 'THURSDAY' ? 'Հինգշաբթի' :
+                                    sch.dayOfWeek == 'FRIDAY' ? 'Ուրբաթ' :
+                                    sch.dayOfWeek == 'SATURDAY' ? 'Շաբաթ' : 'Կիրակի'}"></span>
+        </div>
+
+        <!-- Սկիզբ -->
+        <div class="w-full md:w-1/5 px-2">
+          <label class="text-[10px] uppercase font-bold text-gray-400 block mb-1">Սկիզբ</label>
+          <select th:name="'startTime_' + ${sch.dayOfWeek}" class="time-select w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-cyan cursor-pointer transition-all">
+            <option value="08:00" th:selected="${sch.startTime == '08:00'}">08:00</option>
+            <option value="09:00" th:selected="${sch.startTime == '09:00'}">09:00</option>
+            <option value="10:00" th:selected="${sch.startTime == '10:00'}">10:00</option>
+            <option value="11:00" th:selected="${sch.startTime == '11:00'}">11:00</option>
+            <option value="12:00" th:selected="${sch.startTime == '12:00'}">12:00</option>
+            <option value="13:00" th:selected="${sch.startTime == '13:00'}">13:00</option>
+            <option value="14:00" th:selected="${sch.startTime == '14:00'}">14:00</option>
+            <option value="15:00" th:selected="${sch.startTime == '15:00'}">15:00</option>
+            <option value="16:00" th:selected="${sch.startTime == '16:00'}">16:00</option>
+            <option value="17:00" th:selected="${sch.startTime == '17:00'}">17:00</option>
+          </select>
+        </div>
+
+        <!-- Ավարտ -->
+        <div class="w-full md:w-1/5 px-2">
+          <label class="text-[10px] uppercase font-bold text-gray-400 block mb-1">Ավարտ</label>
+          <select th:name="'endTime_' + ${sch.dayOfWeek}" class="time-select w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-cyan cursor-pointer transition-all">
+            <option value="12:00" th:selected="${sch.endTime == '12:00'}">12:00</option>
+            <option value="13:00" th:selected="${sch.endTime == '13:00'}">13:00</option>
+            <option value="14:00" th:selected="${sch.endTime == '14:00'}">14:00</option>
+            <option value="15:00" th:selected="${sch.endTime == '15:00'}">15:00</option>
+            <option value="16:00" th:selected="${sch.endTime == '16:00'}">16:00</option>
+            <option value="17:00" th:selected="${sch.endTime == '17:00'}">17:00</option>
+            <option value="18:00" th:selected="${sch.endTime == '18:00'}">18:00</option>
+            <option value="19:00" th:selected="${sch.endTime == '19:00'}">19:00</option>
+            <option value="20:00" th:selected="${sch.endTime == '20:00'}">20:00</option>
+          </select>
+        </div>
+
+        <!-- Ընդմիջման բլոկ -->
+        <div class="w-full md:w-1/3 px-3 border-t md:border-t-0 md:border-l border-gray-200 pt-3 md:pt-0">
+          <div class="flex items-center mb-1">
+            <input type="checkbox" th:name="'hasBreak_' + ${sch.dayOfWeek}" th:checked="${sch.hasBreak}"
+                   onchange="toggleBreakInputs(this)"
+                   class="w-4 h-4 text-accent-blue bg-white border-gray-300 rounded cursor-pointer focus:ring-accent-blue transition-all">
+            <label class="text-[10px] uppercase font-bold text-gray-500 ml-2 tracking-wider">Ընդմիջում</label>
+          </div>
+          <div class="flex gap-1 items-center">
+            <select th:name="'breakStartTime_' + ${sch.dayOfWeek}" class="break-select w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-accent-blue transition-all">
+              <option value="11:00" th:selected="${sch.breakStartTime == '11:00'}">11:00</option>
+              <option value="12:00" th:selected="${sch.breakStartTime == '12:00'}">12:00</option>
+              <option value="13:00" th:selected="${sch.breakStartTime == '13:00'}">13:00</option>
+              <option value="14:00" th:selected="${sch.breakStartTime == '14:00'}">14:00</option>
+              <option value="15:00" th:selected="${sch.breakStartTime == '15:00'}">15:00</option>
+              <option value="16:00" th:selected="${sch.breakStartTime == '16:00'}">16:00</option>
+            </select>
+            <span class="text-gray-400 text-xs">-</span>
+            <select th:name="'breakEndTime_' + ${sch.dayOfWeek}" class="break-select w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-accent-blue transition-all">
+              <option value="12:00" th:selected="${sch.breakEndTime == '12:00'}">12:00</option>
+              <option value="13:00" th:selected="${sch.breakEndTime == '13:00'}">13:00</option>
+              <option value="14:00" th:selected="${sch.breakEndTime == '14:00'}">14:00</option>
+              <option value="15:00" th:selected="${sch.breakEndTime == '15:00'}">15:00</option>
+              <option value="16:00" th:selected="${sch.breakEndTime == '16:00'}">16:00</option>
+              <option value="17:00" th:selected="${sch.breakEndTime == '17:00'}">17:00</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Պահպանման կոճակ -->
+      <button type="submit" class="w-full bg-gradient-to-r from-accent-cyan to-accent-blue hover:shadow-lg text-white font-bold py-4 rounded-2xl transition-all mt-8 text-lg active:scale-95 shadow-md flex items-center justify-center gap-2">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+        Պահպանել Ամբողջ Գրաֆիկը
+      </button>
+    </form>
+
+  </div>
+</div>
+
+<script>
+  function toggleTimeInputs(checkbox) {
+    let row = checkbox.closest('.schedule-row');
+    let timeSelects = row.querySelectorAll('.time-select');
+
+    timeSelects.forEach(select => {
+      select.disabled = !checkbox.checked;
+      if (!checkbox.checked) {
+        select.classList.add('opacity-40', 'cursor-not-allowed', 'bg-gray-100');
+      } else {
+        select.classList.remove('opacity-40', 'cursor-not-allowed', 'bg-gray-100');
+      }
+    });
+
+    let breakCheckbox = row.querySelector('input[name^="hasBreak_"]');
+    let breakBlock = breakCheckbox.closest('div').parentElement;
+
+    breakCheckbox.disabled = !checkbox.checked;
+
+    if (!checkbox.checked) {
+      breakBlock.classList.add('opacity-40', 'pointer-events-none');
+      row.querySelectorAll('.break-select').forEach(s => s.disabled = true);
+    } else {
+      breakBlock.classList.remove('opacity-40', 'pointer-events-none');
+      toggleBreakInputs(breakCheckbox);
+    }
+  }
+
+  function toggleBreakInputs(checkbox) {
+    let parent = checkbox.closest('div').parentElement;
+    let selects = parent.querySelectorAll('.break-select');
+
+    selects.forEach(select => {
+      select.disabled = !checkbox.checked;
+      if (!checkbox.checked) {
+        select.classList.add('opacity-40', 'cursor-not-allowed', 'bg-gray-100');
+      } else {
+        select.classList.remove('opacity-40', 'cursor-not-allowed', 'bg-gray-100');
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll('input[name^="hasBreak_"]').forEach(cb => toggleBreakInputs(cb));
+    document.querySelectorAll('.day-checkbox').forEach(cb => toggleTimeInputs(cb));
+  });
+</script>
+
 </body>
 </html>

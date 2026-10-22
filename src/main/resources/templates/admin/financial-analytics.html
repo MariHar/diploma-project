@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Financial Analytics & Export | Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for Smart Graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-50 font-sans p-6 text-slate-800">
+
+<div class="max-w-7xl mx-auto">
+
+    <!-- Top Header -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-900">Ընդլայնված Ֆինանսական Անալիտիկա</h1>
+            <p class="text-slate-500 mt-1">Վիճակագրություն, գրաֆիկներ և արտահանում ըստ բաժանմունքների ու բժիշկների</p>
+        </div>
+        <div class="flex space-x-3">
+            <a href="/admin/invoices/dashboard" class="px-4 py-2 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 font-medium">Հետ դեպի Դաշբորդ</a>
+            <!-- EXCEL EXPORT BUTTON -->
+            <button onclick="exportExcel()" class="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg shadow-sm hover:bg-green-700 font-medium transition">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                Արտահանել Excel
+            </button>
+        </div>
+    </div>
+
+    <!-- FILTER SECTION -->
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8">
+        <form id="filterForm" action="/admin/invoices/analytics" method="get" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 items-end">
+
+            <div class="col-span-1 md:col-span-2 lg:col-span-2">
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Որոնել (Պացիենտ / Ծառայություն)</label>
+                <input type="text" name="search" th:value="${search}" placeholder="Անուն, ազգանուն..." class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Բաժանմունք</label>
+                <select name="department" class="w-full border border-slate-300 rounded-lg px-4 py-2 outline-none">
+                    <option value="">Բոլորը</option>
+                    <option th:each="dept : ${allDepartments}" th:value="${dept}" th:text="${dept}" th:selected="${dept == selectedDept}"></option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Բժիշկ</label>
+                <select name="doctor" class="w-full border border-slate-300 rounded-lg px-4 py-2 outline-none">
+                    <option value="">Բոլորը</option>
+                    <option th:each="doc : ${allDoctors}" th:value="${doc}" th:text="${doc}" th:selected="${doc == selectedDoc}"></option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Կարգավիճակ</label>
+                <select name="status" class="w-full border border-slate-300 rounded-lg px-4 py-2 outline-none">
+                    <option value="">Բոլորը</option>
+                    <option value="PAID" th:selected="${selectedStatus == 'PAID'}">Վճարված</option>
+                    <option value="PENDING" th:selected="${selectedStatus == 'PENDING'}">Սպասվող</option>
+                    <option value="UNPAID" th:selected="${selectedStatus == 'UNPAID'}">Ժամկետանց</option>
+                </select>
+            </div>
+
+            <div class="flex space-x-2">
+                <div class="w-1/2">
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Սկիզբ</label>
+                    <input type="date" name="startDate" th:value="${startDate}" class="w-full border border-slate-300 rounded-lg px-2 py-2 text-sm outline-none">
+                </div>
+                <div class="w-1/2">
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Ավարտ</label>
+                    <input type="date" name="endDate" th:value="${endDate}" class="w-full border border-slate-300 rounded-lg px-2 py-2 text-sm outline-none">
+                </div>
+            </div>
+
+            <div class="col-span-full flex justify-end mt-2">
+                <a href="/admin/invoices/analytics" class="px-4 py-2 text-slate-500 hover:text-slate-800 font-medium mr-4">Մաքրել Ֆիլտրերը</a>
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 font-bold transition">Ֆիլտրել Տվյալները</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- GRAPHS SECTION -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Daily Revenue Line Chart -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Եկամուտների Դինամիկա (Ըստ Օրերի)</h3>
+            <!-- FIX: Added a relative container with a strict height (h-72 = 18rem/288px) -->
+            <div class="relative h-72 w-full">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Department Distribution Pie Chart -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Ըստ Բաժանմունքների (Միայն Վճարված)</h3>
+            <!-- FIX: Added a relative container with a strict height -->
+            <div class="relative h-72 w-full">
+                <canvas id="deptChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATA TABLE -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+            <h3 class="text-lg font-bold text-slate-800">Արդյունքներ</h3>
+            <span class="text-sm text-slate-500" th:text="'Գտնվել է ' + ${report.size()} + ' գրառում'"></span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                <tr>
+                    <th class="py-3 px-6 text-xs font-semibold text-slate-500 uppercase">Ինվոյս / Ամսաթիվ</th>
+                    <th class="py-3 px-6 text-xs font-semibold text-slate-500 uppercase">Պացիենտ</th>
+                    <th class="py-3 px-6 text-xs font-semibold text-slate-500 uppercase">Բաժանմունք / Բժիշկ</th>
+                    <th class="py-3 px-6 text-xs font-semibold text-slate-500 uppercase">Ծառայություններ (Լաբ/Գործիք/Այց)</th>
+                    <th class="py-3 px-6 text-xs font-semibold text-slate-500 uppercase">Գումար</th>
+                    <th class="py-3 px-6 text-xs font-semibold text-slate-500 uppercase">Ստատուս</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                <tr th:each="row : ${report}" class="hover:bg-blue-50 transition">
+                    <td class="py-4 px-6">
+                        <div class="text-sm font-mono text-slate-500" th:text="${#strings.substring(row.invoiceId, row.invoiceId.length() - 8)}"></div>
+                        <div class="text-xs text-slate-400" th:text="${#temporals.format(row.issueDate, 'dd.MM.yyyy HH:mm')}"></div>
+                    </td>
+                    <td class="py-4 px-6 font-medium text-slate-900" th:text="${row.patientName}"></td>
+                    <td class="py-4 px-6">
+                        <div class="font-bold text-slate-700 text-sm" th:text="${row.departmentName}"></div>
+                        <div class="text-xs text-slate-500" th:text="${row.doctorName}"></div>
+                    </td>
+                    <td class="py-4 px-6 text-sm text-slate-600" th:text="${row.serviceName}"></td>
+                    <td class="py-4 px-6 font-extrabold text-blue-600" th:text="${row.amount} + ' ֏'"></td>
+                    <td class="py-4 px-6">
+                        <span th:if="${row.status == 'PAID'}" class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold uppercase">Վճարված</span>
+                        <span th:if="${row.status == 'PENDING'}" class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-bold uppercase">Սպասվող</span>
+                        <span th:if="${row.status == 'UNPAID'}" class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-bold uppercase">Ժամկետանց</span>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(report)}">
+                    <td colspan="6" class="py-12 text-center text-slate-400">Այս ֆիլտրերով տվյալներ չեն գտնվել:</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- SCRIPTS FOR GRAPHS AND EXPORT -->
+<script th:inline="javascript">
+    // 1. Export Excel Logic (Transforms the GET parameters and hits the Export endpoint)
+    function exportExcel() {
+        const urlParams = new URLSearchParams(window.location.search);
+        window.location.href = '/admin/invoices/export?' + urlParams.toString();
+    }
+
+    // 2. Chart.js Implementation
+    /*<![CDATA[*/
+    const rawDeptLabels = /*[[${chartDeptLabels}]]*/ '[]';
+    const rawDeptData = /*[[${chartDeptData}]]*/ '[]';
+
+    const rawDateLabels = /*[[${chartDateLabels}]]*/ '[]';
+    const rawDateData = /*[[${chartDateData}]]*/ '[]';
+
+    // Parse JSON safely
+    const deptLabels = JSON.parse(rawDeptLabels || '[]');
+    const deptData = JSON.parse(rawDeptData || '[]');
+    const dateLabels = JSON.parse(rawDateLabels || '[]');
+    const dateData = JSON.parse(rawDateData || '[]');
+    /*]]>*/
+
+    // Colors for charts
+    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
+
+    // Render Department Pie Chart
+    if(document.getElementById('deptChart')) {
+        new Chart(document.getElementById('deptChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: deptLabels,
+                datasets: [{
+                    data: deptData,
+                    backgroundColor: colors,
+                    borderWidth: 0
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    // Render Daily Revenue Line Chart
+    if(document.getElementById('revenueChart')) {
+        new Chart(document.getElementById('revenueChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: dateLabels,
+                datasets: [{
+                    label: 'Վճարված Եկամուտ (֏)',
+                    data: dateData,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+        });
+    }
+</script>
+</body>
+</html>

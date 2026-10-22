@@ -1,10 +1,860 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org" class="scroll-smooth dark" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <title th:text="#{head.title.medical_record_form}">Medical Record Form</title>
+  <!-- CSRF Tokens for Secure AJAX calls to Spring Boot -->
+  <meta name="_csrf" th:content="${_csrf?.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn { animation: fadeIn 0.3s ease-out forwards; }
+  </style>
 </head>
-<body>
-$END$
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+
+<nav class="bg-gray-800 border-b border-gray-700 px-6 py-4">
+  <div class="flex flex-wrap justify-between items-center gap-4">
+    <h1 class="text-xl font-bold text-cyan-400 translate-me"
+        th:text="${record != null ? #messages.msg('medical.record.title.edit') : #messages.msg('medical.record.title.complete')}">
+      Complete Medical Record
+    </h1>
+    <div class="flex gap-4 items-center flex-wrap">
+      <a href="/doctor/dashboard" class="text-gray-400 hover:text-white transition font-semibold" th:text="#{nav.doctor.dashboard}">Dashboard</a>
+      <a href="/doctor/appointments" class="text-gray-400 hover:text-white transition font-semibold" th:text="#{nav.doctor.appointments}">Appointments</a>
+
+      <!-- Premium Language Switcher -->
+      <div class="flex gap-2 items-center border-l border-gray-700 pl-4">
+        <button onclick="changeLanguage('en')" class="text-xs font-bold px-2 py-1 rounded hover:bg-gray-700 hover:text-cyan-400 text-gray-400 transition" data-lang="en">EN</button>
+        <button onclick="changeLanguage('hy')" class="text-xs font-bold px-2 py-1 rounded hover:bg-gray-700 hover:text-cyan-400 text-gray-400 transition" data-lang="hy">AM</button>
+        <button onclick="changeLanguage('ru')" class="text-xs font-bold px-2 py-1 rounded hover:bg-gray-700 hover:text-cyan-400 text-gray-400 transition" data-lang="ru">RU</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+  <a href="/doctor/appointments" class="text-gray-400 hover:text-white mb-6 inline-block transition font-medium" th:text="#{medical.record.back}">← Back to Appointments</a>
+
+  <!-- Patient Info Header -->
+  <div class="bg-gray-800 rounded-xl border border-gray-700 p-6 mb-8 shadow-md">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div class="flex items-center gap-4 md:gap-6">
+        <div class="w-16 h-16 bg-cyan-500/20 rounded-full flex items-center justify-center text-2xl">👤</div>
+        <div>
+          <h2 class="text-xl font-bold text-white">
+            <span th:text="#{medical.record.patient.label}">Patient:</span>
+            <span class="translate-me" th:text="${patient?.firstName + ' ' + patient?.lastName}">Name</span>
+          </h2>
+          <p class="text-cyan-400 font-semibold text-sm mt-1">
+            <span th:text="#{medical.record.patient.age}">Age:</span>
+            <span class="translate-me" th:text="${patientAge}">?</span> |
+            <span th:text="#{medical.record.patient.gender}">Gender:</span>
+            <span class="translate-me" th:text="${patientGender}">Unknown</span>
+          </p>
+          <p class="text-gray-400 text-xs mt-1">
+            <span th:text="#{medical.record.patient.date}">Date:</span>
+            <span class="translate-me" th:text="${#temporals.format(appointment?.date, 'dd MMM yyyy, HH:mm')}">Date</span>
+          </p>
+        </div>
+      </div>
+      <div th:if="${patient != null}" class="self-start md:self-auto">
+        <a th:href="@{/doctor/patient/{id}/history(id=${patient.id})}" target="_blank"
+           class="bg-indigo-500/20 text-indigo-400 border border-indigo-500/50 px-4 py-2 rounded-lg font-semibold hover:bg-indigo-500/40 transition flex items-center gap-2 text-sm shadow-sm">
+          📂 <span th:text="#{medical.record.patient.history}">Դիտել Նախկին Այցերը (History)</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Form Section -->
+  <div class="bg-gray-800 rounded-xl border border-cyan-500/30 p-6 shadow-lg">
+
+    <div th:if="${record != null and record.adminUnlocked}" class="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400 text-sm flex items-center gap-2 translate-me" th:text="#{medical.record.admin_unlocked}">
+      🔓 Ադմինիստրատորը թույլատրել է խմբագրել այս քարտը (Admin Unlocked).
+    </div>
+
+    <h2 class="text-xl font-bold text-white mb-6 border-b border-gray-700 pb-2 translate-me"
+        th:text="${record != null ? #messages.msg('medical.record.editing_session') : #messages.msg('medical.record.new_entry')}">
+      Medical Entry
+    </h2>
+
+    <!-- Action bound to DoctorController.saveMedicalRecord -->
+    <form id="medicalRecordForm" th:action="@{/doctor/appointment/{id}/record/save(id=${appointment.id})}" method="post" class="space-y-6">
+
+      <!-- Subjective / Objective Examination -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+        <div>
+          <h3 class="text-cyan-400 font-bold mb-4" th:text="#{medical.record.subjective.title}">🩺 Սուբյեկտիվ Զննում (Subjective)</h3>
+          <div class="space-y-4">
+            <textarea name="symptoms" th:placeholder="#{medical.record.subjective.symptoms.placeholder}" required
+                      class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm text-white focus:border-cyan-500 outline-none transition-colors"
+                      th:text="${record != null ? record.symptoms : ''}"></textarea>
+
+            <textarea name="complaints" th:placeholder="#{medical.record.subjective.complaints.placeholder}"
+                      class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm text-white focus:border-cyan-500 outline-none transition-colors"
+                      th:text="${record != null ? record.complaints : ''}"></textarea>
+
+            <textarea name="anamnesisMorbi" th:placeholder="#{medical.record.subjective.anamnesis_morbi.placeholder}"
+                      class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm text-white focus:border-cyan-500 outline-none transition-colors"
+                      th:text="${record != null ? record.anamnesisMorbi : ''}"></textarea>
+
+            <textarea name="anamnesisVitae" th:placeholder="#{medical.record.subjective.anamnesis_vitae.placeholder}"
+                      class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm text-white focus:border-cyan-500 outline-none transition-colors"
+                      th:text="${record != null ? record.anamnesisVitae : ''}"></textarea>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-indigo-400 font-bold mb-4" th:text="#{medical.record.objective.title}">🔍 Օբյեկտիվ Զննում (Objective)</h3>
+          <div class="space-y-4">
+            <input type="text" name="inspection" th:placeholder="#{medical.record.objective.inspection.placeholder}"
+                   class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm text-white focus:border-indigo-500 outline-none transition-colors"
+                   th:value="${record != null ? record.inspection : ''}">
+
+            <input type="text" name="palpation" th:placeholder="#{medical.record.objective.palpation.placeholder}"
+                   class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm text-white focus:border-indigo-500 outline-none transition-colors"
+                   th:value="${record != null ? record.palpation : ''}">
+
+            <input type="text" name="percussion" th:placeholder="#{medical.record.objective.percussion.placeholder}"
+                   class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm text-white focus:border-indigo-500 outline-none transition-colors"
+                   th:value="${record != null ? record.percussion : ''}">
+
+            <input type="text" name="auscultation" th:placeholder="#{medical.record.objective.auscultation.placeholder}"
+                   class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm text-white focus:border-indigo-500 outline-none transition-colors"
+                   th:value="${record != null ? record.auscultation : ''}">
+          </div>
+        </div>
+      </div>
+
+      <!-- Diagnosis & Treatment with Voice Dictation -->
+      <div class="space-y-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">
+            <span th:text="#{medical.record.diagnosis.label}">Ախտորոշում (Diagnosis)</span> <span class="text-red-400">*</span>
+          </label>
+          <div class="relative">
+            <input type="text" id="diagnosisInput" name="diagnosis" required
+                   class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 pr-12 text-white focus:border-cyan-500 outline-none transition-colors"
+                   th:value="${record != null ? record.diagnosis : ''}">
+            <button type="button" onclick="startDictation('diagnosisInput', this, 'diagnosis')"
+                    class="absolute right-3 top-3 text-gray-400 hover:text-cyan-400 transition-colors" th:title="#{medical.record.dictate_diagnosis}">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">
+            <span th:text="#{medical.record.treatment.label}">Խնամք/բուժում (Treatment / Prescription)</span> <span class="text-red-400">*</span>
+          </label>
+          <div class="relative">
+            <textarea id="treatmentInput" name="treatment" rows="3" required
+                      class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 pr-12 text-white focus:border-cyan-500 outline-none transition-colors"
+                      th:text="${record != null ? record.treatment : ''}"></textarea>
+            <button type="button" onclick="startDictation('treatmentInput', this, 'treatment')"
+                    class="absolute right-3 top-3 text-gray-400 hover:text-cyan-400 transition-colors" th:title="#{medical.record.dictate_treatment}">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Prescriptions List -->
+      <div class="mt-8 p-6 bg-gray-900/50 border border-cyan-500/30 rounded-xl shadow-inner">
+        <h3 class="text-lg font-bold text-cyan-400 mb-4 flex items-center gap-2">
+          <span class="text-2xl">💊</span> <span th:text="#{medical.record.prescription.title}">Թվային Դեղատոմս (Prescription List)</span>
+        </h3>
+        <div id="prescription-list" class="space-y-4">
+          <th:block th:if="${record != null and record.prescriptions != null}">
+            <!-- Formatted card-like list on mobile responsive -->
+            <div th:each="drug, stat : ${record.prescriptions}" class="medication-row grid grid-cols-1 md:grid-cols-6 gap-3 bg-gray-800 p-4 border border-gray-700 rounded-lg items-end relative group animate-fadeIn">
+              <div class="md:col-span-1">
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1" th:text="#{medical.record.prescription.drug_name}">Դեղի անուն</label>
+                <input type="text" th:name="|prescriptions[${stat.index}].name|" th:value="${drug.name}" required
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-white focus:border-cyan-500 outline-none text-sm translate-me">
+              </div>
+              <div class="md:col-span-1">
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1" th:text="#{medical.record.prescription.dosage}">Չափաբաժին</label>
+                <input type="text" th:name="|prescriptions[${stat.index}].dosage|" th:value="${drug.dosage}" required
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-white focus:border-cyan-500 outline-none text-sm translate-me">
+              </div>
+              <div class="md:col-span-1">
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1" th:text="#{medical.record.prescription.frequency}">Կիրառում</label>
+                <input type="text" th:name="|prescriptions[${stat.index}].frequency|" th:value="${drug.frequency}" required
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-white focus:border-cyan-500 outline-none text-sm translate-me">
+              </div>
+              <div class="md:col-span-1">
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1" th:text="#{medical.record.prescription.duration}">Տևողություն</label>
+                <input type="text" th:name="|prescriptions[${stat.index}].duration|" th:value="${drug.duration}"
+                       class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-white focus:border-cyan-500 outline-none text-sm translate-me">
+              </div>
+              <div class="md:col-span-1">
+                <label class="block text-xs font-bold text-cyan-400 uppercase mb-1" th:text="#{medical.record.prescription.quantity}">Քանակ (Տուփ)</label>
+                <input type="number" th:name="|prescriptions[${stat.index}].quantity|" th:value="${drug.quantity != null ? drug.quantity : 1}" min="1" required
+                       class="w-full bg-gray-900 border border-cyan-500/50 rounded-lg p-2 text-cyan-400 font-bold focus:border-cyan-400 outline-none text-sm text-center">
+              </div>
+              <div class="flex justify-end md:col-span-1">
+                <button type="button" onclick="this.closest('.medication-row').remove(); reindexMedicationRows();" class="text-gray-500 hover:text-red-400 transition-colors p-2" th:title="#{medical.record.delete}">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </button>
+              </div>
+            </div>
+          </th:block>
+        </div>
+        <button type="button" onclick="addMedicationRow()"
+                class="mt-4 px-4 py-2 border border-dashed border-cyan-500/50 rounded-lg text-sm text-cyan-400 hover:bg-cyan-500/10 transition-all flex items-center gap-2">
+          ➕ <span th:text="#{medical.record.prescription.add_btn}">Ավելացնել Դեղ</span>
+        </button>
+      </div>
+
+      <!-- AI Compatibility & Contraindications -->
+      <div class="p-5 bg-gray-900/50 border border-indigo-500/30 rounded-lg relative">
+        <div class="flex justify-between items-center mb-3">
+          <label class="block text-sm font-medium text-indigo-300" th:text="#{medical.record.contraindications.label}">⚠ Contraindications (Food & Drugs)</label>
+        </div>
+        <textarea id="contraindications" name="contraindications" rows="2"
+                  class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-indigo-500 transition-colors outline-none"
+                  th:text="${record != null ? record.contraindications : ''}"></textarea>
+        <div id="aiResponse" class="hidden mt-3 p-4 bg-indigo-900/40 border-l-4 border-indigo-500 text-sm text-indigo-200 rounded-lg"></div>
+      </div>
+
+      <!-- Notes and Follow Up -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- 📅 SMART FOLLOW-UP SCHEDULING -->
+        <div class="md:col-span-2 bg-indigo-900/20 border border-indigo-500/30 rounded-xl p-5 mt-4">
+          <h3 class="text-indigo-400 font-bold mb-1 flex items-center gap-2" th:text="#{medical.record.followup.title}">
+            📅 Պլանավորել Հաջորդ Այցը (Auto-Book Follow-up)
+          </h3>
+          <p class="text-xs text-gray-400 mb-4" th:text="#{medical.record.followup.desc}">Ընտրեք օրը և ազատ ժամը՝ պացիենտի համար նոր հերթագրում ավտոմատ ստեղծելու համար:</p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- ՕՐՎԱ ԴԱՇՏ -->
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2" th:text="#{medical.record.followup.date}">Օր (Date)</label>
+              <input type="date" id="followUpDateStr" name="followUpDateStr"
+                     onchange="fetchAvailableSlots()"
+                     th:value="${record != null and record.followUpDate != null ? #temporals.format(record.followUpDate, 'yyyy-MM-dd') : ''}"
+                     th:readonly="${record != null and record.followUpDate != null}"
+                     class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white transition-colors outline-none focus:border-indigo-500"
+                     th:classappend="${record != null and record.followUpDate != null ? 'opacity-60 cursor-not-allowed pointer-events-none' : 'cursor-pointer'}">
+            </div>
+
+            <!-- ԺԱՄԻ ԴԱՇՏ -->
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2" th:text="#{medical.record.followup.slots}">Ազատ Ժամեր (Available Slots)</label>
+              <select id="followUpTime" name="followUpTime"
+                      th:disabled="${record != null and record.followUpDate != null}"
+                      class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed outline-none">
+
+                <option th:if="${record != null and record.followUpDate != null}" value="" selected th:text="#{medical.record.followup.already_booked}">
+                  🔒 Արդեն ամրագրված է
+                </option>
+
+                <option th:unless="${record != null and record.followUpDate != null}" value="" th:text="#{medical.record.followup.select_date_first}">
+                  Ընտրեք նախ օրը...
+                </option>
+
+              </select>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2" th:text="#{medical.record.notes.label}">Additional Notes (Optional)</label>
+          <input type="text" name="notes" th:placeholder="#{medical.record.notes.placeholder}"
+                 class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-cyan-500 outline-none transition-colors"
+                 th:value="${record != null ? record.notes : ''}">
+        </div>
+      </div>
+
+      <!-- Existing Lab Results -->
+      <div th:if="${labTests != null and !labTests.isEmpty()}" class="p-5 bg-gray-900 border border-indigo-500/30 rounded-xl shadow-inner overflow-hidden">
+        <h3 class="text-lg font-bold text-indigo-400 mb-4 flex items-center gap-2">
+          🧪 <span th:text="#{medical.record.lab.title}">Լաբորատոր Արդյունքներ (Lab Results)</span>
+        </h3>
+        <div class="space-y-3">
+          <div th:each="test : ${labTests}" class="p-4 bg-gray-800 rounded-lg border border-gray-700 flex flex-col gap-2">
+            <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+              <span class="font-bold text-white text-md translate-me" th:text="${test.testName}">Test Name</span>
+              <span th:if="${test.status == 'PENDING'}" class="px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-md border border-yellow-500/30 animate-pulse" th:text="#{medical.record.lab.pending}">
+                ⏳ Սպասվում է... (Pending)
+              </span>
+              <span th:if="${test.status == 'COMPLETED'}" class="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-md border border-green-500/30" th:text="#{medical.record.lab.completed}">
+                ✅ Պատրաստ է (Completed)
+              </span>
+            </div>
+            <div th:if="${test.status == 'COMPLETED'}" class="pt-4 border-t border-gray-700/50 mt-4">
+              <div class="flex justify-between items-center mb-3">
+                <h4 class="text-sm font-bold text-indigo-400" th:text="#{medical.record.lab.results_header}">📊 Հետազոտության Արդյունքներ</h4>
+                <p class="text-xs text-gray-500"><span th:text="#{medical.record.lab.completed_label}">Ավարտված է:</span> <span class="text-gray-400 translate-me" th:text="${#temporals.format(test.completionDate, 'dd.MM.yyyy HH:mm')}"></span></p>
+              </div>
+
+              <!-- Responsive table container wrapper -->
+              <div class="bg-gray-900 rounded-lg overflow-x-auto border border-gray-700 shadow-inner">
+                <table class="w-full text-xs text-left min-w-[500px]">
+                  <thead class="bg-gray-800 text-gray-400 border-b border-gray-700">
+                  <tr>
+                    <th class="p-3 font-medium" th:text="#{medical.record.lab.indicator}">Ցուցանիշ</th>
+                    <th class="p-3 font-medium text-center" th:text="#{medical.record.lab.result}">Արդյունք</th>
+                    <th class="p-3 font-medium text-center" th:text="#{medical.record.lab.unit_norm}">Միավոր / Նորմա</th>
+                    <th class="p-3 font-medium text-right" th:text="#{medical.record.lab.deviation}">Շեղում</th>
+                  </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-800/50">
+                  <tr th:each="res : ${test.detailedResults}" class="hover:bg-gray-800/30 transition-colors">
+                    <td class="p-3 text-gray-300 font-medium translate-me" th:text="${res.name}"></td>
+                    <td class="p-3 text-center font-bold text-white text-sm translate-me" th:text="${res.value}"></td>
+                    <td class="p-3 text-center text-gray-500">
+                      <span th:text="${res.unit}" class="translate-me"></span> <br>
+                      <span class="text-[10px] text-gray-600 translate-me" th:text="${res.norms}"></span>
+                    </td>
+                    <td class="p-3 text-right">
+                      <span th:class="${res.statusClass} + ' text-[11px] uppercase tracking-wider'" th:text="${res.status}"></span>
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div th:if="${test.resultNotes != null and !test.resultNotes.empty}" class="mt-3 p-3 bg-gray-800/40 rounded-lg border border-gray-700/50">
+                <span class="text-[11px] text-indigo-400 font-bold uppercase tracking-wider" th:text="#{medical.record.lab.notes_label}">Լաբորանտի Նշում.</span>
+                <p class="text-sm text-gray-300 mt-1 italic translate-me" th:text="${test.resultNotes}"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Instrumental Exam Order Section -->
+      <div class="p-6 bg-gray-900/50 border border-purple-500/30 rounded-lg w-full mt-6">
+        <h3 class="text-lg font-bold text-purple-400 mb-4" th:text="#{medical.record.imaging.title}">☢️ Գործիքային Հետազոտություն (Order Imaging)</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-400 mb-1" th:text="#{medical.record.imaging.type}">Հետազոտության Տեսակ (Type)</label>
+            <select id="examServiceId" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2.5 text-white focus:border-purple-500 outline-none">
+              <option value="" disabled selected th:text="#{medical.record.imaging.select_service}">Ընտրեք ծառայությունը...</option>
+              <option th:each="srv : ${radServices}" th:value="${srv.id}" th:text="${srv.name}"></option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-400 mb-1" th:text="#{medical.record.imaging.area}">Հետազոտվող Մաս (Area)</label>
+            <input type="text" id="areaToExamine" th:placeholder="#{medical.record.imaging.area_placeholder}"
+                   class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2.5 text-white focus:border-purple-500 outline-none">
+          </div>
+          <div class="md:col-span-3">
+            <label class="block text-sm font-medium text-gray-400 mb-1" th:text="#{medical.record.imaging.reason}">Կլինիկական Հիմնավորում (Reason)</label>
+            <textarea id="clinicalReason" rows="2" th:placeholder="#{medical.record.imaging.reason_placeholder}"
+                      class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2.5 text-white focus:border-purple-500 outline-none"></textarea>
+          </div>
+        </div>
+        <div class="mt-4 flex justify-between items-center flex-wrap gap-4">
+          <div id="imagingStatus" class="text-sm font-medium"></div>
+          <button type="button" onclick="sendImagingOrder()" id="sendImagingBtn"
+                  class="bg-purple-600 hover:bg-purple-500 text-white py-2 px-6 rounded-lg font-bold transition-all shadow-lg active:scale-[0.98]" th:text="#{medical.record.imaging.send_btn}">
+            Ուղարկել Ռադիոլոգիա (Send Order)
+          </button>
+        </div>
+      </div>
+
+      <!-- Display existing exam results -->
+      <div th:if="${instrumentalExams != null and !instrumentalExams.isEmpty()}" class="p-5 bg-gray-900 border border-purple-500/30 rounded-xl shadow-inner mt-6 overflow-hidden">
+        <h3 class="text-lg font-bold text-purple-400 mb-4 flex items-center gap-2">
+          ☢️ <span th:text="#{medical.record.imaging.results_title}">Գործիքային Հետազոտությունների Արդյունքներ</span>
+        </h3>
+        <div class="space-y-3">
+          <div th:each="exam : ${instrumentalExams}" class="p-4 bg-gray-800 rounded-lg border border-gray-700 flex flex-col gap-2">
+            <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+              <span class="font-bold text-white text-md translate-me" th:text="${exam.examType + ' - ' + exam.areaToExamine}">Exam Info</span>
+              <span th:if="${exam.status == 'PENDING'}" class="px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-md border border-yellow-500/30 animate-pulse" th:text="#{medical.record.lab.pending}">
+                ⏳ Սպասվում է... (Pending)
+              </span>
+              <span th:if="${exam.status == 'COMPLETED'}" class="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-md border border-green-500/30" th:text="#{medical.record.lab.completed}">
+                ✅ Պատրաստ է (Completed)
+              </span>
+            </div>
+            <div th:if="${exam.status == 'COMPLETED'}" class="pt-2">
+              <p class="text-xs text-gray-500 mb-1">Completed Date: <span class="translate-me" th:text="${#temporals.format(exam.completionDate, 'dd.MM.yyyy HH:mm')}"></span></p>
+              <div class="bg-gray-900 p-3 rounded text-sm text-cyan-100 font-mono whitespace-pre-wrap border border-cyan-900 translate-me" th:text="${exam.findings}"></div>
+              <a th:if="${exam.reportFilePath != null}" th:href="@{/secure-image(id=${exam.reportFilePath})}" target="_blank"
+                 class="inline-block mt-3 bg-indigo-500/20 text-indigo-400 border border-indigo-500/50 px-3 py-1 rounded-lg text-sm hover:bg-indigo-500/40 transition font-semibold">
+                🖼️ <span th:text="#{medical.record.imaging.view_image}">Դիտել Նկարը (View Image)</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- New Lab Test Requests via AJAX -->
+      <div class="p-6 bg-gray-900/50 border border-cyan-500/30 rounded-lg w-full">
+        <h3 class="text-lg font-bold text-cyan-400 mb-4" th:text="#{medical.record.lab.order_title}">🔬 Նոր Հետազոտությունների Նշանակում (Order Lab Tests)</h3>
+        <div id="testsContainer" class="w-full space-y-4">
+          <div class="flex w-full gap-3 test-row items-center">
+            <select name="testIds" class="flex-1 w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:border-cyan-500 outline-none transition-all shadow-sm">
+              <option value="" disabled selected th:text="#{medical.record.lab.select_test}">Ընտրեք անալիզը...</option>
+              <option th:each="srv : ${labServices}" th:value="${srv.id}" th:text="${srv.name}"></option>
+            </select>
+            <button type="button" onclick="removeField(this)" class="flex-none text-gray-500 hover:text-red-400 p-2 transition-colors" th:title="#{medical.record.delete}">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </button>
+          </div>
+        </div>
+        <div class="w-full text-left mt-4">
+          <button type="button" onclick="addNewField()"
+                  class="px-4 py-2 border border-dashed border-cyan-500/50 rounded-lg text-sm text-cyan-400 hover:bg-cyan-500/10 transition-all flex items-center gap-2">
+            <span class="text-lg">+</span> <span th:text="#{medical.record.lab.add_more}">Ավելացնել ևս մեկը (Add More)</span>
+          </button>
+        </div>
+        <div class="mt-6 pt-6 border-t border-gray-700/50 w-full">
+          <button type="button" onclick="sendTestsToLab()" id="sendLabBtn"
+                  class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold transition-all shadow-lg active:scale-[0.98]" th:text="#{medical.record.lab.send_requests}">
+            Ուղարկել Լաբորատորիա (Send Lab Requests)
+          </button>
+          <div id="labStatus" class="mt-3 text-center text-sm font-medium"></div>
+        </div>
+      </div>
+
+      <!-- Form Actions & Referral -->
+      <div class="flex justify-between items-center pt-6 border-t border-gray-700 mt-8 w-full flex-wrap gap-4">
+        <button type="button" onclick="document.getElementById('referralModal').classList.remove('hidden')"
+                class="bg-purple-600/20 border border-purple-500 text-purple-400 hover:bg-purple-600 hover:text-white px-4 py-2 rounded-lg font-bold transition shadow-md flex items-center gap-2" th:text="#{medical.record.refer.button}">
+          ↪️ Ուղեգրել Ադմինին (Refer Patient)
+        </button>
+
+        <div class="flex gap-3">
+          <a href="/doctor/appointments" class="px-6 py-2 rounded-lg text-gray-300 hover:bg-gray-700 transition" th:text="#{medical.record.cancel}">Cancel</a>
+
+          <button type="submit" name="action" value="draft" formnovalidate
+                  class="bg-gray-600 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-bold transition shadow-md" th:text="#{medical.record.save_draft}">
+            💾 Սևագիր (Save Draft)
+          </button>
+
+          <button type="submit" name="action" value="complete"
+                  class="bg-cyan-600 hover:bg-cyan-500 text-white px-6 py-2 rounded-lg font-bold transition shadow-md shadow-cyan-500/20 translate-me"
+                  th:text="${record != null and record.status == 'COMPLETED' ? #messages.msg('medical.record.action.update') : #messages.msg('medical.record.action.complete')}">
+            Ավարտել քարտը և ուղարկել (Complete Record and send)
+          </button>
+        </div>
+      </div>
+
+      <!-- Referral Modal (Hidden by Default) -->
+      <div id="referralModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 px-4">
+        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 w-full max-w-md shadow-2xl animate-fadeIn">
+          <h3 class="text-xl font-bold text-purple-400 mb-4" th:text="#{medical.record.refer.modal_title}">Ուղեգրել Ադմինիստրատուրա (Referral)</h3>
+          <p class="text-sm text-gray-400 mb-4" th:text="#{medical.record.refer.modal_desc}">Նշեք, թե ինչ մասնագետի կարիք ունի պացիենտը (Specify specialist needed):</p>
+          <div class="space-y-4">
+            <input type="hidden" name="referralActionFlag" id="referralActionFlag">
+            <div>
+              <label class="block text-sm text-gray-400 mb-1" th:text="#{medical.record.refer.specialist_label}">Անհրաժեշտ Մասնագետ (Specialist)</label>
+              <input type="text" name="requestedSpecialist" th:placeholder="#{medical.record.refer.specialist_placeholder}" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white focus:border-purple-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-sm text-gray-400 mb-1" th:text="#{medical.record.refer.reason_label}">Ուղեգրման Պատճառը (Reason)</label>
+              <textarea name="referralReason" rows="3" th:placeholder="#{medical.record.refer.reason_placeholder}" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white focus:border-purple-500 outline-none"></textarea>
+            </div>
+            <div class="flex justify-end gap-3 pt-4 border-t border-gray-700">
+              <button type="button" onclick="document.getElementById('referralModal').classList.add('hidden')" class="px-4 py-2 text-gray-400 hover:text-white transition" th:text="#{medical.record.refer.cancel}">Չեղարկել (Cancel)</button>
+              <button type="submit" onclick="document.getElementById('referralActionFlag').name='action'; document.getElementById('referralActionFlag').value='refer_to_admin';"
+                      class="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded font-bold text-white shadow-lg transition" th:text="#{medical.record.refer.send}">
+                Ուղարկել (Send Referral)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-500 z-[100]">
+  <div class="bg-emerald-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+    <span id="toastMessage" class="font-bold translate-me" th:text="#{medical.record.toast.success}">Գործողությունը հաջողվեց:</span>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  // TASK 4: Language Switcher
+  function changeLanguage(lang) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('lang', lang);
+    window.location.href = url.toString();
+  }
+
+  // Active language buttons state modifier
+  document.addEventListener("DOMContentLoaded", () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentLang = urlParams.get('lang') || 'en';
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.getAttribute('data-lang') === currentLang) {
+        btn.classList.add('active');
+      }
+    });
+  });
+
+  let drugIndex = /*[[${record?.prescriptions != null ? record.prescriptions.size() : 0}]]*/ 0;
+
+  /**
+   * CRITICAL: Spring Boot needs list indices to be 0, 1, 2... with no gaps.
+   * This function re-numbers all rows every time one is added or deleted.
+   */
+  function reindexMedicationRows() {
+    const rows = document.querySelectorAll('.medication-row');
+    rows.forEach((row, index) => {
+      row.querySelectorAll('input').forEach(input => {
+        const oldName = input.getAttribute('name');
+        if (oldName && oldName.includes('prescriptions[')) {
+          const newName = oldName.replace(/prescriptions\[\d+\]/, `prescriptions[${index}]`);
+          input.setAttribute('name', newName);
+        }
+      });
+    });
+    drugIndex = rows.length;
+  }
+
+  function addMedicationRow() {
+    const container = document.getElementById('prescription-list');
+    const row = document.createElement('div');
+    row.className = "medication-row grid grid-cols-1 md:grid-cols-6 gap-3 bg-gray-800 p-4 border border-gray-700 rounded-lg items-end relative mt-3 animate-fadeIn";
+
+    row.innerHTML = `
+            <div class="md:col-span-1"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Դեղի անուն</label>
+                <input type="text" name="prescriptions[${drugIndex}].name" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-white text-sm focus:border-cyan-500 outline-none">
+            </div>
+            <div class="md:col-span-1"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Չափաբաժին</label>
+                <input type="text" name="prescriptions[${drugIndex}].dosage" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-white text-sm focus:border-cyan-500 outline-none">
+            </div>
+            <div class="md:col-span-1"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Կիրառում</label>
+                <input type="text" name="prescriptions[${drugIndex}].frequency" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-white text-sm focus:border-cyan-500 outline-none">
+            </div>
+            <div class="md:col-span-1"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Տևողություն</label>
+                <input type="text" name="prescriptions[${drugIndex}].duration" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-white text-sm focus:border-cyan-500 outline-none">
+            </div>
+            <div class="md:col-span-1"><label class="block text-xs font-bold text-cyan-400 uppercase mb-1">Քանակ</label>
+                <input type="number" name="prescriptions[${drugIndex}].quantity" value="1" min="1" class="w-full bg-gray-900 border border-cyan-500/50 rounded-lg p-2 text-cyan-400 font-bold text-sm text-center outline-none">
+            </div>
+            <div class="flex justify-end md:col-span-1">
+                <button type="button" onclick="this.closest('.medication-row').remove(); reindexMedicationRows();" class="text-gray-500 hover:text-red-400 p-2 transition-colors">✕</button>
+            </div>
+        `;
+    container.appendChild(row);
+    reindexMedicationRows();
+  }
+
+  async function sendTestsToLab() {
+    const appointmentId = /*[[${appointment?.id}]]*/ 'null';
+    if (!appointmentId || appointmentId === 'null') return;
+
+    const inputs = document.querySelectorAll('select[name="testIds"]');
+    const testIds = Array.from(inputs).map(i => i.value).filter(v => v.trim() !== "");
+
+    const btn = document.getElementById('sendLabBtn');
+    const status = document.getElementById('labStatus');
+
+    if (testIds.length === 0) {
+      status.className = "mt-3 text-center text-sm text-yellow-500 font-bold";
+      status.innerText = "ℹ️ Լրացված անալիզներ չկան (No tests entered):";
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "⏳ Ուղարկվում է (Sending)...";
+
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+    try {
+      const response = await fetch(`/doctor/appointment/${appointmentId}/order-tests`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrfHeader && csrfToken ? { [csrfHeader]: csrfToken } : {})
+        },
+        body: JSON.stringify(testIds)
+      });
+
+      if (response.ok) {
+        status.className = "mt-3 text-center text-sm text-green-400 font-bold";
+        status.innerText = "✅ Հարցումն ուղարկված է լաբորատորիա (Sent successfully):";
+        btn.classList.add('hidden');
+        inputs.forEach(i => i.disabled = true);
+      } else {
+        throw new Error("Error: " + response.status);
+      }
+    } catch (error) {
+      console.error(error);
+      status.className = "mt-3 text-center text-sm text-red-400 font-bold";
+      status.innerText = "❌ Չհաջողվեց ուղարկել (Failed to send):";
+      btn.disabled = false;
+      btn.innerText = "Ուղարկել Լաբորատորիա";
+    }
+  }
+
+  /* --- Voice Dictation System --- */
+  let activeMediaRecorder = null;
+  let activeAudioChunks = [];
+  let currentActiveButton = null;
+
+  async function startDictation(targetId, btnElement, contextType) {
+    const targetInput = document.getElementById(targetId);
+
+    if (activeMediaRecorder && activeMediaRecorder.state === 'recording' && currentActiveButton === btnElement) {
+      activeMediaRecorder.stop();
+      btnElement.classList.remove('text-red-500', 'animate-pulse');
+      btnElement.classList.add('text-gray-400');
+      return;
+    }
+
+    if (activeMediaRecorder && activeMediaRecorder.state === 'recording') {
+      alert("Խնդրում ենք նախ անջատել նախորդ դաշտի ձայնագրությունը (Stop current dictation first):");
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      activeMediaRecorder = new MediaRecorder(stream);
+      activeAudioChunks = [];
+      currentActiveButton = btnElement;
+
+      activeMediaRecorder.ondataavailable = e => activeAudioChunks.push(e.data);
+
+      activeMediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(activeAudioChunks, { type: 'audio/webm' });
+        const formData = new FormData();
+        formData.append('file', audioBlob, 'recording.webm');
+        formData.append('context', contextType);
+
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+        const originalBg = targetInput.style.backgroundColor;
+        targetInput.style.backgroundColor = '#1e3a8a';
+
+        try {
+          const response = await fetch('/api/voice/transcribe', {
+            method: 'POST',
+            headers: {
+              ...(csrfToken && csrfHeader ? { [csrfHeader]: csrfToken } : {})
+            },
+            body: formData
+          });
+
+          if (response.ok) {
+            const text = await response.text();
+            targetInput.value = targetInput.value.trim() !== '' ? targetInput.value.trim() + '\n' + text : text;
+          } else {
+            console.error("Server Error:", response.status);
+            alert("Չհաջողվեց վերծանել տեքստը (Failed to transcribe): " + response.status);
+          }
+        } catch (err) {
+          console.error('Fetch error:', err);
+          alert("Սերվերի հետ կապի խնդիր (Connection error):");
+        } finally {
+          targetInput.style.backgroundColor = originalBg;
+          currentActiveButton = null;
+        }
+      };
+
+      activeMediaRecorder.start();
+      btnElement.classList.remove('text-gray-400', 'hover:text-cyan-400');
+      btnElement.classList.add('text-red-500', 'animate-pulse');
+
+    } catch (err) {
+      alert("Միկրոֆոնի հասանելիությունը մերժված է (Microphone access denied):");
+    }
+  }
+
+  /* --- FAST Drug Interactions Validation (Mapped to /doctor/api/drugs/check) --- */
+  async function validateDrugInteractions() {
+    const inputs = document.querySelectorAll('input[name$=".name"]');
+    const drugNames = Array.from(inputs).map(i => i.value).filter(v => v.trim() !== "");
+
+    if (drugNames.length < 2) {
+      const box = document.getElementById('drug-alert-box');
+      if(box) box.classList.add('hidden');
+      return;
+    }
+
+    let alertBox = document.getElementById('drug-alert-box');
+    if (!alertBox) {
+      alertBox = document.createElement('div');
+      alertBox.id = 'drug-alert-box';
+      alertBox.className = 'hidden mb-4 p-4 bg-red-900/40 border border-red-500 text-red-200 text-sm rounded-lg font-bold flex items-center gap-2 shadow-lg animate-fadeIn';
+      document.getElementById('prescription-list').parentNode.insertBefore(alertBox, document.getElementById('prescription-list'));
+    }
+
+    try {
+      const response = await fetch('/doctor/api/drugs/check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(drugNames)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.alert !== "OK") {
+          alertBox.innerHTML = `<span>🛑</span> <span>${result.alert}</span>`;
+          alertBox.classList.remove('hidden');
+        } else {
+          alertBox.classList.add('hidden');
+        }
+      }
+    } catch (e) {
+      console.error('Drug check failed:', e);
+    }
+  }
+
+  document.getElementById('prescription-list').addEventListener('input', function(e) {
+    if (e.target.name && e.target.name.includes('.name')) {
+      clearTimeout(window.drugCheckTimer);
+      window.drugCheckTimer = setTimeout(validateDrugInteractions, 800);
+    }
+  });
+
+  /* --- Send Instrumental Exam Order (AJAX) --- */
+  async function sendImagingOrder() {
+    const appointmentId = /*[[${appointment?.id}]]*/ 'null';
+    if (!appointmentId || appointmentId === 'null') return;
+
+    const areaToExamine = document.getElementById('areaToExamine').value;
+    const clinicalReason = document.getElementById('clinicalReason').value;
+
+    const examSelect = document.getElementById('examServiceId');
+    const selectedServiceId = examSelect.value;
+    const selectedServiceName = examSelect.options[examSelect.selectedIndex].text;
+    if (!selectedServiceId || !areaToExamine.trim() || !clinicalReason.trim()) {
+      alert("Խնդրում ենք լրացնել բոլոր դաշտերը:");
+      return;
+    }
+
+    const btn = document.getElementById('sendImagingBtn');
+    const status = document.getElementById('imagingStatus');
+
+    btn.disabled = true;
+    btn.innerText = "⏳ Ուղարկվում է...";
+
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+    const formData = new URLSearchParams();
+    formData.append('serviceId', selectedServiceId);
+    formData.append('examType', selectedServiceName);
+    formData.append('areaToExamine', areaToExamine);
+    formData.append('clinicalReason', clinicalReason);
+
+    try {
+      const response = await fetch(`/doctor/appointment/${appointmentId}/order-exam`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          ...(csrfHeader && csrfToken ? { [csrfHeader]: csrfToken } : {})
+        },
+        body: formData.toString()
+      });
+
+      if (response.ok) {
+        status.className = "text-sm text-green-400 font-bold";
+        status.innerText = "✅ Հարցումն ուղարկված է!";
+        btn.classList.add('hidden');
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        throw new Error("Error: " + response.status);
+      }
+    } catch (error) {
+      console.error(error);
+      status.className = "text-sm text-red-400 font-bold";
+      status.innerText = "❌ Սխալ տեղի ունեցավ:";
+      btn.disabled = false;
+      btn.innerText = "Ուղարկել Ռադիոլոգիա";
+    }
+  }
+
+  /* --- Smart Follow-up Slot Fetcher --- */
+  async function fetchAvailableSlots() {
+    const dateInput = document.getElementById('followUpDateStr').value;
+    const timeSelect = document.getElementById('followUpTime');
+    const doctorId = /*[[${doctor?.id}]]*/ '';
+
+    if (!dateInput) {
+      timeSelect.innerHTML = '<option value="">Ընտրեք նախ օրը...</option>';
+      timeSelect.disabled = true;
+      return;
+    }
+
+    timeSelect.innerHTML = '<option value="">⏳ Որոնվում են ազատ ժամեր...</option>';
+    timeSelect.disabled = true;
+
+    try {
+      const response = await fetch(`/appointments/api/available-slots?doctorId=${doctorId}&date=${dateInput}`);
+
+      if (response.ok) {
+        const slots = await response.json();
+        timeSelect.innerHTML = '<option value="">Ընտրեք ազատ ժամ...</option>';
+
+        if (slots.length === 0) {
+          timeSelect.innerHTML = '<option value="">❌ Այս օրը ազատ ժամեր չկան կամ ոչ աշխատանքային է</option>';
+        } else {
+          slots.forEach(slot => {
+            const opt = document.createElement('option');
+            opt.value = slot.length === 5 ? slot : slot.substring(0, 5);
+            opt.textContent = opt.value;
+            timeSelect.appendChild(opt);
+          });
+          timeSelect.disabled = false;
+        }
+      }
+    } catch (e) {
+      console.error("Error fetching slots:", e);
+      timeSelect.innerHTML = '<option value="">❌ Սխալ առաջացավ սերվերի հետ կապում</option>';
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    const dateInput = document.getElementById('followUpDateStr');
+    if (dateInput && dateInput.value) {
+      fetchAvailableSlots();
+    }
+  });
+
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toastMessage').innerText = message;
+    toast.classList.remove('translate-y-20', 'opacity-0');
+    setTimeout(() => {
+      toast.classList.add('translate-y-20', 'opacity-0');
+    }, 3000);
+  }
+
+  if (window.location.search.includes('success')) {
+    showToast("Տվյալները հաջողությամբ պահպանվեցին:");
+  }
+
+  /* --- Դինամիկ Լաբորատոր Դաշտերի Ավելացում և Ջնջում --- */
+  function addNewField() {
+    const container = document.getElementById('testsContainer');
+    const firstRow = container.querySelector('.test-row');
+    if (firstRow) {
+      const newRow = firstRow.cloneNode(true);
+      newRow.querySelector('select').selectedIndex = 0;
+      container.appendChild(newRow);
+    }
+  }
+
+  function removeField(btn) {
+    const row = btn.closest('.test-row');
+    const container = document.getElementById('testsContainer');
+    if (container.children.length > 1) {
+      row.remove();
+    } else {
+      row.querySelector('select').selectedIndex = 0;
+    }
+  }
+</script>
+
 </body>
 </html>

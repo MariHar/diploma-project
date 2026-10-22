@@ -1,4 +1,4 @@
-package com.example.diplomathesisfinalcollection.service;
+package com.example.diplomathesisfinalcollection.services;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.client.j2se.MatrixToImageWriter;

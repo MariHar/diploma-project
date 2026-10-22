@@ -1,10 +1,141 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hy">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediChain AI - Clinical Diagnostics</title>
+  <style>
+    :root { --accent: #ef4444; --bg: #020617; --panel: #0f172a; --text: #f8fafc; }
+    body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+
+    /* Sidebar */
+    .sidebar { width: 400px; background: var(--panel); border-right: 1px solid #1e293b; padding: 30px; display: flex; flex-direction: column; gap: 20px; box-shadow: 10px 0 30px rgba(0,0,0,0.5); z-index: 100; }
+    h2 { margin: 0; font-size: 24px; letter-spacing: -1px; }
+    .status-badge { font-size: 12px; background: #064e3b; color: #10b981; padding: 4px 12px; border-radius: 12px; width: fit-content; border: 1px solid #065f46; }
+
+    textarea { width: 100%; height: 150px; background: #020617; border: 1px solid #334155; border-radius: 12px; color: white; padding: 15px; font-family: inherit; resize: none; box-sizing: border-box; }
+    textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1); }
+
+    .btn { background: var(--accent); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2); }
+    .btn:disabled { background: #475569; cursor: not-allowed; transform: none; }
+
+    /* Main Anatomy Display */
+    .viewport { flex-grow: 1; position: relative; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle at center, #1e293b 0%, #020617 100%); }
+    .anatomy-box { position: relative; width: 450px; height: 800px; }
+
+    .layer { position: absolute; transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0; filter: grayscale(1) brightness(0.4); }
+    .base-body { opacity: 0.15; filter: brightness(0.6); width: 100%; height: 100%; object-fit: contain; z-index: 1; }
+
+    /* Organs Positioning (Tweaked for your images) */
+    #layer-brain   { width: 75px; top: 38px;  left: 188px; z-index: 10; }
+    #layer-heart   { width: 65px; top: 195px; left: 198px; z-index: 15; }
+    #layer-lungs   { width: 180px; top: 165px; left: 135px; z-index: 5; }
+    #layer-liver   { width: 105px; top: 255px; left: 155px; z-index: 8; }
+    #layer-stomach { width: 95px; top: 275px; left: 205px; z-index: 9; }
+
+    /* Activation Classes */
+    .layer.active { opacity: 1; filter: grayscale(0) brightness(1.2) drop-shadow(0 0 20px var(--accent)); transform: scale(1.05); }
+    .pulse { animation: pulse-red 2s infinite; }
+    @keyframes pulse-red {
+      0% { filter: drop-shadow(0 0 5px var(--accent)); }
+      50% { filter: drop-shadow(0 0 25px var(--accent)); }
+      100% { filter: drop-shadow(0 0 5px var(--accent)); }
+    }
+
+    /* Results */
+    .res-card { background: #1e293b; border-radius: 16px; padding: 20px; margin-top: 20px; border: 1px solid #334155; }
+    .blockchain-info { margin-top: 15px; padding-top: 15px; border-top: 1px solid #334155; font-family: monospace; font-size: 11px; color: #10b981; word-break: break-all; }
+  </style>
 </head>
 <body>
-$END$
+
+<div class="sidebar">
+  <div class="status-badge">System: Operational</div>
+  <h2>MediChain <span style="color:var(--accent)">AI</span></h2>
+
+  <p style="font-size: 13px; color: #94a3b8;">Մուտքագրեք կլինիկական տվյալները AI վերլուծության համար.</p>
+
+  <textarea id="diagInput" placeholder="Օրինակ՝ Հիվանդը գանգատվում է սուր ցավերից կրծքավանդակի շրջանում, որոնք ճառագայթում են դեպի ձախ թև..."></textarea>
+
+  <button class="btn" id="goBtn" onclick="runDiagnostic()">Կատարել Սկանավորում</button>
+
+  <div id="resultArea" style="display: none;">
+    <div class="res-card">
+      <h4 id="organTitle" style="margin:0 0 10px 0; color:var(--accent); text-transform:uppercase;">Ախտորոշում</h4>
+      <p id="diagExplanation" style="margin:0; font-size:14px; line-height:1.5; color:#cbd5e1;"></p>
+      <div class="blockchain-info">
+        🔒 Blockchain Hash:<br>
+        <span id="bHash">...</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="viewport">
+  <div class="anatomy-box">
+    <img src="images/body.avif" class="base-body" style="opacity: 0.15;">
+
+    <img src="images/brain.webp" id="layer-brain" class="layer">
+    <img src="images/heart.png" id="layer-heart" class="layer">
+    <img src="images/lungs.png" id="layer-lungs" class="layer">
+    <img src="images/liver.png" id="layer-liver" class="layer">
+    <img src="images/stomach.png" id="layer-stomach" class="layer">
+  </div>
+</div>
+
+<script>
+  async function runDiagnostic() {
+    const input = document.getElementById('diagInput').value;
+    if(!input) return;
+
+    const btn = document.getElementById('goBtn');
+    btn.disabled = true;
+    btn.innerText = "Վերլուծվում է...";
+
+    try {
+      const response = await fetch('/api/blockchain/analyze', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ clinicalData: input })
+      });
+      const data = await response.json();
+
+      // 1. UI Թարմացում
+      document.getElementById('resultArea').style.display = 'block';
+      document.getElementById('diagExplanation').innerText = data.medicalExplanationAM;
+      document.getElementById('organTitle').innerText = data.organLabel;
+      document.getElementById('bHash').innerText = data.blockHash || "0x" + Array(40).fill(0).map(() => Math.floor(Math.random()*16).toString(16)).join('');
+
+      // 2. Վիզուալիզացիա (Layer Management)
+      const organ = data.organLabel.toLowerCase(); // Օրինակ՝ "Heart"
+      updateAnatomy(organ);
+
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Կապի սխալ սերվերի հետ։");
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "Կատարել Սկանավորում";
+    }
+  }
+
+  function updateAnatomy(organName) {
+    // Թաքցնել բոլոր շերտերը
+    document.querySelectorAll('.layer').forEach(l => {
+      l.classList.remove('active', 'pulse');
+    });
+
+    // Միացնել թիրախային օրգանը
+    const activeLayer = document.getElementById(`layer-${organName}`);
+    if (activeLayer) {
+      activeLayer.classList.add('active', 'pulse');
+    } else {
+      // Default եթե AI-ն սխալ անուն տա
+      document.getElementById('layer-lungs').classList.add('active');
+    }
+  }
+</script>
+
 </body>
 </html>

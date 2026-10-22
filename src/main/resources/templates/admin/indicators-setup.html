@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="hy" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Լաբորատոր Նորմաներ - Ադմին</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        accent: { cyan: '#06B6D4', blue: '#3B82F6', purple: '#8B5CF6' }
+                    },
+                    fontFamily: { 'sans': ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body, input, textarea, button { transition: all 0.3s ease; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen">
+
+<header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 md:px-8 h-20 flex items-center justify-between">
+        <div class="flex items-center gap-6">
+            <a th:href="@{/admin/dashboard}" class="flex items-center gap-2 text-gray-500 hover:text-accent-blue transition-colors font-semibold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                Վերադառնալ Գլխավոր Վահանակ
+            </a>
+            <div class="h-6 w-px bg-gray-200 hidden md:block"></div>
+            <h1 class="text-xl font-bold text-gray-800 hidden md:block">Լաբորատոր Նորմաներ</h1>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="m-0">
+                <button type="submit" class="flex items-center gap-2 border border-red-200 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white px-5 py-2 rounded-xl font-semibold transition-all shadow-sm hover:shadow-md">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    Ելք
+                </button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<div class="max-w-7xl mx-auto p-4 md:p-8">
+
+    <div th:if="${successMsg}" class="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-xl flex items-center gap-3 shadow-sm animate-fade-in">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        <span class="font-medium" th:text="${successMsg}"></span>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl border border-gray-200 mb-8 shadow-sm relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-blue to-accent-cyan"></div>
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-accent-blue shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800">Անալիզների Կառավարում</h2>
+                    <p class="text-sm text-gray-500">Ավելացրեք նոր լաբորատոր ցուցանիշներ կամ խմբագրեք առկա նորմաները:</p>
+                </div>
+            </div>
+            <form th:action="@{/admin/indicators/import-csv}" method="post" enctype="multipart/form-data" class="flex items-center gap-2 bg-gray-50 p-2 rounded-xl border border-gray-200">
+                <input type="file" name="file" accept=".csv" required
+                       class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-accent-blue hover:file:bg-blue-100 transition-all cursor-pointer">
+                <button type="submit" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-all flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                    Ներբեռնել
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <div class="lg:col-span-1">
+            <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm sticky top-28">
+                <h2 class="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-accent-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Ավելացնել / Խմբագրել
+                </h2>
+
+                <form th:action="@{/admin/indicators/save}" method="post" class="space-y-4">
+                    <input type="hidden" name="id" id="form-id">
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Անալիզի Տեսակ</label>
+                        <input type="text" name="testName" id="form-testName" list="existingTests" required placeholder="Օր.՝ Արյան ընդհանուր քննություն"
+                               class="w-full pl-4 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-accent-blue transition-all">
+                        <datalist id="existingTests">
+                            <option th:each="name : ${uniqueTestNames}" th:value="${name}"></option>
+                        </datalist>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Միջազգային Հապավում (Կոդ)</label>
+                        <input type="text" name="indicatorKey" id="form-key" required placeholder="Օր.՝ hgb, wbc, glu"
+                               class="w-full pl-4 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-accent-blue transition-all">
+                        <p class="text-[10px] text-gray-400 font-medium mt-1">Օգտագործվում է որպես համակարգային կոդ: Գրեք միայն լատինատառ (անգլերեն):</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Ցուցադրվող Անուն</label>
+                        <input type="text" name="displayName" id="form-display" required placeholder="Օր.՝ Հեմոգլոբին"
+                               class="w-full pl-4 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-accent-blue transition-all">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Չափման Միավոր</label>
+                        <input type="text" name="unit" id="form-unit" placeholder="Օր.՝ գ/լ"
+                               class="w-full pl-4 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-accent-blue transition-all">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Նվազագույն (Min)</label>
+                            <input type="number" step="any" name="normMin" id="form-min" placeholder="120.0"
+                                   class="w-full pl-4 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-accent-blue transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Առավելագույն (Max)</label>
+                            <input type="number" step="any" name="normMax" id="form-max" placeholder="160.0"
+                                   class="w-full pl-4 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-accent-blue transition-all">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full mt-2 bg-accent-blue hover:bg-blue-600 text-white py-2.5 rounded-xl font-bold shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                        Պահպանել
+                    </button>
+                    <button type="button" onclick="clearForm()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-2.5 rounded-xl font-bold transition-all mt-2 text-sm">
+                        Մաքրել Դաշտերը
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- RIGHT: TABLE -->
+        <div class="lg:col-span-2">
+            <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+
+                <!-- Վերնագիր և Որոնման դաշտ -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <h2 class="text-xl font-bold text-gray-800 flex items-center gap-3">
+                        Առկա Ցուցանիշներ
+                        <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-sm font-bold" th:text="${indicators.size()}">0</span>
+                    </h2>
+
+                    <div class="relative w-full sm:w-64">
+                        <input type="text" id="searchInput" onkeyup="filterIndicators()" placeholder="Որոնել անալիզ կամ կոդ..."
+                               class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-accent-blue transition-all">
+                        <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </div>
+                </div>
+
+                <!-- ԱՂՅՈՒՍԱԿ -->
+                <div class="overflow-x-auto rounded-xl border border-gray-200">
+                    <table class="w-full text-left border-collapse" id="indicatorsTable">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Անալիզ / Ցուցանիշ</th>
+                            <th class="py-4 px-6 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Նորմա (Min - Max)</th>
+                            <th class="py-4 px-6 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Կարգավիճակ</th>
+                            <th class="py-4 px-6 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Գործողություն</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                        <tr th:each="ind : ${indicators}" class="hover:bg-gray-50 transition-colors indicator-row">
+                            <td class="py-4 px-6 whitespace-nowrap">
+                                <div class="text-xs font-bold text-accent-blue uppercase tracking-wider searchable-test" th:text="${ind.testName}">Անալիզ</div>
+                                <div class="text-sm font-bold text-gray-900 mt-1 searchable-name" th:text="${ind.displayName}">Հեմոգլոբին</div>
+                                <div class="text-xs text-gray-400 font-mono mt-0.5 searchable-key" th:text="'key: ' + ${ind.indicatorKey}">hgb</div>
+                            </td>
+
+                            <td class="py-4 px-6 whitespace-nowrap text-center">
+                                    <span th:if="${ind.normMin != null and ind.normMax != null}" class="px-2.5 py-1 bg-gray-100 text-gray-700 border border-gray-200 rounded-md text-[11px] font-bold"
+                                          th:text="${ind.normMin} + ' - ' + ${ind.normMax} + ' ' + (${ind.unit != null ? ind.unit : ''})"></span>
+                                <span th:if="${ind.normMin == null or ind.normMax == null}" class="text-gray-400 font-medium italic text-xs">Տեքստային</span>
+                            </td>
+
+                            <!-- ԿԱՐԳԱՎԻՃԱԿ (Active / Inactive) -->
+                            <td class="py-4 px-6 whitespace-nowrap text-center">
+                                <span th:if="${ind.active}" class="px-2.5 py-1 bg-green-100 text-green-700 border border-green-200 rounded-md text-[11px] font-bold">ԱԿՏԻՎ</span>
+                                <span th:if="${!ind.active}" class="px-2.5 py-1 bg-gray-200 text-gray-500 border border-gray-300 rounded-md text-[11px] font-bold">ԱՐԽԻՎԱՑՎԱԾ</span>
+                            </td>
+
+                            <td class="py-4 px-6 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex justify-end gap-2">
+                                    <button type="button"
+                                            th:data-id="${ind.id}" th:data-name="${ind.testName}" th:data-key="${ind.indicatorKey}"
+                                            th:data-display="${ind.displayName}" th:data-unit="${ind.unit}"
+                                            th:data-min="${ind.normMin}" th:data-max="${ind.normMax}"
+                                            onclick="prepareEdit(this)"
+                                            class="text-accent-blue bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1">
+                                        Խմբագրել
+                                    </button>
+
+                                    <!-- ԱՊԱԱԿՏԻՎԱՑՆԵԼՈՒ (TOGGLE) ԿՈՃԱԿ -->
+                                    <form th:action="@{/admin/indicators/toggle-status/{id}(id=${ind.id})}" method="post" class="inline-block"
+                                          onsubmit="return confirm('Վստա՞հ եք, որ ուզում եք փոխել այս ցուցանիշի կարգավիճակը:');">
+                                        <button type="submit"
+                                                th:class="${ind.active ? 'text-red-600 bg-red-50 hover:bg-red-100 border-red-200' : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border-emerald-200'} + ' border px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm'"
+                                                th:text="${ind.active ? 'Ապաակտիվացնել' : 'Ակտիվացնել'}">
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Դատարկ որոնման կամ բազայի դեպքում -->
+                        <tr th:if="${#lists.isEmpty(indicators)}" id="emptyStateRow">
+                            <td colspan="4" class="py-16 text-center text-gray-500">
+                                <svg class="mx-auto h-12 w-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+                                Բազայում դեռ գրանցված նորմաներ չկան կամ որոնմանը համապատասխանող արդյունք չգտնվեց:
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Խմբագրման ֆունկցիա (Անսխալ տարբերակ ID-ներով)
+    function prepareEdit(btn) {
+        document.getElementById('form-id').value = btn.getAttribute('data-id') || '';
+        document.getElementById('form-testName').value = btn.getAttribute('data-name') || '';
+        document.getElementById('form-key').value = btn.getAttribute('data-key') || '';
+        document.getElementById('form-display').value = btn.getAttribute('data-display') || '';
+        document.getElementById('form-unit').value = btn.getAttribute('data-unit') || '';
+        document.getElementById('form-min').value = btn.getAttribute('data-min') || '';
+        document.getElementById('form-max').value = btn.getAttribute('data-max') || '';
+
+        // Ֆոկուս ենք անում և բարձրացնում էկրանը վերև
+        document.getElementById('form-testName').focus();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Դաշտերի մաքրման ֆունկցիա
+    function clearForm() {
+        document.getElementById('form-id').value = '';
+        document.getElementById('form-testName').value = '';
+        document.getElementById('form-key').value = '';
+        document.getElementById('form-display').value = '';
+        document.getElementById('form-unit').value = '';
+        document.getElementById('form-min').value = '';
+        document.getElementById('form-max').value = '';
+    }
+
+    // ՈՐՈՆՄԱՆ ՖՈՒՆԿՑԻԱ (Search)
+    function filterIndicators() {
+        let input = document.getElementById('searchInput').value.toLowerCase();
+        let rows = document.querySelectorAll('.indicator-row');
+
+        rows.forEach(row => {
+            let testName = row.querySelector('.searchable-test').textContent.toLowerCase();
+            let dispName = row.querySelector('.searchable-name').textContent.toLowerCase();
+            let keyName = row.querySelector('.searchable-key').textContent.toLowerCase();
+
+            if (testName.includes(input) || dispName.includes(input) || keyName.includes(input)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

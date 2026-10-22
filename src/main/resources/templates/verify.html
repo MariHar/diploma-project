@@ -1,10 +1,195 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="#{head.title.verify}">Verify Account - Avelia Clinic</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            dark: { 100: '#1E293B', 200: '#0F172A', 300: '#020617' },
+            accent: { cyan: '#06B6D4', blue: '#3B82F6', purple: '#8B5CF6' },
+            light: { 100: '#F9FAFB', 200: '#F3F4F6', 300: '#E5E7EB' }
+          },
+          fontFamily: { 'sans': ['Inter', 'system-ui', 'sans-serif'] },
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; transition: background-color 0.3s ease, color 0.3s ease; }
+    body:not(.dark) { background-color: #F9FAFB !important; color: #1E293B !important; }
+    body:not(.dark) .auth-card { background: rgba(255, 255, 255, 0.95) !important; border-color: #E5E7EB !important; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08) !important; }
+    body:not(.dark) .input-field { background-color: #F3F4F6 !important; border-color: #CBD5E1 !important; color: #1E293B !important; }
+    body:not(.dark) .input-field:focus { background-color: #FFFFFF !important; border-color: #06B6D4 !important; }
+    body:not(.dark) .text-gray-100, body:not(.dark) .text-gray-300, body:not(.dark) .text-gray-400 { color: #1E293B !important; }
+    body:not(.dark) .text-gray-500 { color: #6B7280 !important; }
+
+    .auth-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
+    .input-field { background: rgba(15, 23, 42, 0.5); border: 1.5px solid rgba(148, 163, 184, 0.2); transition: all 0.3s ease; }
+    .input-field:focus { background: rgba(15, 23, 42, 0.7); border-color: #06B6D4; outline: none; box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1); }
+    .gradient-text { background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeInUp 0.8s ease-out; }
+
+    body.dark { background: radial-gradient(circle at 20% 50%, rgba(6, 182, 212, 0.03) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.03) 0%, transparent 50%), #020617; }
+    .theme-toggle { position: fixed; top: 2rem; right: 2rem; z-index: 50; }
+
+    /* Language Switcher Styles */
+    .language-switcher { backdrop-filter: blur(10px); background: rgba(30, 41, 59, 0.8); }
+    body:not(.dark) .language-switcher { background: rgba(255, 255, 255, 0.9) !important; border-color: #E5E7EB !important; }
+    .lang-btn { color: #94A3B8; transition: all 0.3s ease; }
+    .lang-btn:hover { color: #06B6D4; }
+    .lang-btn.active { background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%); color: white; transform: scale(1.05); }
+    body:not(.dark) .lang-btn { color: #64748B; }
+    body:not(.dark) .lang-btn.active { color: white; }
+  </style>
 </head>
-<body>
-$END$
+<body class="dark min-h-screen flex items-center justify-center px-4 py-8">
+
+<!-- Floating Theme Toggle -->
+<button type="button" id="themeToggle" class="theme-toggle w-12 h-12 rounded-xl bg-dark-100 border border-gray-700 flex items-center justify-center hover:bg-dark-200 transition-all hover:scale-110 group shadow-md">
+  <svg id="sunIcon" class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+  <svg id="moonIcon" class="w-6 h-6 text-indigo-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+</button>
+
+<!-- Floating Language Switcher -->
+<div class="language-switcher fixed top-2 left-2 md:top-6 md:left-6 z-50 flex items-center gap-2 bg-dark-100 border border-gray-700 rounded-xl p-1.5 shadow-lg">
+  <button onclick="changeLanguage('en')" class="lang-btn active px-3 py-2 rounded-lg text-sm font-semibold transition-all hover:bg-dark-200" data-lang="en">EN</button>
+  <button onclick="changeLanguage('hy')" class="lang-btn px-3 py-2 rounded-lg text-sm font-semibold transition-all hover:bg-dark-200" data-lang="hy">AM</button>
+  <button onclick="changeLanguage('ru')" class="lang-btn px-3 py-2 rounded-lg text-sm font-semibold transition-all hover:bg-dark-200" data-lang="ru">RU</button>
+</div>
+
+<div class="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center fade-in my-10">
+  <!-- Left Side - Branding -->
+  <div class="hidden lg:flex flex-col justify-center p-12">
+    <div class="mb-8">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="w-16 h-16 bg-gradient-to-br from-accent-cyan to-accent-blue rounded-2xl flex items-center justify-center shadow-2xl">
+          <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold gradient-text" th:text="#{nav.logo.title}">avelia clinic</h1>
+          <p class="text-gray-400 text-sm" th:text="#{verify.brand.subtitle}">Security Verification</p>
+        </div>
+      </div>
+    </div>
+    <h2 class="text-4xl font-bold text-gray-100 mb-4" th:text="#{verify.brand.title}">Secure Your Account</h2>
+    <p class="text-lg text-gray-400 mb-8" th:text="#{verify.brand.desc}">We've sent a unique verification code to your email to ensure your health data remains private and protected.</p>
+  </div>
+
+  <!-- Right Side - Verification Form -->
+  <div class="auth-card rounded-3xl p-8 md:p-12">
+    <div class="lg:hidden flex items-center justify-center gap-3 mb-8">
+      <span class="text-2xl font-bold gradient-text" th:text="#{nav.logo.title}">avelia clinic</span>
+    </div>
+
+    <div class="text-center mb-8">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-100 mb-2" th:text="#{verify.form.title}">Verify Identity</h2>
+      <p class="text-gray-400">
+        <span th:text="#{verify.form.subtitle.prefix}">Code sent to</span>
+        <span class="text-accent-cyan font-semibold translate-me" th:text="${email}">user@example.com</span>
+      </p>
+    </div>
+
+    <!-- Backend Error Alert -->
+    <div th:if="${errorMsg}" class="bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-xl mb-6 text-center text-sm font-bold translate-me">
+      ❌ <span th:text="${errorMsg}">Invalid verification code.</span>
+    </div>
+
+    <form th:action="@{/verify/submit}" method="post" class="space-y-6">
+      <input type="hidden" name="email" th:value="${email}" />
+
+      <div>
+        <label for="code" class="block text-sm font-semibold text-gray-300 mb-4 text-center" th:text="#{verify.form.label.code}">Enter 6-Digit Code</label>
+        <div class="relative">
+          <input
+                  type="text"
+                  id="code"
+                  name="code"
+                  class="input-field w-full py-4 rounded-xl text-gray-100 text-center text-3xl font-bold tracking-[0.5em] focus:ring-accent-cyan"
+                  placeholder="000000"
+                  required
+                  pattern="\d{6}"
+                  maxlength="6"
+                  autocomplete="off"
+          >
+        </div>
+        <p class="text-xs text-center text-gray-500 mt-4" th:text="#{verify.form.expiration_hint}">Code expires in 10 minutes</p>
+      </div>
+
+      <button type="submit" class="w-full bg-gradient-to-r from-accent-cyan to-accent-blue text-white py-4 rounded-xl font-bold text-lg hover:shadow-2xl hover:shadow-accent-cyan/30 transition-all hover:scale-[1.02] active:scale-[0.98]" th:text="#{verify.form.btn_submit}">
+        Verify Account
+      </button>
+
+      <p class="text-center text-gray-400 mt-8">
+        <span th:text="#{verify.form.footer.text}">Mistyped email?</span>
+        <a th:href="@{/register}" class="text-accent-cyan hover:text-accent-blue font-semibold transition-colors" th:text="#{verify.form.footer.link}">
+          Register again
+        </a>
+      </p>
+    </form>
+  </div>
+</div>
+
+<script>
+  // TASK 4: Language Switcher Logic
+  function changeLanguage(lang) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('lang', lang);
+    window.location.href = url.toString();
+  }
+
+  // Set active language switcher button state based on URL parameters
+  document.addEventListener("DOMContentLoaded", () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentLang = urlParams.get('lang') || 'en';
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.getAttribute('data-lang') === currentLang) {
+        btn.classList.add('active');
+      }
+    });
+  });
+
+  // Theme Toggle Logic
+  const themeToggle = document.getElementById('themeToggle');
+  const sunIcon = document.getElementById('sunIcon');
+  const moonIcon = document.getElementById('moonIcon');
+  const html = document.documentElement;
+  const body = document.body;
+
+  function applyTheme(theme) {
+    if (theme === 'dark') {
+      body.classList.add('dark');
+      html.classList.add('dark');
+      sunIcon.classList.remove('hidden');
+      moonIcon.classList.add('hidden');
+    } else {
+      body.classList.remove('dark');
+      html.classList.remove('dark');
+      sunIcon.classList.add('hidden');
+      moonIcon.classList.remove('hidden');
+    }
+  }
+
+  applyTheme(localStorage.getItem('theme') || 'dark');
+
+  themeToggle.addEventListener('click', () => {
+    const newTheme = body.classList.contains('dark') ? 'light' : 'dark';
+    applyTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+  });
+</script>
 </body>
 </html>

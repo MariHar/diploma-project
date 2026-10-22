@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        /* Էլ. փոստի համար օպտիմիզացված մինիմալիստական դիզայն */
+        body {             font-family: 'DejaVu Sans', sans-serif !important; margin: 0; padding: 0; background-color: #ffffff; color: #333333; }
+        .page-container { max-width: 650px; margin: 0 auto; padding: 30px 20px; background: white; }
+
+        /* Գլխամաս */
+        .header { display: table; width: 100%; border-bottom: 1px solid #eaeaea; padding-bottom: 20px; margin-bottom: 30px; }
+        .hospital-brand { display: table-cell; vertical-align: middle; }
+        .hospital-logo { font-size: 22px; font-weight: 600; color: #111111; letter-spacing: 0.5px; }
+        .hospital-subtitle { font-size: 12px; color: #666666; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .hospital-contact { display: table-cell; text-align: right; vertical-align: middle; font-size: 12px; color: #666666; line-height: 1.5; }
+
+        /* Ամփոփիչ քարտ */
+        .summary-card { background-color: #fafafa; border-radius: 6px; padding: 20px; margin-bottom: 30px; display: table; width: 100%; box-sizing: border-box; }
+        .column { display: table-cell; width: 50%; vertical-align: top; }
+        .info-row { margin-bottom: 10px; font-size: 13px; color: #444444; }
+        .label { color: #888888; width: 130px; display: inline-block; font-weight: normal; }
+
+        /* Բաժնի վերնագիր */
+        .section-header { font-size: 14px; font-weight: 600; color: #111111; border-bottom: 1px solid #eaeaea; padding-bottom: 10px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Անալիզի կոնկրետ բլոկը */
+        .test-block { margin-bottom: 25px; }
+        .test-title { font-size: 14px; font-weight: 600; color: #222222; margin-bottom: 8px; }
+        .results-box { background-color: #ffffff; padding: 10px 0; border-top: 1px dashed #eaeaea; }
+        .results-text { font-size: 13px; color: #333333; white-space: pre-wrap; line-height: 1.6; }
+
+        /* Ստորագրություն և ծանուցում */
+        .footer-sign { margin-top: 40px; display: table; width: 100%; page-break-inside: avoid; }
+        .signature-line { display: table-cell; width: 45%; border-top: 1px solid #cccccc; padding-top: 10px; text-align: center; font-size: 12px; color: #333333; }
+        .empty-cell { display: table-cell; width: 55%; }
+        .disclaimer { font-size: 11px; color: #888888; text-align: justify; border-top: 1px solid #eaeaea; padding-top: 15px; margin-top: 40px; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+<div class="page-container">
+    <div class="header">
+        <div class="hospital-brand">
+            <div class="hospital-logo">AVELIA CLINIC</div>
+            <div class="hospital-subtitle">ԸՆԴՀԱՆՈՒՐ ԼԱԲՈՐԱՏՈՐ ՔԱՂՎԱԾՔ</div>
+        </div>
+        <div class="hospital-contact">
+            789 Healthcare Blvd, Medical District<br />
+            Հեռ: +1 (555) 900-4000<br />
+            Էլ. փոստ: lab@avelia.clinic
+        </div>
+    </div>
+
+    <div class="summary-card">
+        <div class="column">
+            <div class="info-row"><span class="label">Պացիենտ:</span> <strong th:text="${patient.firstName + ' ' + patient.lastName}"></strong></div>
+            <div class="info-row"><span class="label">Պացիենտի ID:</span> #<span th:text="${patient.id}"></span></div>
+        </div>
+        <div class="column">
+            <div class="info-row"><span class="label">Ամսաթիվ:</span> <span th:text="${#temporals.format(T(java.time.LocalDateTime).now(), 'dd MMM yyyy, HH:mm')}"></span></div>
+            <div class="info-row"><span class="label">Հետազոտությունների Քանակ:</span> <span th:text="${labTests.size()}"></span></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">Հետազոտության Արդյունքներ</div>
+
+        <div th:each="test : ${labTests}" class="test-block">
+            <div class="test-title" th:text="${test.testName}">Անալիզի Անուն</div>
+
+            <div class="results-box">
+                <div class="results-text" th:text="${test.results['Արդյունքներ']}">Արդյունքներ...</div>
+            </div>
+
+            <div style="font-size: 11px; color: #888888; margin-top: 5px; text-align: right;">
+                Կատարված է՝ <span th:text="${#temporals.format(test.completionDate, 'dd.MM.yyyy HH:mm')}"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-sign">
+        <div class="empty-cell"><div style="font-size: 11px; color: #888888;"><em>Կ.Տ.</em></div></div>
+        <div class="signature-line">
+            Լաբորատորիայի Վարիչ / Բժիշկ-Լաբորանտ<br />
+            <div style="font-size: 11px; font-weight: normal; margin-top: 5px; color: #666666;">Հաստատված է համակարգի կողմից</div>
+        </div>
+    </div>
+
+    <div class="disclaimer">
+        <strong>ՈՒՇԱԴՐՈՒԹՅՈՒՆ:</strong> Սույն փաստաթուղթը չի հանդիսանում վերջնական ախտորոշում: Արդյունքների ճշգրիտ մեկնաբանումը և բուժման նշանակումը պետք է իրականացվի Ձեր բուժող բժշկի կողմից:
+    </div>
+</div>
+
+</body>
+</html>

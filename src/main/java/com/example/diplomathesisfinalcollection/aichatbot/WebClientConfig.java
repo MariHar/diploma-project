@@ -1,4 +1,4 @@
-package com.example.diplomathesisfinalcollection.newaiclaude;
+package com.example.diplomathesisfinalcollection.aichatbot;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

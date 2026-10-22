@@ -1,52 +1,43 @@
-package com.example.medicalweb.department;
+package com.example.diplomathesisfinalcollection.department;
 
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import java.util.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-@Document(collection = "department")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Document(collection = "departments")
 public class Department {
     @Id
     private String id;
+    private String code;
     private String name;
     private String description;
-    private List<String> services = new ArrayList<>();
 
-    public Department() {
-    }
+    // List of images with status
+    @Builder.Default
+    private List<DepartmentImage> images = new ArrayList<>();
 
-    public Department(String name) {
-        this.name = name;
-    }
-    public Department(String id, String name, String description,String services) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.services = Arrays.asList(services);
-    }
+    private String location;
+    private String contactPhone;
+    private String iconSvg;
 
-    public String  getId() {
-        return id;
-    }
-    public void setId(String id) {
-        this.id = id;
-    }
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-    public String getDescription() {
-        return description;
-    }
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    public List<String> getServices() { return services; }
-    public void setServices(List<String> services) { this.services = services; }
+    @Builder.Default
+    private boolean active = true;
+    @Builder.Default
+    private boolean isPubliclyBookable = true;
 
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class DepartmentImage {
+        private String publicId;
+        private boolean active = true;
+
+        // This is not saved in DB, used only for the UI display
+        private transient String url;
+    }
 }

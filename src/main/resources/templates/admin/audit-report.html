@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Անվտանգության Զեկույց</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 p-8 font-sans">
+<div class="max-w-5xl mx-auto">
+
+    <!-- HEADER -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-slate-800">Անվտանգության Զեկույց</h1>
+        <a href="/admin/audit/list" class="text-indigo-600 hover:text-indigo-800 font-medium">&larr; Հետ դեպի ցանկ</a>
+    </div>
+
+    <!-- MAIN STATUS BADGE -->
+    <div th:if="${integrityStatus == 'VERIFIED'}" class="bg-green-100 border-l-4 border-green-500 p-6 rounded-r-lg shadow-sm mb-8 flex items-center">
+        <svg class="w-12 h-12 text-green-500 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <div>
+            <h2 class="text-2xl font-bold text-green-800">ԱՆՎՏԱՆԳ Է (VERIFIED)</h2>
+            <p class="text-green-700 mt-1">Բժշկական քարտի տվյալները համընկնում են բլոկչեյնում պահված կրիպտոգրաֆիկ հեշի հետ։ Փոփոխություններ չեն հայտնաբերվել։</p>
+        </div>
+    </div>
+
+    <div th:if="${integrityStatus == 'TAMPERED'}" class="bg-red-100 border-l-4 border-red-600 p-6 rounded-r-lg shadow-sm mb-8 flex items-center">
+        <svg class="w-12 h-12 text-red-600 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        <div>
+            <h2 class="text-2xl font-bold text-red-800">ՏԱԳՆԱՊ։ ՏՎՅԱԼՆԵՐԸ ՓՈՓՈԽՎԱԾ ԵՆ (TAMPERED)</h2>
+            <p class="text-red-700 mt-1">Անվտանգության համակարգը հայտնաբերել է, որ քարտի տվյալները փոփոխվել են բլոկչեյնում գրանցվելուց հետո առանց համակարգի թույլտվության։</p>
+        </div>
+    </div>
+
+    <div th:if="${integrityStatus == 'NO_BLOCKCHAIN_DATA'}" class="bg-yellow-100 border-l-4 border-yellow-500 p-6 rounded-r-lg shadow-sm mb-8 flex items-center">
+        <svg class="w-12 h-12 text-yellow-500 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <div>
+            <h2 class="text-2xl font-bold text-yellow-800">ՍՊԱՍՎՈՂ ՏՎՅԱԼՆԵՐ</h2>
+            <p class="text-yellow-700 mt-1">Այս բժշկական քարտի համար բլոկչեյն աուդիտ դեռ չի իրականացվել կամ քարտը դեռ սևագիր (DRAFT) կարգավիճակում է։</p>
+        </div>
+    </div>
+
+    <!-- BEFORE & AFTER DIFFERENCE TABLE (ONLY SHOWS IF TAMPERED) -->
+    <div th:if="${integrityStatus == 'TAMPERED'}" class="bg-white rounded-xl shadow-sm border border-red-300 mb-8 overflow-hidden">
+        <div class="bg-red-50 px-6 py-4 border-b border-red-200">
+            <h3 class="text-lg font-bold text-red-800">Հայտնաբերված Տվյալների Կեղծում (Before & After)</h3>
+            <p class="text-sm text-red-600 mt-1">Ստորև ներկայացված է բլոկչեյնում պահպանված բնօրինակի և բազայում առկա կեղծված տվյալների տարբերությունը:</p>
+        </div>
+
+        <table class="w-full text-left table-fixed">
+            <thead class="bg-slate-50 border-b border-slate-200">
+            <tr>
+                <th class="py-3 px-6 text-sm font-semibold text-slate-600 w-1/4">Դաշտի Անվանում</th>
+                <th class="py-3 px-6 text-sm font-semibold text-green-700 w-3/8 bg-green-50 border-l border-white">Բնօրինակ (Անվտանգ)</th>
+                <th class="py-3 px-6 text-sm font-semibold text-red-700 w-3/8 bg-red-50 border-l border-white">Փոփոխված (Կեղծված)</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+            <tr th:each="diff : ${detailedDiffs}">
+                <!-- Field Name -->
+                <td class="py-4 px-6 font-bold text-slate-700 bg-slate-50" th:text="${diff.fieldName}"></td>
+
+                <!-- Old Value (Safe from Blockchain) -->
+                <td class="py-4 px-6 text-slate-600 bg-green-50/40 break-words">
+                    <span th:if="${diff.oldValue == 'null'}"><em class="text-gray-400">Դատարկ</em></span>
+                    <span th:unless="${diff.oldValue == 'null'}" th:text="${diff.oldValue}"></span>
+                </td>
+
+                <!-- New Value (Hacked in DB) -->
+                <td class="py-4 px-6 font-medium text-red-600 bg-red-50/40 break-words line-through decoration-red-400 decoration-2">
+                    <span th:if="${diff.newValue == 'null'}"><em class="text-red-400">Դատարկվել է</em></span>
+                    <span th:unless="${diff.newValue == 'null'}" th:text="${diff.newValue}"></span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- GENERAL CLINICAL INFO (FULL RECORD) -->
+    <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200">
+        <h3 class="text-xl font-bold text-slate-800 mb-6 border-b pb-2">Ներկայիս Բժշկական Տվյալներ (Բազայից)</h3>
+
+        <!-- Basic Info -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-slate-50 p-4 rounded-lg">
+                <p class="text-xs text-slate-500 uppercase font-bold mb-1">Պացիենտ</p>
+                <p class="font-medium text-slate-800" th:text="${patientName}"></p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-lg">
+                <p class="text-xs text-slate-500 uppercase font-bold mb-1">Բուժող Բժիշկ</p>
+                <p class="font-medium text-slate-800" th:text="${doctorName}"></p>
+            </div>
+        </div>
+
+        <!-- Subjective & Anamnesis -->
+        <div class="mb-8">
+            <h4 class="text-sm font-bold text-slate-700 uppercase mb-3 text-indigo-600">Սուբյեկտիվ Զննում</h4>
+            <div class="space-y-4">
+                <div><span class="font-semibold text-slate-700">Գանգատներ:</span> <span class="text-slate-600" th:text="${record.complaints ?: '---'}"></span></div>
+                <div><span class="font-semibold text-slate-700">Ախտանիշներ:</span> <span class="text-slate-600" th:text="${record.symptoms ?: '---'}"></span></div>
+                <div><span class="font-semibold text-slate-700">Հիվանդության Պատմություն (Morbi):</span> <span class="text-slate-600" th:text="${record.anamnesisMorbi ?: '---'}"></span></div>
+                <div><span class="font-semibold text-slate-700">Կյանքի Պատմություն (Vitae):</span> <span class="text-slate-600" th:text="${record.anamnesisVitae ?: '---'}"></span></div>
+            </div>
+        </div>
+
+        <!-- Objective Exam -->
+        <div class="mb-8">
+            <h4 class="text-sm font-bold text-slate-700 uppercase mb-3 text-indigo-600">Օբյեկտիվ Զննում</h4>
+            <div class="space-y-4">
+                <div><span class="font-semibold text-slate-700">Ընդհանուր վիճակ:</span> <span class="text-slate-600" th:text="${record.objectiveExamination ?: '---'}"></span></div>
+                <div><span class="font-semibold text-slate-700">Դիտում:</span> <span class="text-slate-600" th:text="${record.inspection ?: '---'}"></span></div>
+                <div><span class="font-semibold text-slate-700">Շոշափում:</span> <span class="text-slate-600" th:text="${record.palpation ?: '---'}"></span></div>
+                <div><span class="font-semibold text-slate-700">Թակոց:</span> <span class="text-slate-600" th:text="${record.percussion ?: '---'}"></span></div>
+                <div><span class="font-semibold text-slate-700">Լսում:</span> <span class="text-slate-600" th:text="${record.auscultation ?: '---'}"></span></div>
+            </div>
+        </div>
+
+        <!-- Assessment & Plan -->
+        <div class="mb-4 bg-indigo-50 p-6 rounded-lg border border-indigo-100">
+            <h4 class="text-sm font-bold text-slate-700 uppercase mb-3 text-indigo-800">Ախտորոշում և Բուժում</h4>
+            <div class="space-y-4">
+                <div><span class="font-bold text-slate-800">Ախտորոշում:</span> <span class="text-slate-700" th:text="${record.diagnosis ?: '---'}"></span></div>
+                <div><span class="font-bold text-slate-800">Նշանակված Բուժում:</span> <span class="text-slate-700" th:text="${record.treatment ?: '---'}"></span></div>
+                <div><span class="font-bold text-slate-800">Հակացուցումներ:</span> <span class="text-slate-700" th:text="${record.contraindications ?: '---'}"></span></div>
+                <div><span class="font-bold text-slate-800">Լրացուցիչ Նշումներ:</span> <span class="text-slate-700" th:text="${record.notes ?: '---'}"></span></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

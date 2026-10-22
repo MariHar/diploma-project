@@ -1,4 +1,4 @@
-package com.example.diplomathesisfinalcollection.newaiclaude;
+package com.example.diplomathesisfinalcollection.aichatbot;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,7 +25,7 @@ public class Conversation {
     @Indexed
     private String patientId;
 
-    private String title;          // auto-generated from first message
+    private String title;
 
     @Builder.Default
     private List<ChatMessage> messages = new ArrayList<>();
