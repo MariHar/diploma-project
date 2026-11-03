@@ -1,7 +1,6 @@
 package com.example.diplomathesisfinalcollection.aichatbot;
 
 
-//import jakarta.validation.Valid;
 import com.example.diplomathesisfinalcollection.user.User;
 import com.example.diplomathesisfinalcollection.user.UserRepository;
 import jakarta.validation.Valid;
@@ -17,7 +16,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")   // tighten in production
+@CrossOrigin(origins = "*")   // allows all origins; restrict in production
 public class ChatController {
 
 

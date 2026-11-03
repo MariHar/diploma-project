@@ -1,0 +1,5 @@
+{
+  "src/main/java/com/example/diplomathesisfinalcollection/DiplomaThesisFinalCollectionApplication.java": "unchanged",
+  "src/main/java/com/example/diplomathesisfinalcollection/aichatbot/ChatController.java": "cleaned",
+  "src/main/java/com/example/diplomathesisfinalcollection/aichatbot/ChatMessage.java": "unchanged"
+}
