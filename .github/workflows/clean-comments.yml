@@ -43,7 +43,7 @@ jobs:
         if: steps.openpr.outputs.count == '0'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          BATCH_SIZE: '3'
+          BATCH_SIZE: '12'
         run: python tools/clean_comments.py
 
       - name: Check that the project still compiles
