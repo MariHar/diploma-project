@@ -100,7 +100,7 @@ def ask_model(client, source):
 
 
 def main():
-    client = anthropic.Anthropic()
+    client = anthropic.Anthropic(max_retries=5)
 
     done = json.loads(PROGRESS.read_text(encoding='utf-8')) if PROGRESS.exists() else {}
     files = sorted(pathlib.Path('src').rglob('*.java'))
