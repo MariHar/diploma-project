@@ -16,7 +16,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")   // allows all origins; restrict in production
+@CrossOrigin(origins = "*")   
 public class ChatController {
 
 
