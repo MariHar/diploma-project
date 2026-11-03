@@ -8,7 +8,7 @@ public class ChatRequest {
 
     @NotBlank(message = "Patient ID is required")
 
-    private String conversationId;   // Required by @NotBlank, so null is rejected
+    private String conversationId;   
 
     @NotBlank(message = "Message cannot be empty")
     private String message;
