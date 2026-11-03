@@ -1,11 +1,5 @@
 package com.example.diplomathesisfinalcollection.aichatbot;
 
-
-//import com.medical.chat.model.Conversation;
-
-//import com.example.aiapi.newaiclaude.Conversation;
-//import org.springframework.data.mongodb.repository.MongoRepository;
-
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;

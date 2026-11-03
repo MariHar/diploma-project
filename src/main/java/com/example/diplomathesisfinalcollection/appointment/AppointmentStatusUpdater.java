@@ -29,7 +29,7 @@ public class AppointmentStatusUpdater {
     @Autowired
     private EmailService emailService;
 
-    // Ամեն օր կեսգիշերին (00:00) համակարգը թարմացնում է բոլոր այցերը
+    // Ամեն օր կեսգիշերին (00:00) թարմացնում է CONFIRMED այցերը՝ դարձնելով դրանք PENDING
     @Scheduled(cron = "0 0 0 * * *")
     public void updateConfirmedToPending() {
         LocalDate today = LocalDate.now();
@@ -51,9 +51,9 @@ public class AppointmentStatusUpdater {
     public void sendUnpaidInvoiceReminders() {
         System.out.println("🔔 Ժամը 12:00 է. Սկսվում է չվճարված հաշիվների ստուգումը...");
 
-        // Գտնում ենք բոլոր չվճարված հաշիվները
+        // Գտնում ենք չվճարված հաշիվները
         List<Invoice> unpaidInvoices = invoiceRepository.findByPatientIdAndStatus(null, InvoiceStatus.PENDING_PAYMENT);
-        // Նշում. Եթե վերևի մեթոդը չկա, կարող ես օգտագործել findAll() և ֆիլտրել ըստ STATUS-ի
+        // Եթե հարցումը դատարկ արդյունք է տալիս, ֆիլտրում ենք բոլոր հաշիվները ըստ կարգավիճակի
         if (unpaidInvoices == null || unpaidInvoices.isEmpty()) {
             unpaidInvoices = invoiceRepository.findAll().stream()
                     .filter(inv -> inv.getStatus() == InvoiceStatus.PENDING_PAYMENT)
@@ -65,7 +65,7 @@ public class AppointmentStatusUpdater {
             User patient = userRepository.findById(inv.getPatientId()).orElse(null);
 
             if (patient != null && patient.getEmail() != null && !patient.getEmail().isEmpty()) {
-                // Կանչում ենք մեյլ ուղարկող փոքրիկ ֆունկցիան
+                // Ուղարկում ենք վճարման հիշեցում էլ. փոստով
                 emailService.sendPaymentReminderSimpleEmail(
                         patient.getEmail(),
                         patient.getFirstName(),

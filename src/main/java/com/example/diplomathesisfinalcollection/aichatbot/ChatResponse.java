@@ -1,8 +1,5 @@
 package com.example.diplomathesisfinalcollection.aichatbot;
 
-//import com.medical.chat.model.ChatMessage;
-
-//import com.example.aiapi.newaiclaude.ChatMessage;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
