@@ -1,5 +1,17 @@
 {
   "src/main/java/com/example/diplomathesisfinalcollection/DiplomaThesisFinalCollectionApplication.java": "unchanged",
   "src/main/java/com/example/diplomathesisfinalcollection/aichatbot/ChatController.java": "cleaned",
-  "src/main/java/com/example/diplomathesisfinalcollection/aichatbot/ChatMessage.java": "unchanged"
+  "src/main/java/com/example/diplomathesisfinalcollection/aichatbot/ChatMessage.java": "unchanged",
+  "src/main/java/com/example/diplomathesisfinalcollection/aichatbot/ChatRequest.java": "cleaned",
+  "src/main/java/com/example/diplomathesisfinalcollection/aichatbot/ChatResponse.java": "cleaned",
+  "src/main/java/com/example/diplomathesisfinalcollection/aichatbot/Conversation.java": "unchanged",
+  "src/main/java/com/example/diplomathesisfinalcollection/aichatbot/ConversationRepository.java": "cleaned",
+  "src/main/java/com/example/diplomathesisfinalcollection/aichatbot/GeminiAiService.java": "cleaned",
+  "src/main/java/com/example/diplomathesisfinalcollection/aichatbot/GroqAiService.java": "cleaned",
+  "src/main/java/com/example/diplomathesisfinalcollection/aichatbot/MedicalChatService.java": "unchanged",
+  "src/main/java/com/example/diplomathesisfinalcollection/aichatbot/WebClientConfig.java": "unchanged",
+  "src/main/java/com/example/diplomathesisfinalcollection/appointment/Appointment.java": "unchanged",
+  "src/main/java/com/example/diplomathesisfinalcollection/appointment/AppointmentReminderService.java": "cleaned",
+  "src/main/java/com/example/diplomathesisfinalcollection/appointment/AppointmentRepository.java": "cleaned",
+  "src/main/java/com/example/diplomathesisfinalcollection/appointment/AppointmentStatusUpdater.java": "cleaned"
 }

@@ -18,7 +18,7 @@ import java.util.Map;
 
 @Service
 @Slf4j
-public class GeminiAiService { //  OpenAiService
+public class GeminiAiService { // Requests are sent to the OpenAI API, not Gemini.
 
     @Value("${ai.api.key}")
     private String apiKey;
