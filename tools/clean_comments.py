@@ -3,10 +3,10 @@ import json
 import os
 import pathlib
 import re
-from openai import OpenAI
 
-# NVIDIA endpoints and models
-MODEL = 'nvidia/llama-3.1-nemotron-70b-instruct'
+import anthropic
+
+MODEL = 'claude-haiku-5-5'
 BATCH_SIZE = int(os.environ.get('BATCH_SIZE', '3'))
 PROGRESS = pathlib.Path('.agent/progress.json')
 REPORT = pathlib.Path('AGENT_REPORT.md')
@@ -88,26 +88,19 @@ def parse_reply(text):
 
 
 def ask_model(client, source):
-    response = client.chat.completions.create(
+    with client.messages.stream(
         model=MODEL,
-        messages=[
-            {'role': 'system', 'content': RULES},
-            {'role': 'user', 'content': source}
-        ],
-        temperature=0.2,
-        max_tokens=8192
-    )
-    text = response.choices[0].message.content or ''
-    finish_reason = response.choices[0].finish_reason
-    stop_reason = 'end_turn' if finish_reason in ('stop', None) else finish_reason
-    return text, stop_reason
+        max_tokens=16000,
+        system=RULES,
+        messages=[{'role': 'user', 'content': source}],
+    ) as stream:
+        message = stream.get_final_message()
+    text = ''.join(b.text for b in message.content if b.type == 'text')
+    return text, message.stop_reason
 
 
 def main():
-    client = OpenAI(
-        base_url="https://integrate.api.nvidia.com/v1",
-        api_key=os.environ.get("NVIDIA_API_KEY")
-    )
+    client = anthropic.Anthropic()
 
     done = json.loads(PROGRESS.read_text(encoding='utf-8')) if PROGRESS.exists() else {}
     files = sorted(pathlib.Path('src').rglob('*.java'))
