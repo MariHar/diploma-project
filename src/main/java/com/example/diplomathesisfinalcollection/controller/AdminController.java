@@ -40,7 +40,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import jakarta.servlet.http.HttpServletRequest; // Համոզվիր որ այս import-ը կա վերևում
+import jakarta.servlet.http.HttpServletRequest; 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -51,8 +51,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption; // Ավելացրու import-ների մեջ
-import org.springframework.web.servlet.mvc.support.RedirectAttributes; // Ավելացրու վերևում
+import java.nio.file.StandardCopyOption; 
+import org.springframework.web.servlet.mvc.support.RedirectAttributes; 
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
@@ -331,7 +331,7 @@ public class AdminController {
 
         List<Appointment> allAppointments = appointmentRepository.findAll();
 
-        // 🔴 1. ՖԻԼՏՐՈՒՄ ԵՆՔ ԸՍՏ ԱՄՍԱԹՎԻ
+      
         if (startDate != null && !startDate.isEmpty()) {
             LocalDateTime start = LocalDate.parse(startDate).atStartOfDay();
             allAppointments = allAppointments.stream()
@@ -345,12 +345,11 @@ public class AdminController {
                     .collect(Collectors.toList());
         }
 
-        // 2. Հաշվում ենք Ստատուսները (արդեն ֆիլտրված ցուցակից)
+       
         long pendingCount = allAppointments.stream().filter(a -> "PENDING".equals(a.getStatus())).count();
         long completedCount = allAppointments.stream().filter(a -> "COMPLETED".equals(a.getStatus())).count();
         long cancelledCount = allAppointments.stream().filter(a -> "CANCELLED".equals(a.getStatus())).count();
 
-        // 3. Հաշվում ենք Բաժանմունքները (արդեն ֆիլտրված ցուցակից)
         Map<String, Long> deptCounts = new HashMap<>();
         for (Appointment app : allAppointments) {
             if (!"CANCELLED".equals(app.getStatus()) && app.getServiceId() != null) {
@@ -365,26 +364,26 @@ public class AdminController {
             }
         }
 
-        // 4. ՓՈԽԱՆՑՈՒՄ ԵՆՔ MODEL-ԻՆ
+
         model.addAttribute("pendingCount", pendingCount);
         model.addAttribute("completedCount", completedCount);
         model.addAttribute("cancelledCount", cancelledCount);
         model.addAttribute("deptNames", deptCounts.keySet());
         model.addAttribute("deptValues", deptCounts.values());
 
-        // 🔴 Որպեսզի HTML-ի մեջ ամսաթվերը պահպանվեն ընտրելուց հետո
+     
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
 
         return "admin/statistics";
     }
 
-    // 1. Ցուցադրել բոլոր հարցումները
+
     @GetMapping("/edit-requests")
     public String viewEditRequests(Model model) {
         List<EditRequest> allRequests = editRequestRepository.findAllByOrderByRequestDateDesc();
 
-        // Հաշվում ենք բժիշկների APPROVED (հաստատված) խմբագրումների քանակը
+      
         Map<String, Long> doctorEditCounts = new HashMap<>();
         for (EditRequest req : allRequests) {
             if (!doctorEditCounts.containsKey(req.getDoctorId())) {
@@ -403,20 +402,17 @@ public class AdminController {
 
         model.addAttribute("activeRequests", activeRequests);
         model.addAttribute("history", history);
-        model.addAttribute("doctorEditCounts", doctorEditCounts); // 🔴 ՆՈՐ: Ուղարկում ենք թվերը
-
+        model.addAttribute("doctorEditCounts", doctorEditCounts); 
         return "admin/edit-requests";
     }
 
-    // 2. Հաստատել հարցումը (Բացել կողպեքը)
-    // 1. ՀԱՍՏԱՏՈՒՄ
+
     @PostMapping("/approve-edit/{requestId}")
     public String approveEdit(@PathVariable String requestId) {
         EditRequest req = editRequestRepository.findById(requestId).orElse(null);
         if (req != null) {
             req.setStatus("APPROVED");
             req.setApprovalDate(LocalDateTime.now());
-            // 🔴 Սահմանում ենք ավտոմատ փակման ժամը (օրինակ՝ հաստատումից 2 ժամ անց)
             req.setExpiryDate(LocalDateTime.now().plusHours(2));
             editRequestRepository.save(req);
 
@@ -429,7 +425,6 @@ public class AdminController {
         return "redirect:/admin/edit-requests";
     }
 
-    // 2. ՄԵՐԺՈՒՄ
     @PostMapping("/reject-edit/{requestId}")
     public String rejectEdit(@PathVariable String requestId, @RequestParam String adminComment) {
         EditRequest req = editRequestRepository.findById(requestId).orElse(null);
@@ -440,7 +435,7 @@ public class AdminController {
 
             MedicalRecord record = medicalRecordRepository.findById(req.getRecordId()).orElse(null);
             if (record != null) {
-                record.setEditRequestReason(null); // Մաքրում ենք հարցումը
+                record.setEditRequestReason(null); 
                 medicalRecordRepository.save(record);
             }
         }
