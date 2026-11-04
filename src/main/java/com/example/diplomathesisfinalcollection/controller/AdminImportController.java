@@ -34,7 +34,7 @@ public class AdminImportController {
         return "redirect:/admin/dashboard";
     }
 
-    @PostMapping("/departments") // Specific endpoint for departments
+    @PostMapping("/departments") // Imports department data
     public String importDepartments(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
         if (file.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMsg", "Please select an Excel file.");
@@ -42,13 +42,13 @@ public class AdminImportController {
         }
 
         try {
-            excelImportService.importData(file); // Ensure your service handles Department logic
+            excelImportService.importData(file); // The service must handle department import logic
             redirectAttributes.addFlashAttribute("successMsg", "Data imported successfully!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMsg", "Import failed: " + e.getMessage());
         }
 
-        return "redirect:/admin/departments"; // Go back to the list
+        return "redirect:/admin/departments";
     }
 
     @PostMapping("/bulk")
@@ -66,7 +66,7 @@ public class AdminImportController {
             redirectAttributes.addFlashAttribute("errorMsg", "Import Error: " + e.getMessage());
         }
 
-        // Redirecting back to departments so they can see the new data
+        // Redirect to departments to show the imported data
         return "redirect:/admin/departments";
     }
 }

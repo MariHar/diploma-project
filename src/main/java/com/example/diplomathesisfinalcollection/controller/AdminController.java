@@ -40,7 +40,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import jakarta.servlet.http.HttpServletRequest; // Համոզվիր որ այս import-ը կա վերևում
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -51,8 +51,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption; // Ավելացրու import-ների մեջ
-import org.springframework.web.servlet.mvc.support.RedirectAttributes; // Ավելացրու վերևում
+import java.nio.file.StandardCopyOption;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
@@ -94,6 +94,7 @@ public class AdminController {
                 @RequestParam(required = false) String searchQuery,
                 @RequestParam(required = false) String status) {
 
+            // Filtering is done in memory after loading all appointments
             List<Appointment> appointments = appointmentRepository.findAll();
 
             if (doctorId != null && !doctorId.isEmpty()) {
@@ -133,7 +134,7 @@ public class AdminController {
                 }
 
                  String dName = "Անհայտ Բժիշկ";
-                String rawDoctorId = app.getDoctorId(); // Here is your Doctor ID
+                String rawDoctorId = app.getDoctorId();
 
                 if (rawDoctorId != null) {
                      dName = doctorRepository.findById(rawDoctorId)
@@ -245,6 +246,7 @@ public class AdminController {
     public Map<String, Long> getMonthlyStats() {
         List<Appointment> all = appointmentRepository.findAll();
 
+        // Groups appointments by month (yyyy-MM)
         return all.stream()
                 .filter(a -> a.getDate() != null)
                 .collect(Collectors.groupingBy(
@@ -331,7 +333,7 @@ public class AdminController {
 
         List<Appointment> allAppointments = appointmentRepository.findAll();
 
-        // 🔴 1. ՖԻԼՏՐՈՒՄ ԵՆՔ ԸՍՏ ԱՄՍԱԹՎԻ
+        // Filter by the selected date range
         if (startDate != null && !startDate.isEmpty()) {
             LocalDateTime start = LocalDate.parse(startDate).atStartOfDay();
             allAppointments = allAppointments.stream()
@@ -345,12 +347,12 @@ public class AdminController {
                     .collect(Collectors.toList());
         }
 
-        // 2. Հաշվում ենք Ստատուսները (արդեն ֆիլտրված ցուցակից)
+        // Count statuses from the filtered list
         long pendingCount = allAppointments.stream().filter(a -> "PENDING".equals(a.getStatus())).count();
         long completedCount = allAppointments.stream().filter(a -> "COMPLETED".equals(a.getStatus())).count();
         long cancelledCount = allAppointments.stream().filter(a -> "CANCELLED".equals(a.getStatus())).count();
 
-        // 3. Հաշվում ենք Բաժանմունքները (արդեն ֆիլտրված ցուցակից)
+        // Count non-cancelled appointments per department from the filtered list
         Map<String, Long> deptCounts = new HashMap<>();
         for (Appointment app : allAppointments) {
             if (!"CANCELLED".equals(app.getStatus()) && app.getServiceId() != null) {
@@ -365,26 +367,26 @@ public class AdminController {
             }
         }
 
-        // 4. ՓՈԽԱՆՑՈՒՄ ԵՆՔ MODEL-ԻՆ
+        // Pass the results to the view
         model.addAttribute("pendingCount", pendingCount);
         model.addAttribute("completedCount", completedCount);
         model.addAttribute("cancelledCount", cancelledCount);
         model.addAttribute("deptNames", deptCounts.keySet());
         model.addAttribute("deptValues", deptCounts.values());
 
-        // 🔴 Որպեսզի HTML-ի մեջ ամսաթվերը պահպանվեն ընտրելուց հետո
+        // Keep the selected dates in the form after submit
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
 
         return "admin/statistics";
     }
 
-    // 1. Ցուցադրել բոլոր հարցումները
+    // Show all edit requests
     @GetMapping("/edit-requests")
     public String viewEditRequests(Model model) {
         List<EditRequest> allRequests = editRequestRepository.findAllByOrderByRequestDateDesc();
 
-        // Հաշվում ենք բժիշկների APPROVED (հաստատված) խմբագրումների քանակը
+        // Count APPROVED edits per doctor, computed once per doctor
         Map<String, Long> doctorEditCounts = new HashMap<>();
         for (EditRequest req : allRequests) {
             if (!doctorEditCounts.containsKey(req.getDoctorId())) {
@@ -403,20 +405,19 @@ public class AdminController {
 
         model.addAttribute("activeRequests", activeRequests);
         model.addAttribute("history", history);
-        model.addAttribute("doctorEditCounts", doctorEditCounts); // 🔴 ՆՈՐ: Ուղարկում ենք թվերը
+        model.addAttribute("doctorEditCounts", doctorEditCounts);
 
         return "admin/edit-requests";
     }
 
-    // 2. Հաստատել հարցումը (Բացել կողպեքը)
-    // 1. ՀԱՍՏԱՏՈՒՄ
+    // Approve an edit request and unlock the medical record
     @PostMapping("/approve-edit/{requestId}")
     public String approveEdit(@PathVariable String requestId) {
         EditRequest req = editRequestRepository.findById(requestId).orElse(null);
         if (req != null) {
             req.setStatus("APPROVED");
             req.setApprovalDate(LocalDateTime.now());
-            // 🔴 Սահմանում ենք ավտոմատ փակման ժամը (օրինակ՝ հաստատումից 2 ժամ անց)
+            // Automatic expiry: the approval lasts 2 hours
             req.setExpiryDate(LocalDateTime.now().plusHours(2));
             editRequestRepository.save(req);
 
@@ -429,7 +430,7 @@ public class AdminController {
         return "redirect:/admin/edit-requests";
     }
 
-    // 2. ՄԵՐԺՈՒՄ
+    // Reject an edit request and clear the pending reason on the record
     @PostMapping("/reject-edit/{requestId}")
     public String rejectEdit(@PathVariable String requestId, @RequestParam String adminComment) {
         EditRequest req = editRequestRepository.findById(requestId).orElse(null);
@@ -440,27 +441,20 @@ public class AdminController {
 
             MedicalRecord record = medicalRecordRepository.findById(req.getRecordId()).orElse(null);
             if (record != null) {
-                record.setEditRequestReason(null); // Մաքրում ենք հարցումը
+                record.setEditRequestReason(null);
                 medicalRecordRepository.save(record);
             }
         }
         return "redirect:/admin/edit-requests";
     }
 
-//    @GetMapping("/api/test-billing")
-//    @ResponseBody
-//    public String testBilling() {
-//        billingService.processCompletedProceduresAndAddToInvoice();
-//        return "Billing process triggered manually. Check your console logs!";
-//    }
-
     @GetMapping("/financials")
     public String showFinancials(Model model) {
-        // Get all PAID invoices (Actual Income)
+        // All PAID invoices (actual income)
         List<Invoice> paidInvoices = invoiceRepository.findByStatus(InvoiceStatus.PAID);
         double totalRevenue = paidInvoices.stream().mapToDouble(Invoice::getTotalAmount).sum();
 
-        // Get all PENDING invoices (Expected Future Income)
+        // All PENDING_PAYMENT invoices (expected future income)
         List<Invoice> pendingInvoices = invoiceRepository.findByStatus(InvoiceStatus.PENDING_PAYMENT);
         double totalPending = pendingInvoices.stream().mapToDouble(Invoice::getTotalAmount).sum();
 
@@ -484,14 +478,14 @@ public class AdminController {
         return "admin/indicators-setup";
     }
 
-    // 2. ՊԱՀՊԱՆԵԼ ՑՈՒՑԱՆԻՇԸ
+    // Save the indicator
     @PostMapping("/indicators/save")
     public String saveIndicator(@ModelAttribute Indicator indicator, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
         if (indicator.getId() != null && indicator.getId().trim().isEmpty()) {
             indicator.setId(null);
         }
 
-        // 🔴 ՈՒՂՂՈՒՄ 2. Մաքրում ենք բանալին ավելորդ պրոբելներից
+        // Normalize the key: lowercase and no whitespace
         if (indicator.getIndicatorKey() != null) {
             indicator.setIndicatorKey(indicator.getIndicatorKey().trim().toLowerCase().replaceAll("\\s+", ""));
         }
@@ -501,12 +495,12 @@ public class AdminController {
         return "redirect:/admin/indicators";
     }
 
-    // 3. ԱՊԱԱԿՏԻՎԱՑՆԵԼ ԿԱՄ ԱԿՏԻՎԱՑՆԵԼ ՑՈՒՑԱՆԻՇԸ (Soft Delete)
+    // Activate or deactivate the indicator (soft delete)
     @PostMapping("/indicators/toggle-status/{id}")
     public String toggleIndicatorStatus(@PathVariable String id, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
         Indicator indicator = indicatorRepository.findById(id).orElse(null);
         if (indicator != null) {
-            // Եթե ակտիվ էր՝ սարքում ենք ոչ ակտիվ, և հակառակը
+            // Flip the current state
             indicator.setActive(!indicator.isActive());
             indicatorRepository.save(indicator);
 
@@ -524,7 +518,7 @@ public class AdminController {
         }
 
         try {
-            // 🔴 ԿԱՆՉՈՒՄ ԵՆՔ ՔՈ ՍԵՐՎԻՍԻ ՄԵԹՈԴԸ
+            // Delegate the import to the service
             int importedCount = excelImportService.importIndicators(file);
 
             redirectAttributes.addFlashAttribute("successMsg", "Հաջողությամբ ներմուծվեց/թարմացվեց " + importedCount + " լաբորատոր ցուցանիշ օրիգինալ Excel ֆայլից:");

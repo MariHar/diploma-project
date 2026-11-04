@@ -61,7 +61,7 @@ public class AdminDoctorController {
                 // Ստուգում ենք մուտքի կարգավիճակը
                 loginStatuses.put(doc.getId(), !user.isForcePasswordChange());
 
-                // 🔴 ԱՀԱ ԽՆԴՐԻ ԼՈՒԾՈՒՄԸ. Եթե մեյլը դատարկ է, վերցնում ենք User-ից
+                // Եթե մեյլը դատարկ է, վերցնում ենք User-ից
                 if (doc.getEmail() == null || doc.getEmail().isEmpty()) {
                     doc.setEmail(user.getEmail());
                 }
@@ -89,7 +89,7 @@ public class AdminDoctorController {
             Path uploadPath = Paths.get("uploads/doctors").toAbsolutePath().normalize();
 
             if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath); // Ստեղծում է թղթապանակը, եթե չկա
+                Files.createDirectories(uploadPath);
             }
 
             // Անունը սարքում ենք յուրահատուկ՝ բացատները ջնջելով
@@ -109,7 +109,7 @@ public class AdminDoctorController {
 
     @PostMapping("/save")
     public String saveDoctor(@ModelAttribute DoctorRegistrationDTO dto, RedirectAttributes redirectAttributes) {
-        // Գեներացնում ենք 6-նիշանոց պատահական կոդ (նախկին UUID-ի փոխարեն)
+        // Գեներացնում ենք 8-նիշանոց պատահական կոդ (նախկին UUID-ի փոխարեն)
         if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
             redirectAttributes.addFlashAttribute("errorMsg", "ՍԽԱԼ. «" + dto.getEmail() + "» հասցեով արդեն կա գրանցված օգտատեր: Խնդրում ենք օգտագործել այլ մեյլ:");
             return "redirect:/admin/doctors";
@@ -119,43 +119,40 @@ public class AdminDoctorController {
         String role = spec.contains("լաբ") || spec.contains("lab") ? "ROLE_LAB_WORKER" : "ROLE_DOCTOR";
         String salutation = role.equals("ROLE_LAB_WORKER") ? "" : "Dr. ";
 
-        // User-ի ստեղծում
         User newDoctorUser = User.builder()
                 .email(dto.getEmail())
                 .passwordHash(passwordEncoder.encode(tempPassword))
                 .firstName(dto.getFirstName())
                 .lastName(dto.getLastName())
-                .phone(dto.getPhone()) // Ավելացրեցինք հեռախոսահամարը
+                .phone(dto.getPhone())
                 .role(role)
                 .enabled(true)
                 .forcePasswordChange(true)
                 .build();
         User savedUser = userRepository.save(newDoctorUser);
 
-        // Պահպանում ենք նկարը
         String photoUrl = saveProfilePhoto(dto.getPhotoFile());
 
-        // Doctor-ի ստեղծում բոլոր դաշտերով
         Doctor newDoctorProfile = Doctor.builder()
                 .userId(savedUser.getId())
                 .departmentId(dto.getDepartmentId())
                 .firstName(dto.getFirstName())
                 .lastName(dto.getLastName())
-                .patronymic(dto.getPatronymic()) // Հայրանուն
+                .patronymic(dto.getPatronymic())
                 .email(dto.getEmail())
-                .description(dto.getDescription()) // Նկարագրություն
-                .photoUrl(photoUrl) // Նկարի URL
-                .phone(dto.getPhone()) // Հեռախոսահամար
-                .serviceIds(dto.getServiceIds()) // Ծառայությունների բազայից ընտրված ցանկ
+                .description(dto.getDescription())
+                .photoUrl(photoUrl)
+                .phone(dto.getPhone())
+                .serviceIds(dto.getServiceIds()) // Բազայից ընտրված ծառայությունների ցանկ
                 .specialization(dto.getSpecialization())
                 .experienceYears(dto.getExperienceYears())
-                .education(dto.getEducation())   // ADD THIS
+                .education(dto.getEducation())
                 .languagesSpoken(dto.getLanguagesSpoken())
                 .active(true)
                 .build();
         doctorRepository.save(newDoctorProfile);
 
-        // Ուղարկում ենք 6-նիշանոց կոդը
+        // Ուղարկում ենք 8-նիշանոց ժամանակավոր կոդը
         String subject = "Բարի գալուստ Համակարգ - Ձեր մուտքային տվյալները";
         String body = "Բարև " + salutation + dto.getLastName() + ",\n\n" +
                 "Ձեր հաշիվը հաջողությամբ ստեղծվել է:\n\n" +
@@ -195,13 +192,13 @@ public class AdminDoctorController {
         model.addAttribute("doctor", doctor);
         model.addAttribute("departments", departmentRepository.findByActiveTrueOrderByNameAsc());
 
-        // 🔴 ԱՎԵԼԱՑՐԵԼ ԵՆՔ ՍԱ, որպեսզի խմբագրելիս ծառայությունները երևան
+        // Ավելացված է, որպեսզի խմբագրելիս ծառայությունները երևան
         model.addAttribute("services", clinicServiceRepository.findAll());
 
         return "admin/doctor-edit";
     }
 
-    // 2. Պահպանում է փոփոխված տվյալները
+    // Պահպանում է բժշկի թարմացված տվյալները
     @PostMapping("/update/{id}")
     public String updateDoctor(@PathVariable String id, @ModelAttribute DoctorRegistrationDTO updatedInfo, RedirectAttributes redirectAttributes) {
         Doctor doct = doctorRepository.findById(id).orElse(null);
@@ -216,7 +213,7 @@ public class AdminDoctorController {
         doct.setDescription(updatedInfo.getDescription());
         doct.setPhone(updatedInfo.getPhone());
         doct.setServiceIds(updatedInfo.getServiceIds());
-        doct.setEducation(updatedInfo.getEducation()); // ADD THIS
+        doct.setEducation(updatedInfo.getEducation());
         doct.setLanguagesSpoken(updatedInfo.getLanguagesSpoken());
 
         if (updatedInfo.getPhotoFile() != null && !updatedInfo.getPhotoFile().isEmpty()) {
@@ -251,7 +248,7 @@ public class AdminDoctorController {
                         "Ձեր ՆՈՐ մուտքի 8-նիշանոց ժամանակավոր գաղտնաբառը: " + newVerificationCode + "\n\n" +
                         "Խնդրում ենք մուտք գործել և սահմանել նոր անձնական գաղտնաբառ:";
 
-                // 🔴 Ուղարկում ենք և ստուգում արդյունքը
+                // Ուղարկում ենք և ստուգում արդյունքը
                 boolean isSent = emailService.sendSimpleMessage(updatedInfo.getEmail(), "Կարևոր. Մուտքային տվյալների թարմացում", body);
 
                 if (isSent) {

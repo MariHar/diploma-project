@@ -34,5 +34,4 @@ public class BlockChainAudit {
         this.timestamp = LocalDateTime.now();
     }
 
-    // Ավելացրու Getter-ներ և Setter-ներ
 }
