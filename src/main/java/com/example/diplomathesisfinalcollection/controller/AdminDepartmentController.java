@@ -20,7 +20,7 @@ public class AdminDepartmentController {
     private DepartmentRepository departmentRepository;
     @Autowired private CloudinarySecurityService cloudinaryService;
 
-    // 1. LIST PAGE (Fixed the null error)
+    // 1. LIST PAGE
     @GetMapping
     public String manageDepartments(Model model) {
         List<Department> departments = departmentRepository.findAll();
@@ -29,18 +29,18 @@ public class AdminDepartmentController {
             d.getImages().forEach(img -> img.setUrl(cloudinaryService.generateSignedUrl(img.getPublicId())));
         }
         model.addAttribute("departments", departments);
-        model.addAttribute("newDepartment", new Department()); // Matches th:object="${newDepartment}"
+        model.addAttribute("newDepartment", new Department()); // Bound to th:object="${newDepartment}" in the template
         return "admin/departments";
     }
 
-    // 2. SAVE NEW (With Multi-Upload)
+    // 2. SAVE NEW (supports multiple image uploads)
     @PostMapping("/save")
     public String saveDepartment(@ModelAttribute Department department,
                                  @RequestParam("imageFiles") MultipartFile[] files) throws IOException {
         department.setActive(true);
         for (MultipartFile file : files) {
             if (!file.isEmpty()) {
-                String publicId = cloudinaryService.uploadSecureFile(file); // Or create a specific method in service
+                String publicId = cloudinaryService.uploadSecureFile(file);
                 department.getImages().add(new Department.DepartmentImage(publicId, true, null));
             }
         }
@@ -72,7 +72,7 @@ public class AdminDepartmentController {
         return "redirect:/admin/departments";
     }
 
-    // 4. UPDATE (Add new photos)
+    // 4. UPDATE (appends new photos)
     @PostMapping("/update/{id}")
     public String updateDepartment(@PathVariable String id,
                                    @ModelAttribute Department updatedDept,

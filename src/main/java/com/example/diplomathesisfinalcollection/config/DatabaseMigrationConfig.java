@@ -18,13 +18,11 @@ public class DatabaseMigrationConfig {
         return args -> {
             System.out.println("🔍 Checking MongoDB Atlas for existing users...");
 
-            // Find users where 'enabled' does not exist
+            // Match users that have no 'enabled' field yet (created before the field existed)
             Query query = new Query(Criteria.where("enabled").exists(false));
 
-            // Set 'enabled' to true
             Update update = new Update().set("enabled", true);
 
-            // Execute the update
             long modifiedCount = mongoTemplate.updateMulti(query, update, User.class).getModifiedCount();
 
             if (modifiedCount > 0) {
